@@ -1,0 +1,37 @@
+import unittest
+import jinja2
+import os
+
+
+class TestUtilsTemplate(unittest.TestCase):
+    """
+    Test the jinja template utils
+    """
+
+    def setUp(self):
+        self.debug = False
+        scriptdir = os.path.dirname(os.path.abspath(__file__))
+        template_folder = scriptdir + '../templates'
+        templateLoader = jinja2.FileSystemLoader(searchpath="../templates")
+        self.templateEnv = jinja2.Environment(loader=templateLoader)
+
+    def tearDown(self):
+        pass
+
+    def test_render_entity(self):
+        name = "Event"
+        properties = { 'Title': 'SMWCon', 'Year': '2020', 'Description': "test value test value\n with line break"}
+        template2 = self.templateEnv.from_string(
+            "{% from 'utils.jinja' import render_entity %}{{render_entity(name, properties)}}")
+        outputText = template2.render(name=name, properties=properties)
+        expected = """{{Event
+|Title=SMWCon
+|Year=2020
+|Description=test value test value
+ with line break
+}}"""
+        self.assertEqual(outputText, expected, "SMW entity was not rendered correctly.")
+
+
+if __name__ == "__main__":
+    unittest.main()

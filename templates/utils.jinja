@@ -1,0 +1,41 @@
+
+{%- macro render_info(text,
+                     icon=info,
+                     maxWidth=None,
+                     theme=None) -%}
+{{'{{'}}#info: {{text}}
+{%- if icon -%}
+| {{ icon }}
+{%- else -%}
+| info
+{%- endif -%}
+{%- if maxWidth -%}
+|max-width= {{maxWidth}}
+{%- endif -%}
+{%- if theme -%}
+|theme={{theme}}
+{%- endif -%}
+{{'}}'}}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{#
+Renders a semantic wiki entity.
+Example:
+    Args:
+        name="Event"
+        properties= {'Title':'SMWCon', 'Year': '2020'}
+    Returns:
+            {{Event
+            |Title= SMWCon
+            |Year= 2020
+            |}
+#}
+{%- macro render_entity(name, properties) -%}
+{{'{{'}}{{- name -}}
+{%- for property in properties %}
+|{{property}}={{ properties[property]}}
+{%- endfor %}
+{{'}}'}}
+{%- endmacro -%}

@@ -1,0 +1,205 @@
+{#---------------------------------Import-------------------------------------#}
+{% from 'utils.jinja' import render_info %}
+{#----------------------------------------------------------------------------#}
+
+{%- macro for_template_tag(label,
+                     multiple=false,
+                     display=None,
+                     height=None,
+                     minimum_instances=None,
+                     maximum_instances=None,
+                     add_button_text=None,
+                     strict=false,
+                     embed_in_field=None) -%}
+{{'{{{'}}for template
+{%- if label -%}
+| label={{ label }}
+{%- endif -%}
+{%- if multiple -%}
+| multiple
+{%- endif -%}
+{%- if display -%}
+| display={{ display }}
+{%- endif -%}
+{%- if height -%}
+| height={{ height }}
+{%- endif -%}
+{%- if minimum_instances -%}
+| minimum instances={{ minimum_instances }}
+{%- endif -%}
+{%- if maximum_instances -%}
+| maximum instances={{ maximum_instances }}
+{%- endif -%}
+{%- if add_button_text -%}
+| add button text={{ add_button_text }}
+{%- endif -%}
+{%- if strict -%}
+| strict
+{%- endif -%}
+{%- if embed_in_field -%}
+| embed in field={{ embed_in_field }}
+{%- endif -%}
+{{'}}}'}}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro end_template_tag() -%}
+{{'{{{'}}end template{{'}}}'}}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro render_field(property,regexps={}) -%}
+{{'{{{'}}field| {{ property['name'] }}
+{%- if 'inputType' in property and property['inputType'] -%}
+|input type= {{property['inputType']}}
+{%- endif %}
+{%- if 'placeholder' in property and property['placeholder'] -%}
+|placeholder=  {{property['placeholder']}}
+{%- endif -%}
+{%- if 'defaultValue' in property and property['defaultValue'] -%}
+|default= {{property['defaultValue']}}
+{%- endif -%}
+{%- if 'values_from' in property and property['values_from']  -%}
+|values from {{property['values_from'] }}
+{%- endif -%}
+{%- if 'allowedValues' in property and property['allowedValues'] -%}
+|values= {{property['allowedValues']}}
+{%- endif -%}
+{%- if 'uploadable' in property and property['uploadable'] not in ['f','false','False',False] -%}
+| {{property['uploadable']}} |image preview
+{%- endif -%}
+{%- if 'primaryKey' in property and property['primaryKey'] not in ['f','false','False',False] -%}
+| unique
+{%- endif -%}
+{%- if property['inputType'] == 'regexp' -%}
+{%- if property['regexp'] in regexps -%}
+{{render_regex(regexps[property['regexp']])}}
+{%- endif -%}
+{%- endif -%}
+{{'}}}'}}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro render_field_label(property) -%}
+{{ property['name'] }}
+{%- if 'documentation' in property and property['documentation'] is not none-%}
+{{ render_info(text=property['documentation'],icon='note')}}
+{%- endif -%}
+:
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro render_regex(regexp) -%}
+{%- if 'regexp' in regexp %}| regexp={{regexp['regexp']}}{%- endif -%}
+{%- if 'base type' in regexp %}| base type={{regexp['base type']}}{%- endif -%}
+{%- if 'regexp' in regexp %}| regexp={{regexp['regexp']}}{%- endif -%}
+{%- if 'message' in regexp %}| message={{regexp['message']}}{%- endif -%}
+{%- if 'or char' in regexp %}| or char={{regexp['or char']}}{%- endif -%}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro form_table_begin(class="formtable") -%}
+{{'{|'}} class="{{ class }}"
+{% endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro form_table_end() -%}
+|}
+{%- endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro form_table_headline(text, class="", colspan=2) -%}
+!  colspan="{{ colspan }}" class="{{ class }}"  | {{ text }}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{%- macro form_table_row(label, field) %}
+|-
+! {{ label }}
+| {{ field }}
+{%- endmacro -%}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_standard_input_tag(input, label='',class='',style='') %}
+{{'{{{'}}standard input|
+{{- input -}}
+{{- 'label=' and label or '' -}}
+{{- 'class=' and class or '' -}}
+{{- 'class=' and class or '' -}}
+{{'}}}'}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_save_page(input, label='',class='',style='') %}
+{{- form_standard_input_tag('save', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_save_button(input, label='',class='',style='') %}
+{{- form_standard_input_tag('save', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_preview_button(input, label='',class='',style='') %}
+{{- form_standard_input_tag('preview', label, class, style) -}}
+{% endmacro %}
+
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_save_and_continue_button(input, label='',class='',style='') %}
+{{- form_standard_input_tag('save and continue', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_show_changes_button(input, label='',class='',style='') %}
+{{- form_standard_input_tag('changes', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_summary_text_field(input, label='',class='',style='') %}
+{{- form_standard_input_tag('summary', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_minor_edit_checkbox(input, label='',class='',style='') %}
+{{- form_standard_input_tag('minor edit', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_watch_checkbox(input, label='',class='',style='') %}
+{{- form_standard_input_tag('watch', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_cancel_button(input, label='',class='',style='') %}
+{{- form_standard_input_tag('cancel', label, class, style) -}}
+{% endmacro %}
+
+{#----------------------------------------------------------------------------#}
+
+{% macro form_table(text, properties, regexps) %}
+{{ form_table_begin(class="formtable InfoBox mw-collapsible") -}}
+{{ form_table_headline(text, class="tableHeadline") }}
+{%- for property in properties -%}
+{{- form_table_row(label=render_field_label(property),field=render_field(property, regexps)) -}}
+{%- endfor %}
+{{ form_table_end() }}
+{% endmacro %}
