@@ -118,6 +118,7 @@ def main(argv=None):
         parser.add_argument('-d', '--data', dest="data_input", help="Input data which should be rendered")
         parser.add_argument('--BackupPath', dest="backupPath", help="Path to store/update the wiki entries", required=True)
         parser.add_argument('-stdin', dest="stdin", action='store_true', help='Use the input from STD IN using pipes')
+        parser.add_argument('-f', dest="force", action='store_true', default=False, help='If true template arguments will be overwritten with the given data if present')
         #ToDo: Add parameter to allow custom templates that can load the macros from here
 
         # Process arguments
@@ -135,7 +136,7 @@ def main(argv=None):
                 events = data['data']
             else:
                 pass
-            update_or_create_template(events, args.page_name_id, args.template, templateEnv, args.backupPath)
+            update_or_create_template(events, args.page_name_id, args.template, templateEnv, args.backupPath, args.force)
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 1
