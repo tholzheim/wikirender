@@ -1,6 +1,6 @@
 # ! important
 # see https://stackoverflow.com/a/27868004/1497139
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # read the contents of your README file
 from os import path
@@ -10,9 +10,8 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='wikirender',
-    version='0.0.1',
-
-    packages=['wikifile','templates',],
+    version='0.0.2',
+    packages=['wikifile','templates','templates/macros'],
     classifiers=[
             'Programming Language :: Python',
             'Programming Language :: Python :: 3.6',
@@ -26,10 +25,11 @@ setup(
     ],
     entry_points={
       'console_scripts': [
-        'wikirender = wikifile.wikiRender:main',
+        'wikirender = wikifile.toolbox:main_render',
+        'wikiextract = wikifile.toolbox:main_extract',
       ],
     },
-    package_data={'templates': ['*.jinja', 'templates/*.jinja']},
+    package_data={'templates': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'],'templates/macros': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja']},
     author='Tim Holzheim',
     maintainer='Tim Holzheim',
     url='',

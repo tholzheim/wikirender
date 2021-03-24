@@ -56,7 +56,6 @@ class WikiRender:
         :param properties:
         :return:
         """
-        print("here")
         template_template = self.template_env.get_template("help_page.jinja")
         page = template_template.render(entity_name=entity_name,
                                              entity_properties=entity_properties,
