@@ -20,7 +20,7 @@ Output: Generates the page Category:<entity_name>
 <includeonly>
 {# Form control buttons #}
 {{ form_save_button() }} {{ form_preview_button() }} {{ form_show_changes_button() }} {{ form_cancel_button() }}
-{{for_template_tag('Event')}}
+{{for_template_tag(entity_topic.name)}}
 {{ form_table(text,Property.get_entity_properties(entity_topic.name, all_properties), regexps=regexps) }}
 {{end_template_tag()}}
 {# Form control buttons #}

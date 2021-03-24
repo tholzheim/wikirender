@@ -13,7 +13,7 @@
                      embed_in_field=None) -%}
 {{'{{{'}}for template
 {%- if label -%}
-| label={{ label }}
+| {{ label }}
 {%- endif -%}
 {%- if multiple -%}
 | multiple
@@ -103,8 +103,8 @@
 
 {#----------------------------------------------------------------------------#}
 
-{%- macro form_table_begin(class="formtable") -%}
-{{'{|'}} class="{{ class }}"
+{%- macro form_table_begin(class="formtable", style="") -%}
+{{'{|'}} class="{{ class }}" style="{{ style }}"
 {% endmacro -%}
 
 {#----------------------------------------------------------------------------#}
@@ -197,7 +197,7 @@
 
 {%- macro form_table(text, properties, regexps) -%}
 {{ form_table_begin(class="formtable InfoBox mw-collapsible") -}}
-{{ form_table_headline(text, class="tableHeadline") }}
+{{ form_table_headline(text, class="tableHeadline", style="width:100%") }}
 {%- for property in properties -%}
 {{- form_table_row(label=render_field_label(property),field=render_field(property, regexps=regexps)) -}}
 {%- endfor %}
