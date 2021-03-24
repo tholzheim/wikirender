@@ -1,108 +1,199 @@
-import jinja2
-import json
-import os
 import sys
-import templates as jinja_templates
-from argparse import ArgumentParser
-from argparse import RawDescriptionHelpFormatter
-import wikitextparser as wtp
-from wikitextparser import WikiText, Argument, Template
+import jinja2
 
-WIKI_FILE_PATH = lambda path, name: f"{path}/{name}.wiki"
 
-def render_events(templateEnv:jinja2.Environment, data):
-    events = json.loads(data)
-    for event in events['events']:
+class WikiRender:
+    """
+    Provides functions to render json data to wiki files
+    """
+
+    regexps = {
+                'Regexp:NaturalNumber': {
+                    'regexp': "/^[0-9]+$!^$/",
+                    'message': 'Must be a Number',
+                    'or char': '!'
+                }
+              }
+
+    def __init__(self, template_env: jinja2.Environment):
+        self.template_env = template_env
+        self.template_env.globals['UML'] = UML
+        self.template_env.globals['Property'] = Property
+        self.template_env.globals['Topic'] = Topic
+
+    def render_template(self, template_name: str, data: dict, exclude_keys: list = None):
+        """
+        Render the given data to a template
+        Example:
+            template_name = "Event"
+            data = {"name": "SMWCon", "date": "2020", "Filename": "SMWCon 2020.wiki"}
+            exclude_keys = ["Filename"]
+
+            Results in:
+            {{Event
+            |name=SMWCon
+            |date=2020
+            }}
+        :param template_name: Name of the template
+        :param data: Dictionary the keys are used translated as template arguments and the values as argument value
+        :param exclude_keys: list of keys that should not be included in the template
+        :return:
+        """
+        if exclude_keys is not None:
+            data = {x: data[x] for x in data if x not in exclude_keys}
         try:
-            event_template = templateEnv.get_template(f"event.jinja")
-            res_event = event_template.render(properties=event)
-            print(res_event)
+            template_template = self.template_env.get_template("template.jinja")
+            return template_template.render(name=template_name, properties=data)
         except Exception as e:
             print(e)
+        return None
 
-def render_event(templateEnv:jinja2.Environment, data):
-    try:
-        event_template = templateEnv.get_template(f"event.jinja")
-        return event_template.render(properties=data)
-    except Exception as e:
-        print(e)
-    return None
+    def render_help_page(self, entity_name, entity_properties, properties):
+        """
+        Renders the help page for the given entity using the provided properties
+        :param entity_name:
+        :param entity_properties:
+        :param properties:
+        :return:
+        """
+        print("here")
+        template_template = self.template_env.get_template("help_page.jinja")
+        page = template_template.render(entity_name=entity_name,
+                                             entity_properties=entity_properties,
+                                             all_properties=properties)
+        return page
 
-def get_wikiText(name, path):
-    """find the wiki file by name and return it as parsed object.
+    def render_list_of_page(self, entity_name, entity_properties, properties):
+        template_template = self.template_env.get_template("list_of_page.jinja")
+        page = template_template.render(entity_name=entity_name,
+                                                entity_properties=entity_properties,
+                                                all_properties=properties)
+        return page
 
-    :return None if the file is not found
+    def render_category_page(self, entity_name, entity_properties, properties):
+        template_template = self.template_env.get_template("category_page.jinja")
+        page = template_template.render(entity_name=entity_name,
+                                             entity_properties=entity_properties,
+                                             all_properties=properties)
+        return page
+
+    def render_concept_page(self, entity_name, entity_properties, properties):
+        template_template = self.template_env.get_template("concept_page.jinja")
+        page = template_template.render(entity_name=entity_name,
+                                             entity_properties=entity_properties,
+                                             all_properties=properties)
+        return page
+
+    def render_template_page(self, entity_name, entity_properties, properties):
+        template_template = self.template_env.get_template("template_page.jinja")
+        page = template_template.render(entity_name=entity_name,
+                                        entity_properties=entity_properties,
+                                        all_properties=properties)
+        return page
+
+    def render_form_page(self, entity_name, entity_properties, properties):
+        template_template = self.template_env.get_template("form_page.jinja")
+        page = template_template.render(entity_name=entity_name,
+                                             entity_properties=entity_properties,
+                                             all_properties=properties,
+                                             regexps=self.regexps)
+        return page
+
+
+class UML:
     """
-    fname = WIKI_FILE_PATH(path, name)
-    if os.path.isfile(fname):
-        with open(fname, mode='r') as file:
-            page = file.read()
-            parsed_page = wtp.parse(page)
-            return parsed_page
-    return None
+    Provides helper functions for uml generation
+    """
+    @staticmethod
+    def get_outgoing_edges(entity_name: str, properties: list):
+        """Reduce the given list of properties to those properties which have the given entity as subject"""
+        outgoing_edges = []
+        for property_properties in properties:
+            p = Property(property_properties)
+            if p.used_for == f"Concept:{entity_name}" and p.type == "Special:Types/Page" and p.values_from:
+                uml_infos = {}
+                uml_infos["source"] = entity_name
+                if p.values_from:
+                    values_from = str(p.values_from).split("=")
+                    if values_from[0] == "concept":
+                        uml_infos["target"] = values_from[1]
+                    else:
+                        break
+                if p.input_type == "tokens":
+                    uml_infos["target_cardinality"] = "*"
+                else:
+                    uml_infos["target_cardinality"] = "1"
+                uml_infos["source_cardinality"] = "*"
+                uml_infos["property"] = property_properties
+                outgoing_edges.append(uml_infos)
+        return outgoing_edges
 
-def get_template(wikiText:WikiText, template_name:str):
-    for template in wikiText.templates:
-        name = template.name
-        if name.replace('\n', '') == template_name:
-            return template
-    return None
+    @staticmethod
+    def get_incoming_edges(entity_name: str, properties: list):
+        """Reduce the given list of properties to those properties which have the given entity as object"""
+        incoming_edges = []
+        for property_properties in properties:
+            p = Property(property_properties)
+            if p.values_from == f"concept={entity_name}" and p.type == "Special:Types/Page" and p.values_from:
+                uml_infos = {}
+                uml_infos["target"] = entity_name
+                if p.values_from:
+                    uml_infos["source"] = str(p.values_from).split("=")[1]
+                if p.input_type == "tokens":
+                    uml_infos["source_cardinality"] = "*"
+                else:
+                    uml_infos["source_cardinality"] = "1"
+                uml_infos["target_cardinality"] = "1"
+                uml_infos["property"] = property_properties
+                incoming_edges.append(uml_infos)
+        return incoming_edges
 
-def update_arguments(template:Template, args, force=False):
-    for key, value in args.items():
-        if template.has_arg(key):
-            # update argument
-            if force:
-                template.del_arg(key)
-                template.set_arg(key, value)
+    @staticmethod
+    def get_incoming_edges_reduced(entity_name: str, properties: list):
+        incoming_edges  = UML.get_incoming_edges(entity_name, properties)
+        res = []
+        for edge in incoming_edges:
+            if edge.get('source') == entity_name:
+                break
+            if edge.get('source') in [x.get('source') for x in res]:
+                # merge edges
+                for x in res:
+                    if x.get('source') == edge.get('source'):
+                        x.get('properties').append(Property(edge.get('property')).name)
             else:
-                pass
-        else:
-            template.set_arg(key, value)
+                edge['properties'] = [Property(edge.get('property')).name]
+                res.append(edge)
+        return res
 
-def update_or_create_template(data:list, name_id, template_name, template_env:jinja2.Environment, backup_path, force=False):
+class Property:
     """
-    
-    :param data: json data containing the information for the templates
-    :param name_id: Name of the key that contains the page name
-    :param template: Name of the template that should be updated or created
-    :param template_env: 
-    :param backup_path: path to the directory were the wiki files are stored
-    :param force: If True arguments that are already defined in the template are overwritten by the given data. If False only missing data is added 
-    :return: 
+    Provides helper functions and constants for properties
     """
-    for page in data:
-        # check if page exists
-        if name_id not in page:
-            continue
-        page_name = page[name_id]
-        parsed_page = get_wikiText(page_name, backup_path)
-        if parsed_page is None:
-            # create page and store it
-            page_content = render_event(template_env, page)   # ToDo: Generalize to support all templates
-            save_to_file(backup_path, page_name, page_content)
-        else:
-            # update existing template
-            template = get_template(parsed_page, template_name)
-            if template is None:
-                # create template
-                t = Template(render_event(template_env, page))
-                parsed_page.insert(0,render_event(template_env, page))
-                parsed_page.templates.append(t)
-            else:
-                update_arguments(template, page, force)
-                test = str(parsed_page)
-            save_to_file(backup_path, page_name, str(parsed_page), overwrite=True)
 
-
-def save_to_file(path, filename, data, overwrite=False):
-    """Save the given data in a file"""
-    mode = 'a'
-    if overwrite:
-        mode = 'w'
-
-    with open(WIKI_FILE_PATH(path, filename), mode=mode) as f:
-        f.write(data)
+    def __init__(self, properties: dict):
+        if properties is None:
+            properties = {}
+        self.name = properties.get('name')
+        self.label = properties.get('label')
+        self.type = properties.get('type')
+        self.index = properties.get('index')
+        self.sort_pos = properties.get('sortPos')
+        self.primary_key = properties.get('primaryKey')
+        self.mandatory = properties.get('mandatory')
+        self.namespace = properties.get('namespace')
+        self.size = properties.get('size')
+        self.uploadable = properties.get('uploadable')
+        self.default_value = properties.get('defaultValue')
+        self.input_type = properties.get('inputType')
+        self.allowed_values = properties.get('allowedValues')
+        self.documentation = properties.get('documentation')
+        self.values_from = properties.get('values_from')
+        self.show_in_grid = properties.get('showInGrid')
+        self.is_link = properties.get('isLink')
+        self.nullable = properties.get('nullable')
+        self.topic = properties.get('topic')
+        self.regexp = properties.get('regexp')
+        self.used_for = properties.get('used_for')
 
     def is_used_for(self):
         """"""
@@ -110,33 +201,120 @@ def save_to_file(path, filename, data, overwrite=False):
         if isinstance(self.topic, list):
             res.extend(self.topic)
         else:
-            pass
+            res.append(self.topic)
+        if isinstance(self.used_for, list):
+            res.extend(self.used_for)
+        else:
+            res.append(self.used_for)
+        return res
 
-        if args.template == "Event":
-            if 'data' in data:
-                events = data['data']
-            else:
-                pass
-            update_or_create_template(events, args.page_name_id, args.template, templateEnv, args.backupPath, args.force)
-    except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
-        return 1
-    except Exception as e:
-        print(e)
+    @staticmethod
+    def get_property_properties(properties: list):
+        """Returns the properties that describe properties"""
+        res = []
+        for p in properties:
+            p_obj = Property(p)
+            if "Concept:Property" in p_obj.is_used_for():
+                res.append(p)
+        return sorted(res, key=lambda k: Property(k).index if Property(k).index is not None else sys.maxsize)   # ToDo: Add sotPos to all properties. If done exchange index with sortPos
+
+    @staticmethod
+    def get_entity_properties(entity_name: str, properties: list):
+        """
+        Extracts the properties of an entity form the given property list
+        :param entity_name: Name of the property for which the properties should be extracted
+        :param properties: List of all properties
+        :return: List of all properties the are used by the given entity
+        """
+        res = []
+        for p in properties:
+            p_obj = Property(p)
+            if f"Concept:{entity_name}" in p_obj.is_used_for():
+                res.append(p)
+        return sorted(res, key=lambda k: Property(k).index if Property(k).index is not None else sys.maxsize)
+
+    @staticmethod
+    def get_entity_property(entity_name, properties: list):
+        """Returns the properties of the given entity"""
+        for p in properties:
+            if Property(p).name == entity_name:
+                return p
+        return None
+
+    @staticmethod
+    def get_primitive_properties(entity_name: str, properties: list):
+        """
+        Returns a list of all primitive datatype of the given entity.
+        :param entity_name:
+        :return:
+        """
+        primitive_datatypes = ["Special:Types/Boolean",
+                               "Special:Types/Date",
+                               "Special:Types/Code",
+                               "Special:Types/Text",
+                               "Special:Types/text",
+                               "Special:Types/url",
+                               "Special:Types/URL",
+                               "Special:Types/External identifier",
+                               "Special:Types/ExternalIdentifier",
+                               "Special:Types/Geographic coordinate",
+                               "Special:Types/Number",
+                               "Special:Types/URI",
+                               "Special:Types/Url",
+                               "Special:Types/number",
+                               "Special:Types/code"]
+        primitive_properties = []
+        for property_properties in properties:
+            p = Property(property_properties)
+            if f"Concept:{entity_name}" in p.is_used_for() and p.type in primitive_datatypes:
+                primitive_properties.append(property_properties)
+        return primitive_properties
+
+
+class Topic:
+    """
+    Provides helper functions and constants for Topics
+    """
+
+    def __init__(self, properties: dict):
+        self.name = properties.get('name')
+        self.plural_name = properties.get('pluralName')
+        self.icon = properties.get('icon')
+        self.icon_url = properties.get('iconURL')
+        self.documentation = properties.get('documentation')
+        self.wiki_documentation = properties.get('wikiDocumentation')
+        self.defaultstoremode = properties.get('defaultstoremode')
+        self.context = properties.get('context')
+        self.storemode = properties.get('storemode')
+
+    def get_related_topics(self, properties):
+        """
+        Returns a list of names of topics that are related to this topic.
+        :param properties: List of all properties of the wiki
+        :return: list of names of related topics
+        """
+        res = set([])
+        for p in UML.get_outgoing_edges(self.name, properties):
+            # source (self) --> target
+            res.add(p['target'])
+        for p in UML.get_incoming_edges(self.name, properties):
+            # source --> target (self)
+            res.add(p['source'])
+        res.remove(self.name)
+        return res
+
 
 
 if __name__ == "__main__":
-    sys.argv.append("-t=events")
-    sys.argv.append('-d={"data":[{ "Acronym": "SMWCon 2020","Title": "SMWCon", "Year": "2020", "Description": "test value test value\\n with line break"},{ "Acronym": "SMWCon 2021","Title": "SMWCon", "Year": "2021", "Description": "test value test value\\n with line break"}]}')
-    sys.argv.append("--BackupPath=events")
-    sys.argv.append("-id=events")
-    main(sys.argv[1:])
-
-    scriptdir = os.path.dirname(os.path.abspath(__file__))
-    template_folder = scriptdir + '../templates'
-    templateLoader = jinja2.FileSystemLoader(searchpath="./templates")
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    path = "/home/holzheim/wikibackup/orth_copy"
-    name = "3DUI 2020"
-    data=[{"Acronym":"3DUI 2020","testkey":"Test argument"},{"Acronym":"3DUI 2021","testkey":"Test argument"}]
-    update_or_create_template(data, 'Acronym', 'Event', templateEnv, path)
+    # Opening JSON file
+    # data={}
+    # with open('path/to/your/file') as json_file:
+    #     data = json.load(json_file)
+    # scriptdir = os.path.dirname(os.path.abspath(__file__))
+    # template_folder = scriptdir + '../templates'
+    # templateLoader = jinja2.FileSystemLoader(searchpath="../templates")
+    # templateEnv = jinja2.Environment(loader=templateLoader)
+    # template_template = templateEnv.get_template("form_page.jinja")
+    # wiki_render = WikiRender(templateEnv)
+    # print(wiki_render.render_template_page("Event",data["topics"],data["properties"]))
+    pass
