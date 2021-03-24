@@ -52,8 +52,8 @@ Provides macros that help generating a Template page
 {%- macro storemode_subobject(name, properties) -%}
 {{ '{{' }}#subobject:-
 |isA={{ name }}
-{%- for p in Property.get_entity_properties(name, properties) -%}
-|{{ name }} {{ Property(p).name }}={{ template_arg(Property(p).name) }}
+{% for p in Property.get_entity_properties(name, properties) -%}
+|{{ Property(p).name }}={{ template_arg(Property(p).name) }}
 {% endfor -%}
 {{ '}}' }}
 {%- endmacro -%}
@@ -62,8 +62,8 @@ Provides macros that help generating a Template page
 {%- macro storemode_default(name, properties) -%}
 {{ '{{' }}#set:
 |isA={{ name }}
-{%- for p in Property.get_entity_properties(name, properties) -%}
-|{{ name }} {{ Property(p).name }}={{ template_arg(Property(p).name) }}
+{% for p in Property.get_entity_properties(name, properties) -%}
+|{{ Property(p).name }}={{ template_arg(Property(p).name) }}
 {% endfor -%}
 {{ '}}' }}
 {%- endmacro -%}
