@@ -1,5 +1,5 @@
 {#---------------------------------Import-------------------------------------#}
-{% from 'utils.jinja' import render_info %}
+{% from 'macros/utils.jinja' import render_info %}
 {#----------------------------------------------------------------------------#}
 
 {%- macro for_template_tag(label,
@@ -129,77 +129,130 @@
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_standard_input_tag(input, label='',class='',style='') %}
+{%- macro form_standard_input_tag(input, label='',class='',style='') -%}
 {{'{{{'}}standard input|
 {{- input -}}
 {{- 'label=' and label or '' -}}
 {{- 'class=' and class or '' -}}
 {{- 'class=' and class or '' -}}
 {{'}}}'}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_save_page(input, label='',class='',style='') %}
+{%- macro form_save_page(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('save', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_save_button(input, label='',class='',style='') %}
+{%- macro form_save_button(label='',class='',style='') -%}
 {{- form_standard_input_tag('save', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_preview_button(input, label='',class='',style='') %}
+{%- macro form_preview_button(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('preview', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_save_and_continue_button(input, label='',class='',style='') %}
+{%- macro form_save_and_continue_button(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('save and continue', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_show_changes_button(input, label='',class='',style='') %}
+{%- macro form_show_changes_button(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('changes', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_summary_text_field(input, label='',class='',style='') %}
+{%- macro form_summary_text_field(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('summary', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_minor_edit_checkbox(input, label='',class='',style='') %}
+{%- macro form_minor_edit_checkbox(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('minor edit', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_watch_checkbox(input, label='',class='',style='') %}
+{%- macro form_watch_checkbox(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('watch', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_cancel_button(input, label='',class='',style='') %}
+{%- macro form_cancel_button(input, label='',class='',style='') -%}
 {{- form_standard_input_tag('cancel', label, class, style) -}}
-{% endmacro %}
+{%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}
 
-{% macro form_table(text, properties, regexps) %}
+{%- macro form_table(text, properties, regexps) -%}
 {{ form_table_begin(class="formtable InfoBox mw-collapsible") -}}
 {{ form_table_headline(text, class="tableHeadline") }}
 {%- for property in properties -%}
-{{- form_table_row(label=render_field_label(property),field=render_field(property, regexps)) -}}
+{{- form_table_row(label=render_field_label(property),field=render_field(property, regexps=regexps)) -}}
 {%- endfor %}
 {{ form_table_end() }}
-{% endmacro %}
+{%- endmacro -%}
+
+{%- macro forminput( form,
+                    size=None,
+                    default_value=None,
+                    button_text=None,
+                    query_string=None,
+                    autocomplete_on_category=None,
+                    autocomplete_on_namespace=None,
+                    placeholder=None,
+                    namespace_selector=None,
+                    popup=None,
+                    no_autofocus=None,
+                    returnto=None,
+                    reload=None) -%}
+{{ '{{' }}#forminput: form={{ form }}
+{%- if size -%}
+| size={{ size }}
+{%- endif -%}
+{%- if default_value -%}
+| default value={{ default_value }}
+{%- endif -%}
+{%- if button_text -%}
+| button text={{ button_text }}
+{%- endif -%}
+{%- if query_string -%}
+| query string={{ query_string }}
+{%- endif -%}
+{%- if autocomplete_on_category -%}
+| autocomplete on category={{ autocomplete_on_category }}
+{%- endif -%}
+{%- if autocomplete_on_namespace -%}
+| autocomplete on namespace={{ autocomplete_on_namespace }}
+{%- endif -%}
+{%- if placeholder -%}
+| placeholder={{ placeholder }}
+{%- endif -%}
+{%- if namespace_selector -%}
+| namespace selector={{ namespace_selector }}
+{%- endif -%}
+{%- if popup -%}
+| popup
+{%- endif -%}
+{%- if no_autofocus -%}
+| no autofocus
+{%- endif -%}
+{%- if returnto -%}
+| returnto={{ returnto }}
+{%- endif -%}
+{%- if reload -%}
+| reload
+{%- endif -%}
+{{ '}}' }}
+{%- endmacro -%}

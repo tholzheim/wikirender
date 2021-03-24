@@ -1,0 +1,40 @@
+{#-------------------------------Concept Page---------------------------------#}
+{#
+Generate the concept of page for a entity.
+Input:
+    entity_name: name of the entity
+    entity_properties: properties defining the entity
+    all_properties: all properties of the wiki.
+Output: Generates the page Concept:<entity_name>
+#}
+{#---------------------------------Import-------------------------------------#}
+{% from 'macros/utils.jinja' import render_entity %}
+{% from 'macros/form.jinja' import forminput %}
+{#---------------------------Set Global Variables-----------------------------#}
+{% set entity_topic = Topic(entity_properties) %}
+{#-------------------------------Template-------------------------------------#}
+__NOCACHE__
+{{ render_entity('Topic', entity_properties) }}
+{{ render_entity('Topic', {"viewmode":"masterdetail", "storemode": "none"}) }}
+{{ forminput('Property', button_text='add Property') }}
+=== Documentation ===
+{{ entity_topic.wiki_documentation }}
+=== uml ===
+{% include "uml.jinja" %}
+
+{{ '{{' }}#concept:
+ [[Category:{{ entity_topic.name }}]]
+ |{{ entity_topic.plural_name }}
+see also
+* [[List of {{ entity_topic.plural_name }}]]
+* [[Help:{{ entity_topic.name }}]]
+* [[Concept:{{ entity_topic.name }}]]
+* [[:Category:{{ entity_topic.name }}]]
+* [[:Template:{{ entity_topic.name }}]]
+* [[:Form:{{ entity_topic.name }}]]
+topic links:
+{% for rel_topic in entity_topic.get_related_topics(all_properties) -%}
+* [[:Category:{{ rel_topic }}]]
+{% endfor %}
+{{ '}}' }}
+[[Category:{{ entity_topic.name }}]]

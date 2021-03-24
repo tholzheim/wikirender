@@ -1,0 +1,110 @@
+{#---------------------------------UML----------------------------------------#}
+{#
+Generate a help page for a entity.
+Input:
+    entity_name: name of the entity
+    entity_properties: properties defining the entity
+    all_properties: all properties of the wiki.
+Output: Generates uml diagram representing the usage of the entity in the wiki.
+#}
+{#---------------------------------Import-------------------------------------#}
+{% from 'macros/utils.jinja' import render_entity %}
+{#---------------------------Set Global Variables-----------------------------#}
+{% set entity_topic = Topic(entity_properties) %}
+{#-------------------------------Template-------------------------------------#}
+<uml>
+title {{ entity_name }}
+
+note as {{ entity_name }}Note
+{{  entity_topic.documentation }}
+end note
+class {{ entity_name }} {
+{%  for property in Property.get_primitive_properties(entity_name,all_properties) -%}
+  {{ Property(property).type.replace("Special:Types/","") }}: {{ Property(property).label }}
+{% endfor %}
+}
+{{ entity_name }}Note .. {{ entity_name }}
+{# Set outgoing edges #}
+{%-  for edge in UML.get_outgoing_edges(entity_name,all_properties) -%}
+  "{{ edge.source }}" "{{ edge.source_cardinality }}" --> "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ Property(edge.property).name }}"
+{%- endfor -%}
+{# Set incoming edges #}
+{%  for edge in UML.get_incoming_edges(entity_name,all_properties) -%}
+  "{{ edge.source }}" "{{ edge.source_cardinality }}" <-- "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ Property(edge.property).name }}"
+{%- endfor %}
+
+skinparam note {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam component {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam package {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam usecase {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam activity {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam classAttribute {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam interface {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam class {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+skinparam object {
+  BackGroundColor #FFFFFF
+  FontSize 12
+  ArrowColor #FF8000
+  BorderColor #FF8000
+  FontColor black
+  FontName Technical
+}
+hide Circle
+' end of skinparams '
+</uml>

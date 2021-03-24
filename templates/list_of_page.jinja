@@ -1,0 +1,52 @@
+{#-------------------------------List of Page----------------------------------#}
+{#
+Generate the list of page for a entity.
+Input:
+    entity_name: name of the entity
+    entity_properties: properties defining the entity
+    all_properties: all properties of the wiki.
+Output: Generates the page List of<entity_plural_name>
+#}
+{#---------------------------------Import-------------------------------------#}
+{% from 'macros/utils.jinja' import render_entity %}
+{% from 'macros/form.jinja' import forminput %}
+{#---------------------------Set Global Variables-----------------------------#}
+{% set entity_topic = Topic(entity_properties) %}
+{#-------------------------------Template-------------------------------------#}
+__NOCACHE__
+{{ '{{' }}#ask: [[Topic name::{{ entity_topic.name }}]]
+|mainlabel=-
+|?Topic icon = icon
+|? = Topic
+|?Topic name = name
+|?Topic pluralName = pluralName
+|?Topic documentation = documentation
+{{ '}}' }}
+== {{ entity_topic.plural_name }} ==
+{{ forminput('Event', button_text='add Event') }}
+{{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]|format=count{{ '}}' }} {{ entity_topic.plural_name }}:
+{{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]
+|mainlabel={{ entity_topic.name }}
+{% for entity_property in Property.get_entity_properties(entity_topic.name, all_properties) -%}
+|?{{ Property(entity_property).name }} = {{ Property(entity_property).label }}
+{% endfor %}
+|order=ascending
+| limit=200
+{{ '}}' }}
+<div class="toccolours mw-collapsible mw-collapsed" style="width:1024px">
+=== Example rendered with the correspinding Template ===
+<div class="mw-collapsible-content">
+{{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]
+| ?#=pageid
+{% for entity_property in Property.get_entity_properties(entity_topic.name, all_properties) -%}
+|?{{ Property(entity_property).name }} = {{ Property(entity_property).label }}
+{% endfor %}
+| mainlabel=-
+| format=template
+| named args=yes
+| template={{ entity_topic.name }}
+| limit=1
+{{ '}}' }}
+</div>
+</div>
+[[:Category:{{ entity_topic.name }}]]

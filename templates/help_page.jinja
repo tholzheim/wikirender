@@ -1,0 +1,51 @@
+{#-------------------------------Help Page------------------------------------#}
+{#
+Generate a help page for a entity.
+Input:
+    entity_name: name of the entity
+    entity_properties: properties defining the entity
+    all_properties: all properties of the wiki.
+Output: Generates the page Help:<entity_name>
+#}
+{#---------------------------------Import-------------------------------------#}
+{% from 'macros/utils.jinja' import render_entity %}
+{#---------------------------------Set Global Variables-------------------------------------#}
+{% set entity_topic = Topic(entity_properties) %}
+{#-------------------------------Template-------------------------------------#}
+== Help for {{ entity_name }} ==
+{{'{{' }}#ask: [[Topic name::{{ entity_name }}]]
+|mainlabel=-
+|?Topic icon = icon
+|? = Topic
+|?Topic name = name
+|?Topic pluralName = pluralName
+|?Topic documentation = documentation
+{{ '}}' }}
+=== Documentation ===
+[https://www.wikidata.org/wiki/Q515 large permanent human settlement]
+=== Example {{ entity_topic.plural_name }} ===
+{{ '{{' }}#ask: [[Concept:{{ entity_name }}]]
+|limit=25
+|searchlabel=...more examples
+{{ '}}' }}
+=== Properties ===
+{{ '{{' }}#ask: [[Concept:Property]][[Used for::Concept:{{ entity_name }}]]
+{% for var in Property.get_property_properties(all_properties) -%}
+|?Property {{ Property(var).name }} = {{ Property(var).label }}
+{% endfor %}
+|format=table
+{{ '}}' }}
+=== uml ===
+{% include "uml.jinja" %}
+
+see also
+* [[List of {{ entity_topic.plural_name }}]]
+* [[Help:{{ entity_name }}]]
+* [[Concept:{{ entity_name }}]]
+* [[:Category:{{ entity_name }}]]
+* [[:Template:{{ entity_name }}]]
+* [[:Form:{{ entity_name }}]]
+topic links:
+* [[:Category:{{ entity_name }}]]
+
+[[Category:{{ entity_name }}]]

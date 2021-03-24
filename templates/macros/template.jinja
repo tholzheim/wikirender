@@ -1,0 +1,111 @@
+{#-------------------------------Template Macros---------------------------------#}
+{#
+Provides macros that help generating a Template page
+#}
+{#---------------------------------Import-------------------------------------#}
+{% from 'macros/utils.jinja' import render_entity %}
+{#---------------------------Set Global Variables-----------------------------#}
+
+{#--------------------------------Macros--------------------------------------#}
+{%- macro pipe() -%}
+{{ '{{' }}!{{ '}}' }}
+{%- endmacro -%}
+
+{%- macro template_arg(name) -%}
+{{ '{{{' }}{{ name }}|{{ '}}}' }}
+{%- endmacro -%}
+
+{%- macro blank_template_properties(name, properties) -%}
+{%- for p in Property.get_entity_properties(name, properties) -%}
+|{{ Property(p).name }}=
+{% endfor -%}
+{%- endmacro -%}
+
+{# Renders the templates arguments into one table header #}
+{%- macro viewmode_tableheader(name, properties) -%}
+{{ pipe() }} class='wikitable'
+{%- set entity_properties = Property.get_entity_properties(name, properties) %}
+!{{ Property(entity_properties[0]).name }}
+{%- for p in entity_properties[1:] -%}
+!!{{ Property(p).name }}
+{%- endfor -%}
+{{ pipe() }}-
+{%- endmacro -%}
+
+{# Renders the templates arguments into one table row #}
+{%- macro viewmode_tablerow(name, properties) -%}
+{{ pipe() }} class='wikitable'
+{%- set entity_properties = Property.get_entity_properties(name, properties) %}
+{{ pipe() }}{{ Property(entity_properties[0]).name }}
+{%- for p in entity_properties[1:] %}
+{{ pipe() }}{{ pipe() }}{{ template_arg(Property(p).name) }}
+{% endfor -%}
+{{ pipe() }}-
+{%- endmacro -%}
+
+{# Renders the templates arguments into one table row #}
+{%- macro viewmode_tablerow(name, properties) -%}
+
+{%- endmacro -%}
+
+{# Stores the template arguments as subobject on the page #}
+{%- macro storemode_subobject(name, properties) -%}
+{{ '{{' }}#subobject:-
+|isA={{ name }}
+{%- for p in Property.get_entity_properties(name, properties) -%}
+|{{ name }} {{ Property(p).name }}={{ template_arg(Property(p).name) }}
+{% endfor -%}
+{{ '}}' }}
+{%- endmacro -%}
+
+{# Stores the template arguments as hidden properties #}
+{%- macro storemode_default(name, properties) -%}
+{{ '{{' }}#set:
+|isA={{ name }}
+{%- for p in Property.get_entity_properties(name, properties) -%}
+|{{ name }} {{ Property(p).name }}={{ template_arg(Property(p).name) }}
+{% endfor -%}
+{{ '}}' }}
+{%- endmacro -%}
+
+{# Adds a edit button to the default view table #}
+{%- macro storemode_property(name, properties) -%}
+! colspan='2' style='text-align:left' {{ pipe() }} {{ '{{' }}Icon|name=edit|size=24{{ '}}' }}{{ '{{' }}Link|target=Special:FormEdit/{{ naem }}/{{ '{{' }}FULLPAGENAME{{ '}}' }}|title=edit{{ '}}' }}
+{{ pipe() }}-
+{%- endmacro -%}
+
+{#  #}
+{%- macro viewmode_masterdetail(name, properties) -%}
+{% set incoming_edges = UML.get_incoming_edges_reduced(name, properties) %}
+{%- for edge in incoming_edges %}
+= {{ edge.get('source') }} =
+{{ '{{' }}#ask:[[Concept:{{ edge.get('source') }}]][[{{ edge.get('properties')[0] }}::{{ '{{' }}PAGENAME{{ '}}' }}
+{%- for property_name in edge.get('properties')[1:] -%}
+||{{ property_name }}::{{ '{{' }}PAGENAME{{ '}}' }}
+{%- endfor %}
+::{{ '{{' }}FULLPAGENAME{{ '}}' }}]]
+{%- for p in Property.get_entity_properties(edge.get('source'), properties) -%}
+|?{{ Property(p).name }}={{ Property(p).label }}
+{% endfor -%}
+|sort=Event acronym
+|order=ascending
+{{ '}}' }}
+{%- endfor -%}
+
+{%- endmacro -%}
+
+{#  #}
+{%- macro viewmode_default(name, properties) -%}
+{%- for p in Property.get_entity_properties(name, properties) -%}
+!{{- Property(p).name }}
+{{ pipe() }}&nbsp;{{ '{{' }}#if:{{ template_arg(Property(p).name) }}|{{ template_arg(Property(p).name) }}|{{ '}}' }}
+{{ pipe() }}-
+{% endfor -%}
+{%- endmacro -%}
+
+{#  #}
+{%- macro viewmode_labelfield(name, properties) -%}
+{%- for p in Property.get_entity_properties(name, properties) -%}
+{{ Property(p).name }}={{ '{{' }}#if:{{ template_arg(Property(p).name) }}|{{ template_arg(Property(p).name) }}|{{ '}}' }}<br>
+{%- endfor -%}
+{%- endmacro -%}

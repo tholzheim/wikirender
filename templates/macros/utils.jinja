@@ -33,9 +33,11 @@ Example:
             |}
 #}
 {%- macro render_entity(name, properties) -%}
-{{'{{'}}{{- name -}}
-{%- for property in properties %}
+{{'{{'}}{{ name }}
+{% for property in properties %}
+{%- if properties[property] -%}
 |{{property}}={{ properties[property]}}
-{%- endfor %}
+{% endif -%}
+{%- endfor -%}
 {{'}}'}}
 {%- endmacro -%}
