@@ -196,8 +196,8 @@
 {#----------------------------------------------------------------------------#}
 
 {%- macro form_table(text, properties, regexps) -%}
-{{ form_table_begin(class="formtable InfoBox mw-collapsible") -}}
-{{ form_table_headline(text, class="tableHeadline", style="width:100%") }}
+{{ form_table_begin(class="formtable InfoBox mw-collapsible", style="width:100%") -}}
+{{ form_table_headline(text, class="tableHeadline") }}
 {%- for property in properties -%}
 {{- form_table_row(label=render_field_label(property),field=render_field(property, regexps=regexps)) -}}
 {%- endfor %}
