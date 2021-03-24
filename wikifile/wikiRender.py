@@ -104,30 +104,11 @@ def save_to_file(path, filename, data, overwrite=False):
     with open(WIKI_FILE_PATH(path, filename), mode=mode) as f:
         f.write(data)
 
-
-def main(argv=None):
-    templateLoader = jinja2.FileSystemLoader(searchpath=jinja_templates.__path__)
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    try:
-        # Setup argument parser
-        parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-t", "--template", dest="template",
-                            help="Select a template in which the data is being rendered", required=True)
-        parser.add_argument("-id", "--page_name_id", dest="page_name_id",
-                            help="Select a template in which the data is being rendered", required=True)
-        parser.add_argument('-d', '--data', dest="data_input", help="Input data which should be rendered")
-        parser.add_argument('--BackupPath', dest="backupPath", help="Path to store/update the wiki entries", required=True)
-        parser.add_argument('-stdin', dest="stdin", action='store_true', help='Use the input from STD IN using pipes')
-        parser.add_argument('-f', dest="force", action='store_true', default=False, help='If true template arguments will be overwritten with the given data if present')
-        #ToDo: Add parameter to allow custom templates that can load the macros from here
-
-        # Process arguments
-        args = parser.parse_args(argv)
-        data = {}
-        if args.data_input:
-            data = json.loads(args.data_input)
-        elif args.stdin:
-            data = json.load(sys.stdin)
+    def is_used_for(self):
+        """"""
+        res = []
+        if isinstance(self.topic, list):
+            res.extend(self.topic)
         else:
             pass
 
