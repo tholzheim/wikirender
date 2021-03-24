@@ -23,7 +23,7 @@ __NOCACHE__
 |?Topic documentation = documentation
 {{ '}}' }}
 == {{ entity_topic.plural_name }} ==
-{{ forminput('Event', button_text='add Event') }}
+{{ forminput(entity_topic.name, button_text='add ' + entity_topic.name) }}
 {{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]|format=count{{ '}}' }} {{ entity_topic.plural_name }}:
 {{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]
 |mainlabel={{ entity_topic.name }}
@@ -49,4 +49,4 @@ __NOCACHE__
 {{ '}}' }}
 </div>
 </div>
-[[:Category:{{ entity_topic.name }}]]
+{# [[:Category:{{ entity_topic.name }}]] #}
