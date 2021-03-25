@@ -1,3 +1,5 @@
+import json
+import os
 import sys
 import jinja2
 
@@ -117,7 +119,7 @@ class UML:
                     if values_from[0] == "concept":
                         uml_infos["target"] = values_from[1]
                     else:
-                        break
+                        continue
                 if p.input_type == "tokens":
                     uml_infos["target_cardinality"] = "*"
                 else:
@@ -136,15 +138,16 @@ class UML:
             if p.values_from == f"concept={entity_name}" and p.type == "Special:Types/Page" and p.values_from:
                 uml_infos = {}
                 uml_infos["target"] = entity_name
-                if p.values_from:
-                    uml_infos["source"] = str(p.values_from).split("=")[1]
                 if p.input_type == "tokens":
                     uml_infos["source_cardinality"] = "*"
                 else:
                     uml_infos["source_cardinality"] = "1"
                 uml_infos["target_cardinality"] = "1"
                 uml_infos["property"] = property_properties
-                incoming_edges.append(uml_infos)
+                for source in p.is_used_for():
+                    temp_uml_infos = uml_infos.copy()
+                    temp_uml_infos["source"] = source.replace("Concept:","")
+                    incoming_edges.append(temp_uml_infos)
         return incoming_edges
 
     @staticmethod
@@ -197,14 +200,16 @@ class Property:
     def is_used_for(self):
         """"""
         res = []
-        if isinstance(self.topic, list):
-            res.extend(self.topic)
-        else:
-            res.append(self.topic)
-        if isinstance(self.used_for, list):
-            res.extend(self.used_for)
-        else:
-            res.append(self.used_for)
+        if self.topic:
+            if isinstance(self.topic, list):
+                res.extend(self.topic)
+            else:
+                res.append(self.topic)
+        if self.used_for:
+            if isinstance(self.used_for, list):
+                res.extend(self.used_for)
+            else:
+                res.append(self.used_for)
         return res
 
     @staticmethod
@@ -306,14 +311,14 @@ class Topic:
 
 if __name__ == "__main__":
     # Opening JSON file
-    # data={}
-    # with open('path/to/your/file') as json_file:
-    #     data = json.load(json_file)
-    # scriptdir = os.path.dirname(os.path.abspath(__file__))
-    # template_folder = scriptdir + '../templates'
-    # templateLoader = jinja2.FileSystemLoader(searchpath="../templates")
-    # templateEnv = jinja2.Environment(loader=templateLoader)
-    # template_template = templateEnv.get_template("form_page.jinja")
-    # wiki_render = WikiRender(templateEnv)
-    # print(wiki_render.render_template_page("Event",data["topics"],data["properties"]))
+    data={}
+    with open('/home/holzheim/wikibackup/test_generation/test.json') as json_file:
+        data = json.load(json_file)
+    scriptdir = os.path.dirname(os.path.abspath(__file__))
+    template_folder = scriptdir + '../templates'
+    templateLoader = jinja2.FileSystemLoader(searchpath="../templates")
+    templateEnv = jinja2.Environment(loader=templateLoader)
+    template_template = templateEnv.get_template("form_page.jinja")
+    wiki_render = WikiRender(templateEnv)
+    print(wiki_render.render_help_page("Event",data["topics"][0],data["properties"]))
     pass

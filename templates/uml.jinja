@@ -21,16 +21,16 @@ end note
 class {{ entity_name }} {
 {%  for property in Property.get_primitive_properties(entity_name,all_properties) -%}
   {{ Property(property).type.replace("Special:Types/","") }}: {{ Property(property).label }}
-{% endfor %}
+{% endfor -%}
 }
 {{ entity_name }}Note .. {{ entity_name }}
 {# Set outgoing edges #}
-{%-  for edge in UML.get_outgoing_edges(entity_name,all_properties) -%}
+{%-  for edge in UML.get_outgoing_edges(entity_name,all_properties) %}
   "{{ edge.source }}" "{{ edge.source_cardinality }}" --> "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ Property(edge.property).name }}"
 {%- endfor -%}
 {# Set incoming edges #}
-{%  for edge in UML.get_incoming_edges(entity_name,all_properties) -%}
-  "{{ edge.source }}" "{{ edge.source_cardinality }}" <-- "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ Property(edge.property).name }}"
+{%  for edge in UML.get_incoming_edges(entity_name,all_properties) %}
+  "{{ edge.target }}" "{{ edge.target_cardinality }}" <-- "{{ edge.source_cardinality }}" "{{ edge.source }}" : "{{ Property(edge.property).name }}"
 {%- endfor %}
 
 skinparam note {
