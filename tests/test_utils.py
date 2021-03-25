@@ -10,7 +10,6 @@ class TestUtilsTemplate(unittest.TestCase):
     def setUp(self):
         self.debug = False
         script_dir = os.path.dirname(os.path.abspath(__file__)) + "/.."
-        # print(script_dir)
         self.templateEnv = WikiRender.getTemplateEnv(script_dir)
 
     def tearDown(self):

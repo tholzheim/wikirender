@@ -25,10 +25,12 @@ Provides macros that help generating a Template page
 {%- macro viewmode_tableheader(name, properties) -%}
 {{ pipe() }} class='wikitable'
 {%- set entity_properties = Property.get_entity_properties(name, properties) %}
+{% if entity_properties[0] is defined %}
 !{{ Property(entity_properties[0]).name }}
 {%- for p in entity_properties[1:] -%}
 !!{{ Property(p).name }}
 {%- endfor -%}
+{% endif %}
 {{ pipe() }}-
 {%- endmacro -%}
 
@@ -36,10 +38,12 @@ Provides macros that help generating a Template page
 {%- macro viewmode_tablerow(name, properties) -%}
 {{ pipe() }} class='wikitable'
 {%- set entity_properties = Property.get_entity_properties(name, properties) %}
+{% if entity_properties[0] is defined %}
 {{ pipe() }}{{ Property(entity_properties[0]).name }}
 {%- for p in entity_properties[1:] %}
 {{ pipe() }}{{ pipe() }}{{ template_arg(Property(p).name) }}
 {% endfor -%}
+{% endif %}
 {{ pipe() }}-
 {%- endmacro -%}
 

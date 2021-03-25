@@ -319,19 +319,3 @@ class Topic:
         if self.name in res:
             res.remove(self.name)
         return res
-
-
-
-if __name__ == "__main__":
-    # Opening JSON file
-    data={}
-    with open('/home/holzheim/wikibackup/test_generation/test.json') as json_file:
-        data = json.load(json_file)
-    scriptdir = os.path.dirname(os.path.abspath(__file__))
-    template_folder = scriptdir + '../templates'
-    templateLoader = jinja2.FileSystemLoader(searchpath="../templates")
-    templateEnv = jinja2.Environment(loader=templateLoader)
-    template_template = templateEnv.get_template("form_page.jinja")
-    wiki_render = WikiRender(templateEnv)
-    print(wiki_render.render_help_page("Event",data["topics"][0],data["properties"]))
-    pass
