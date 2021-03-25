@@ -123,7 +123,7 @@ class UML:
         outgoing_edges = []
         for property_properties in properties:
             p = Property(property_properties)
-            if p.used_for == f"Concept:{entity_name}" and p.type == "Special:Types/Page" and p.values_from:
+            if f"Concept:{entity_name}" in p.is_used_for() and p.type == "Special:Types/Page" and p.values_from:
                 uml_infos = {}
                 uml_infos["source"] = entity_name
                 if p.values_from:
