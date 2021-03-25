@@ -1,6 +1,4 @@
 import unittest
-import jinja2
-import os
 
 from wikifile.wikiFile import WikiFile
 

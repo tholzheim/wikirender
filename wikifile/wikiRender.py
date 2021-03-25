@@ -2,7 +2,7 @@ import json
 import os
 import sys
 import jinja2
-
+from distutils.sysconfig import get_python_lib
 
 class WikiRender:
     """
@@ -17,11 +17,22 @@ class WikiRender:
                 }
               }
 
-    def __init__(self, template_env: jinja2.Environment):
+    def __init__(self, template_env: jinja2.Environment=None):
+        if template_env is None:
+            template_env=WikiRender.getTemplateEnv()
         self.template_env = template_env
         self.template_env.globals['UML'] = UML
         self.template_env.globals['Property'] = Property
         self.template_env.globals['Topic'] = Topic
+        
+    
+    @staticmethod
+    def getTemplateEnv():
+        scriptdir = get_python_lib()
+        template_folder = scriptdir + '/templates'
+        templateLoader = jinja2.FileSystemLoader(searchpath=template_folder)
+        templateEnv = jinja2.Environment(loader=templateLoader)
+        return templateEnv
 
     def render_template(self, template_name: str, data: dict, exclude_keys: list = None):
         """

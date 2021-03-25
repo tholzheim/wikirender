@@ -21,7 +21,8 @@ setup(
     ],
 
     install_requires=[
-      'wikitextparser'
+      'wikitextparser',
+      'jinja2'
     ],
     entry_points={
       'console_scripts': [

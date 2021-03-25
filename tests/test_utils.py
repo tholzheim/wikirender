@@ -1,7 +1,5 @@
 import unittest
-import jinja2
-import os
-
+from wikifile.wikiRender import WikiRender
 
 class TestUtilsTemplate(unittest.TestCase):
     """
@@ -10,10 +8,7 @@ class TestUtilsTemplate(unittest.TestCase):
 
     def setUp(self):
         self.debug = False
-        scriptdir = os.path.dirname(os.path.abspath(__file__))
-        template_folder = scriptdir + '../templates'
-        templateLoader = jinja2.FileSystemLoader(searchpath="../templates")
-        self.templateEnv = jinja2.Environment(loader=templateLoader)
+        self.templateEnv = WikiRender.getTemplateEnv()
 
     def tearDown(self):
         pass
