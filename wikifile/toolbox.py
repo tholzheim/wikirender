@@ -58,7 +58,7 @@ def main_render(argv=None):
     CREATE_FILE_MODE = "create"
     GENERATE_ENTITY_PAGES = "generate_entity_pages"
     modes = [UPDATE_TEMPLATES_MODE, CREATE_FILE_MODE, GENERATE_ENTITY_PAGES]
-
+    templateEnv=WikiRender.getTemplateEnv()
     wiki_render = WikiRender(templateEnv)
     try:
         # Setup argument parser
