@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 import sys
 import jinja2
 from argparse import ArgumentParser
@@ -8,7 +7,6 @@ from argparse import RawDescriptionHelpFormatter
 from wikifile.wikiExtract import extrat_templates
 from wikifile.wikiFile import WikiFile, get_wiki_path
 from wikifile.wikiRender import WikiRender, Topic
-from distutils.sysconfig import get_python_lib
 
 
 def save_to_file(path, filename, data, overwrite=False):
@@ -53,7 +51,7 @@ def update_or_create_templates(data: list,
             wiki_file.add_template(template_name, page, exclude_keys)
             wiki_file.save_to_file(overwrite=overwrite)
 
-
+    
 def main_render(argv=None):
     # Modes of operation
     UPDATE_TEMPLATES_MODE = "update_templates"
@@ -61,10 +59,6 @@ def main_render(argv=None):
     GENERATE_ENTITY_PAGES = "generate_entity_pages"
     modes = [UPDATE_TEMPLATES_MODE, CREATE_FILE_MODE, GENERATE_ENTITY_PAGES]
 
-    scriptdir = get_python_lib()
-    template_folder = scriptdir + '/templates'
-    templateLoader = jinja2.FileSystemLoader(searchpath=template_folder)
-    templateEnv = jinja2.Environment(loader=templateLoader)
     wiki_render = WikiRender(templateEnv)
     try:
         # Setup argument parser
