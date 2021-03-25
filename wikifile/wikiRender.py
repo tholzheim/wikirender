@@ -27,9 +27,10 @@ class WikiRender:
         
     
     @staticmethod
-    def getTemplateEnv():
-        scriptdir = get_python_lib()
-        template_folder = scriptdir + '/templates'
+    def getTemplateEnv(script_dir: str=None, template_dir: str='/templates'):
+        if script_dir is None:
+            script_dir = get_python_lib()
+        template_folder = script_dir + template_dir
         templateLoader = jinja2.FileSystemLoader(searchpath=template_folder)
         templateEnv = jinja2.Environment(loader=templateLoader)
         return templateEnv
