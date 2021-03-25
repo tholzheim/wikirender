@@ -304,7 +304,8 @@ class Topic:
         for p in UML.get_incoming_edges(self.name, properties):
             # source --> target (self)
             res.add(p['source'])
-        res.remove(self.name)
+        if self.name in res:
+            res.remove(self.name)
         return res
 
 
