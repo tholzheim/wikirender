@@ -20,7 +20,7 @@ class TestUtilsTemplate(unittest.TestCase):
         name = "Event"
         properties = { 'Title': 'SMWCon', 'Year': '2020', 'Description': "test value test value\n with line break"}
         template2 = self.templateEnv.from_string(
-            "{% from 'utils.jinja' import render_entity %}{{render_entity(name, properties)}}")
+            "{% from 'macros/utils.jinja' import render_entity %}{{render_entity(name, properties)}}")
         outputText = template2.render(name=name, properties=properties)
         expected = """{{Event
 |Title=SMWCon
