@@ -3,7 +3,9 @@ Created on 2021-03-21
 
 @author: th
 '''
+import re
 import sys
+
 class MetaModelElement:
     '''
     a generic MetaModelElement
@@ -11,15 +13,22 @@ class MetaModelElement:
     to handle the technicalities of being a MetaModelElement so that derive
     MetaModelElements can focus on the MetaModel domain specific aspects
     '''
-    def __init__(self, properties: dict,propMap:dict, template=None):
+    def __init__(self, properties: dict,propList:list, template=None):
         '''
         construct me from the given properties and the given propertyMap
         
         Args:
             properties(dict): a dictionary of properties
-            propMap(dict): a mapping dictionary that maps properties to fields
+            propList(list): a list of field names
         '''
+        if properties is None:
+            properties = {}
         self.template=template
+        propMap={}
+        for propName in propList:
+            # https://stackoverflow.com/a/1176023/1497139
+            snakeName= re.sub(r'(?<!^)(?=[A-Z])', '_', propName).lower()
+            propMap[propName]=snakeName
         for key in properties.keys():
             if not key in propMap:
                 raise Exception ("Invalid property '%s' for %s" % (key,type(self)))
@@ -53,17 +62,13 @@ class Topic(MetaModelElement):
     """
 
     def __init__(self, properties: dict):
-        self.propMap={
-            "name":"name",
-            "pluralName":"plural_name",
-            "icon":"icon",
-            "iconUrl":"icon_url",
-            "documentation":"documentation",
-            "wikiDocumentation":"wiki_documentation",
-            "defaultstoremode":"defaultstoremode",
-            "context":"context_name"
-        }
-        super(Topic,self).__init__(properties,self.propMap)
+        propList=["name","pluralName","icon",
+            "iconUrl",
+            "documentation",
+            "wikiDocumentation",
+            "context"
+        ]
+        super(Topic,self).__init__(properties,propList)
   
     def get_related_topics(self, properties):
         """
@@ -88,32 +93,28 @@ class Property(MetaModelElement):
     """
 
     def __init__(self, properties: dict):
-        if properties is None:
-            properties = {}
-        self.propMap={
-            "name":"name",
-            "label":"label",
-            "type":"type",
-            "index":"index",
-            "sortPos":"sort_pos",
-            "primaryKey":"primary_key",
-            "mandatory":"mandatory",
-            "namespace":"namespace",
-            "size":"size"
-        }
-        super(Property,self).__init__(properties,self.propMap)
-        self.uploadable = properties.get('uploadable')
-        self.default_value = properties.get('defaultValue')
-        self.input_type = properties.get('inputType')
-        self.allowed_values = properties.get('allowedValues')
-        self.documentation = properties.get('documentation')
-        self.values_from = properties.get('values_from')
-        self.show_in_grid = properties.get('showInGrid')
-        self.is_link = properties.get('isLink')
-        self.nullable = properties.get('nullable')
-        self.topic = properties.get('topic')
-        self.regexp = properties.get('regexp')
-        self.used_for = properties.get('used_for')
+      
+        propList=["name","label",
+            "type",
+            "index",
+            "sortPos",
+            "primaryKey",
+            "mandatory",
+            "namespace",
+            "size",
+            "uploadable",
+            "defaultValue",
+            "inputType",
+            "allowedVaues",
+            "documentation",
+            "values_from",
+            "showInGrid",
+            "isLink",
+            "nullable",
+            "topic",
+            "regexp",
+            "used_for"]
+        super(Property,self).__init__(properties,propList)
 
     def is_used_for(self):
         """"""
