@@ -1,0 +1,27 @@
+#!/bin/bash
+# WF 2021-03-27
+# Generator Pipeline
+
+#
+# query
+#
+query() {
+  local l_wiki="$1"
+  local l_ask="$2"
+  local l_json="$3"
+  if [ ! -f $l_json ]
+  then
+    echo "quering $l_json from $l_wiki"
+    wikiquery -l --source $l_wiki --query "$l_ask"  > "$l_json"
+  else
+    echo "$l_json already queried"
+  fi
+}
+
+topicAsk="[[Topic name::+]]|mainlabel=Topic|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
+propAsk="[[Property name::+]]| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
+
+wiki="rq"
+cd /tmp
+query $wiki "$topicAsk" topic.json
+query $wiki "$propAsk" properties.json
