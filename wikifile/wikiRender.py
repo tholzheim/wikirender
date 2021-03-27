@@ -1,8 +1,6 @@
-import json
-import os
-import sys
 import jinja2
 from distutils.sysconfig import get_python_lib
+from wikifile.metamodel import Context, Topic, UML, Property
 
 class WikiRender:
     """
@@ -24,6 +22,7 @@ class WikiRender:
         self.template_env.globals['UML'] = UML
         self.template_env.globals['Property'] = Property
         self.template_env.globals['Topic'] = Topic
+        self.template_env.globals['Context'] = Context
         
     
     @staticmethod
@@ -113,70 +112,5 @@ class WikiRender:
         return page
 
 
-class UML:
-    """
-    Provides helper functions for uml generation
-    """
-    @staticmethod
-    def get_outgoing_edges(entity_name: str, properties: list):
-        """Reduce the given list of properties to those properties which have the given entity as subject"""
-        outgoing_edges = []
-        for property_properties in properties:
-            p = Property(property_properties)
-            if f"Concept:{entity_name}" in p.is_used_for() and p.type == "Special:Types/Page" and p.values_from:
-                uml_infos = {}
-                uml_infos["source"] = entity_name
-                if p.values_from:
-                    values_from = str(p.values_from).split("=")
-                    if values_from[0] == "concept":
-                        uml_infos["target"] = values_from[1]
-                    else:
-                        continue
-                if p.input_type == "tokens":
-                    uml_infos["target_cardinality"] = "*"
-                else:
-                    uml_infos["target_cardinality"] = "1"
-                uml_infos["source_cardinality"] = "*"
-                uml_infos["property"] = property_properties
-                outgoing_edges.append(uml_infos)
-        return outgoing_edges
-
-    @staticmethod
-    def get_incoming_edges(entity_name: str, properties: list):
-        """Reduce the given list of properties to those properties which have the given entity as object"""
-        incoming_edges = []
-        for property_properties in properties:
-            p = Property(property_properties)
-            if p.values_from == f"concept={entity_name}" and p.type == "Special:Types/Page" and p.values_from:
-                uml_infos = {}
-                uml_infos["target"] = entity_name
-                if p.input_type == "tokens":
-                    uml_infos["source_cardinality"] = "*"
-                else:
-                    uml_infos["source_cardinality"] = "1"
-                uml_infos["target_cardinality"] = "1"
-                uml_infos["property"] = property_properties
-                for source in p.is_used_for():
-                    temp_uml_infos = uml_infos.copy()
-                    temp_uml_infos["source"] = source.replace("Concept:","")
-                    incoming_edges.append(temp_uml_infos)
-        return incoming_edges
-
-    @staticmethod
-    def get_incoming_edges_reduced(entity_name: str, properties: list):
-        incoming_edges  = UML.get_incoming_edges(entity_name, properties)
-        res = []
-        for edge in incoming_edges:
-            if edge.get('source') == entity_name:
-                break
-            if edge.get('source') in [x.get('source') for x in res]:
-                # merge edges
-                for x in res:
-                    if x.get('source') == edge.get('source'):
-                        x.get('properties').append(Property(edge.get('property')).name)
-            else:
-                edge['properties'] = [Property(edge.get('property')).name]
-                res.append(edge)
-        return res
 
 
