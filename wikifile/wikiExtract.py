@@ -3,8 +3,10 @@ import logging
 import os
 from wikifile.wikiFile import WikiFile
 
-
-def extrat_templates(template_name: str, stdIn, page_titles, file_list, backup_path, add_file_name):
+"""
+what is this ? !!!
+"""
+def extract_templates(template_name: str, stdIn, page_titles, file_list, backup_path, add_file_name):
     """
 
     :param template_name: name of the template that should be extracted

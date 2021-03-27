@@ -4,7 +4,7 @@ import sys
 import jinja2
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-from wikifile.wikiExtract import extrat_templates
+from wikifile.wikiExtract import extract_templates
 from wikifile.wikiFile import WikiFile, get_wiki_path
 from wikifile.wikiRender import WikiRender, Topic
 
