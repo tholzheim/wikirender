@@ -2,35 +2,32 @@
 {#
 Generate a help page for a entity.
 Input:
-    entity_name: name of the entity
-    entity_properties: properties defining the entity
-    all_properties: all properties of the wiki.
+    topic: properties defining the entity
+    properties: all properties of the wiki.
 Output: Generates uml diagram representing the usage of the entity in the wiki.
 #}
 {#---------------------------------Import-------------------------------------#}
 {% from 'macros/utils.jinja' import render_entity %}
-{#---------------------------Set Global Variables-----------------------------#}
-{% set entity_topic = Topic(entity_properties) %}
 {#-------------------------------Template-------------------------------------#}
 <uml>
-title {{ entity_name }}
+title {{ topic.name }}
 
-note as {{ entity_name }}Note
-{{  entity_topic.documentation }}
+note as {{ topic.name }}Note
+{{  topic.documentation }}
 end note
-class {{ entity_name }} {
-{%  for property in Property.get_primitive_properties(entity_name,all_properties) -%}
-  {{ Property(property).type.replace("Special:Types/","") }}: {{ Property(property).label }}
+class {{ topic.name }} {
+{%  for property in Property.get_primitive_properties(topic.name,properties) -%}
+  {{ property.type.replace("Special:Types/","") }}: {{ property.label }}
 {% endfor -%}
 }
-{{ entity_name }}Note .. {{ entity_name }}
+{{ topic.name }}Note .. {{ topic.name }}
 {# Set outgoing edges #}
-{%-  for edge in UML.get_outgoing_edges(entity_name,all_properties) %}
-  "{{ edge.source }}" "{{ edge.source_cardinality }}" --> "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ Property(edge.property).name }}"
+{%-  for edge in UML.get_outgoing_edges(topic.name,properties) %}
+  "{{ edge.source }}" "{{ edge.source_cardinality }}" --> "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ edge.property.name }}"
 {%- endfor -%}
 {# Set incoming edges #}
-{%  for edge in UML.get_incoming_edges(entity_name,all_properties) %}
-  "{{ edge.target }}" "{{ edge.target_cardinality }}" <-- "{{ edge.source_cardinality }}" "{{ edge.source }}" : "{{ Property(edge.property).name }}"
+{%  for edge in UML.get_incoming_edges(topic.name,properties) %}
+  "{{ edge.target }}" "{{ edge.target_cardinality }}" <-- "{{ edge.source_cardinality }}" "{{ edge.source }}" : "{{ edge.property.name }}"
 {%- endfor %}
 
 skinparam note {

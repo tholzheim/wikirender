@@ -85,7 +85,7 @@
 
 {%- macro render_field_label(property) -%}
 {{ property['name'] }}
-{%- if 'documentation' in property and property['documentation'] is not none-%}
+{%- if 'documentation' in property.__dict__.keys() and property.__dict__['documentation'] is not none-%}
 {{ render_info(text=property['documentation'],icon='note')}}
 {%- endif -%}
 :
@@ -199,7 +199,7 @@
 {{ form_table_begin(class="formtable InfoBox mw-collapsible", style="width:100%") -}}
 {{ form_table_headline(text, class="tableHeadline") }}
 {%- for property in properties -%}
-{{- form_table_row(label=render_field_label(property),field=render_field(property, regexps=regexps)) -}}
+{{- form_table_row(label=render_field_label(property),field=Form.field(property)) -}}
 {%- endfor %}
 {{ form_table_end() }}
 {%- endmacro -%}

@@ -2,18 +2,16 @@
 {#
 Generate a help page for a entity.
 Input:
-    entity_name: name of the entity
-    entity_properties: properties defining the entity
+    topic.name: name of the entity
+    topic: properties defining the entity
     all_properties: all properties of the wiki.
-Output: Generates the page Help:<entity_name>
+Output: Generates the page Help:<topic.name>
 #}
 {#---------------------------------Import-------------------------------------#}
 {% from 'macros/utils.jinja' import render_entity %}
-{#---------------------------------Set Global Variables-------------------------------------#}
-{% set entity_topic = Topic(entity_properties) %}
 {#-------------------------------Template-------------------------------------#}
-== Help for {{ entity_name }} ==
-{{'{{' }}#ask: [[Topic name::{{ entity_name }}]]
+== Help for {{ topic.name }} ==
+{{'{{' }}#ask: [[Topic name::{{ topic.name }}]]
 |mainlabel=-
 |?Topic icon = icon
 |? = Topic
@@ -23,15 +21,15 @@ Output: Generates the page Help:<entity_name>
 {{ '}}' }}
 === Documentation ===
 [https://www.wikidata.org/wiki/Q515 large permanent human settlement]
-=== Example {{ entity_topic.plural_name }} ===
-{{ '{{' }}#ask: [[Concept:{{ entity_name }}]]
+=== Example {{ topic.plural_name }} ===
+{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]
 |limit=25
 |searchlabel=...more examples
 {{ '}}' }}
 === Properties ===
-{{ '{{' }}#ask: [[Concept:Property]][[Used for::Concept:{{ entity_name }}]]
+{{ '{{' }}#ask: [[Concept:Property]][[Used for::Concept:{{ topic.name }}]]
 {% for var in Property.get_property_properties(all_properties) -%}
-|?Property {{ Property(var).name }} = {{ Property(var).label }}
+|?Property {{ var.name }} = {{ var.label }}
 {% endfor %}
 |format=table
 {{ '}}' }}
@@ -39,13 +37,13 @@ Output: Generates the page Help:<entity_name>
 {% include "uml.jinja" %}
 
 see also
-* [[List of {{ entity_topic.plural_name }}]]
-* [[Help:{{ entity_name }}]]
-* [[Concept:{{ entity_name }}]]
-* [[:Category:{{ entity_name }}]]
-* [[:Template:{{ entity_name }}]]
-* [[:Form:{{ entity_name }}]]
+* [[List of {{ topic.plural_name }}]]
+* [[Help:{{ topic.name }}]]
+* [[Concept:{{ topic.name }}]]
+* [[:Category:{{ topic.name }}]]
+* [[:Template:{{ topic.name }}]]
+* [[:Form:{{ topic.name }}]]
 topic links:
-* [[:Category:{{ entity_name }}]]
+* [[:Category:{{ topic.name }}]]
 
-{# [[Category:{{ entity_name }}]] #}
+{# [[Category:{{ topic.name }}]] #}

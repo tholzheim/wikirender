@@ -3,7 +3,7 @@ Created on 2021-03-07
 
 @author: wf
 '''
-
+from wikifile.metamodel import Topic, Property
 from wikifile.wikiRender import WikiRender
 
 
@@ -20,18 +20,17 @@ class SMWPart(object):
         self.wikiRender = wikiRender
         self.template = "%s_page.jinja" % part.lower().replace(" ", "_")
 
-    def render_page(self, entity_name, entity_properties, properties):
+    def render_page(self, topic: Topic, properties: list):
         """
         Renders the help page for the given entity using the provided properties
-        :param entity_name:
-        :param entity_properties:
-        :param properties:
-        :return: the page
+        Args:
+            topic: topic for which the page should be rendered
+            properties: list of all properties
+        Returns:
+
         """
         template_template = self.wikiRender.template_env.get_template(self.template)
-        page = template_template.render(entity_name=entity_name,
-                                        entity_properties=entity_properties,
-                                        all_properties=properties)
+        page = template_template.render(topic=topic, properties=properties)
         return page
 
     @staticmethod
@@ -39,10 +38,10 @@ class SMWPart(object):
         smwPartList = [
             SMWPart("Category"),
             SMWPart("Concept"),
-            SMWPart("Form"),
+            Form(wikiRender),
             SMWPart("Template"),
             SMWPart("Help"),
-            SMWPart("List of"),
+            ListOf(wikiRender),
             #TODO: implement
             #SMWPart("Properties"),
             #SMWPart("PythonCode")
@@ -53,6 +52,9 @@ class SMWPart(object):
             smwParts[smwPart.part] = smwPart
         return smwParts
 
+    def get_page_name(self, topic: Topic):
+        return f"{self.part}:{topic.name}"
+
 
 class SMW:
     """Provides functions covering basic SMW features"""
@@ -62,26 +64,88 @@ class SMW:
         """
         Renders the given parameters and function name to the corresponding SMW parser function.
         Parameter names containing a whitespace must be written with an underscore instead.
-        :param function_name: name of the function
-        :param kwargs: parameters of the parser function
-        :return:
+        Args:
+            function_name: name of the function
+            **kwargs: parameters of the parser function
+
+        Returns:
+
         """
         return "{{#" + function_name + ":" + SMW.render_parameters(**kwargs) + "}}"
 
     @staticmethod
-    def render_parameters(**kwargs):
+    def render_entity(template: str, oneliner=True, **kwargs):
+        """
+        Renders the given parameters as template of the given name.
+        Example:
+            Args:
+                template="Event"
+                oneliner= If True entity is returned in oneliner. Otherwise the entity is rendered in a prettier format.
+                kwargs= 'Title'='SMWCon', 'Year'='2020'
+            Returns:
+                    {{Event
+                    |Title= SMWCon
+                    |Year= 2020
+                    |}
+        Args:
+            template: name of the template
+            **kwargs: parameters of the template
+
+        Returns:
+
+        """
+        separator = "" if oneliner else "\n"
+        return "{{" + template + separator + SMW.render_parameters(oneliner=oneliner, **kwargs) + "}}"
+
+    @staticmethod
+    def render_parameters(oneliner=True, **kwargs):
+        separator = "" if oneliner else "\n"
         res = ""
         for parameter, value in kwargs.items():
             if isinstance(value, bool):
                 label = parameter.replace("_", " ")
-                res += f"|{label}"
+                res += f"|{label}{separator}"
             elif value is not None:
                 label = parameter.replace("_", " ")
-                res += f"|{label}={value}"
+                res += f"|{label}={value}{separator}"
         return res
 
-class Form:
-    """"""
+
+class ListOf(SMWPart):
+    """
+    Provides methods to generate a List of page for a topic
+    """
+
+    def __init__(self, wikiRender=None):
+        super().__init__("List of", wikiRender)
+
+    @staticmethod
+    def get_page_name(topic: Topic):
+        return f"List of {topic.plural_name}"
+
+
+class Form(SMWPart):
+    """
+    Provides methods to render a complete Form or parts of a Form.
+    For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms
+    """
+
+    regexps = {
+        'Regexp:NaturalNumber': {
+            'regexp': "/^[0-9]+$!^$/",
+            'message': 'Must be a Number',
+            'or char': '!'
+        }
+    }
+
+    def __init__(self, wikiRender=None):
+        if wikiRender is not None:
+            wikiRender.template_env.globals['Form'] = self
+        super().__init__("Form", wikiRender)
+
+    @staticmethod
+    def get_page_name(topic: Topic):
+        return f"Form:{topic.name}"
 
     @staticmethod
     def page_form_function(tag, **kwargs):
@@ -90,9 +154,12 @@ class Form:
     @staticmethod
     def standard_input_tag(input, **kwargs):
         """
-
-        :param input:
-        :return:
+        Renders standard input tag
+        For more detail see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Defining_forms#'standard_input'_tag
+        Args:
+            input:
+            **kwargs:
+        Returns:
         """
         possible_input_tags = ["save", "preview", "save and continue", "changes", "summary", "minor edit", "watch", "cancel"]
         if input not in possible_input_tags:
@@ -105,21 +172,39 @@ class Form:
         """
         Renders a forminput parser function with the given input
         For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#forminput
-        :param form: the name of the PF form to be used.
-        :return:
+        Args:
+            **kwargs:
+        Returns:
         """
         return SMW.parser_function(function_name="forminput", **kwargs)
 
     @staticmethod
     def formlink(**kwargs):
         """
-        Renders a forminput parser function with the given input
+        Renders a formlink parser function with the given input
         For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#formlink
-        :param form: the name of the PF form to be used.
-        :return:
+        Args:
+            **kwargs:
+        Returns:
+
         """
         return SMW.parser_function(function_name="formlink", **kwargs)
 
+    @staticmethod
+    def field(property: Property,regexps={}):
+        prop_map = {"inputType":"input_type",
+                    "placeholder":"placeholder",
+                    "defaultValue":"default",
+                    "values_from":"values_from",
+                    "uploadable":"uploadable",
+                    "primaryKey":"unique"}
+        parameters = {}
+        for prop in prop_map.keys():
+            if prop in property.__dict__ and property.__dict__[prop] is not None:
+                parameters[prop_map[prop]] = property.__dict__[prop]
+                if prop == "inputType" and property.__dict__[prop] == "regexp":
+                    parameters.update(Form.regexps.get(property.regexp))
+        return Form.page_form_function(tag="field", **parameters)
 
 
 class Query:
@@ -141,17 +226,18 @@ class Query:
                  order: str = None):
         """
         Intit a Query with the given parameters
-        :param mode: ask for multi page query / show for single page query
-        :param mainlabel: title of the first column
-        :param limit: maximal number of pages selected
-        :param offset: where to start selecting pages
-        :param searchlabel: text for continuing the search
-        :param outro: text that is appended to the output, if at least some results exist
-        :param intro: initial text that prepends the output, if at least some results exist
-        :param default: if, for any reason, the query returns no results, this will be printed instead
-        :param format: output format  of the query
-        :param headers: Show headers (with links), plain headers (just text) or hide them. show is default. Possible values show, hide and, plain.
-        :param order: defines how results should be ordered, ascending is the default. Possible values ascending/asc, descending/desc/reverse, random/rand.
+        Args:
+            mode: ask for multi page query / show for single page query
+            mainlabel: title of the first column
+            limit: maximal number of pages selected
+            offset: where to start selecting pages
+            searchlabel: text for continuing the search
+            outro: text that is appended to the output, if at least some results exist
+            intro: initial text that prepends the output, if at least some results exist
+            default: if, for any reason, the query returns no results, this will be printed instead
+            format: output format  of the query
+            headers: Show headers (with links), plain headers (just text) or hide them. show is default. Possible values show, hide and, plain.
+            order: defines how results should be ordered, ascending is the default. Possible values ascending/asc, descending/desc/reverse, random/rand.
         """
         self.mode = mode
         self.page_selections = []
@@ -172,8 +258,11 @@ class Query:
     def render(self, oneliner=True):
         """
         Render this Query to the string format of an SMW query
-        :param oneliner: If True the query is rendered into one line. Otherwise the query is rendered in a prettier format.
-        :return:
+        Args:
+            oneliner: If True the query is rendered into one line. Otherwise the query is rendered in a prettier format.
+
+        Returns:
+
         """
         separator = ""
         if not oneliner:
@@ -194,9 +283,12 @@ class Query:
     def printout(self, property_name, label=None):
         """
         Add a printout statement to the query. Results in querying the given property name.
-        :param property_name: Name of the property that should be queried
-        :param label: Label that should be displayed at the result
-        :return: Returns the query itself
+        Args:
+            property_name: Name of the property that should be queried
+            label: Label that should be displayed at the result
+
+        Returns:
+            Returns the query itself
         """
         self.printout_statements.append(self.PrintoutStatement(property_name, label))
         return self
@@ -204,8 +296,11 @@ class Query:
     def select(self, selector):
         """
         Add page selector to the query
-        :param selector:
-        :return: Returns the query itself
+        Args:
+            selector:
+
+        Returns:
+            Returns the query itself
         """
         self.page_selections.append(selector)
         return self
@@ -213,8 +308,11 @@ class Query:
     def sort_by(self, *properties):
         """
         Set the sort parameter of the query. If already set it overwrites the existing parameter.
-        :param properties:
-        :return:
+        Args:
+            *properties:
+
+        Returns:
+
         """
         self.sort = ",".join(properties)
         return self
@@ -225,8 +323,9 @@ class Query:
         def __init__(self, property_name, label=None):
             """
             Init the printout statement
-            :param property_name: Name of the property that should be queried
-            :param label: Label that should be displayed at the result
+            Args:
+                property_name: Name of the property that should be queried
+                label: Label that should be displayed at the result
             """
             self.property_name = property_name
             self.label = label
@@ -234,7 +333,8 @@ class Query:
         def render(self):
             """
             Render this PrintoutStatement to the string format of an printout statement
-            :return:
+            Returns:
+
             """
             label = f"={self.label}" if self.label else ""
             return f"?{self.property_name}{label}"

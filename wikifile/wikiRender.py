@@ -2,19 +2,11 @@ import jinja2
 from distutils.sysconfig import get_python_lib
 from wikifile.metamodel import Context, Topic, UML, Property
 
+
 class WikiRender:
     """
     Provides functions to render json data to wiki files
     """
-
-    # TODO: Why here? 
-    regexps = {
-                'Regexp:NaturalNumber': {
-                    'regexp': "/^[0-9]+$!^$/",
-                    'message': 'Must be a Number',
-                    'or char': '!'
-                }
-              }
 
     def __init__(self, template_env: jinja2.Environment=None):
         if template_env is None:
@@ -48,10 +40,13 @@ class WikiRender:
             |name=SMWCon
             |date=2020
             }}
-        :param template_name: Name of the template
-        :param data: Dictionary the keys are used translated as template arguments and the values as argument value
-        :param exclude_keys: list of keys that should not be included in the template
-        :return:
+        Args:
+            template_name: Name of the template
+            data: Dictionary the keys are used translated as template arguments and the values as argument value
+            exclude_keys: list of keys that should not be included in the template
+
+        Returns:
+
         """
         if exclude_keys is not None:
             data = {x: data[x] for x in data if x not in exclude_keys}
@@ -61,57 +56,6 @@ class WikiRender:
         except Exception as e:
             print(e)
         return None
-
-    def render_help_page(self, entity_name, entity_properties, properties):
-        """
-        Renders the help page for the given entity using the provided properties
-        :param entity_name:
-        :param entity_properties:
-        :param properties:
-        :return:
-        """
-        template_template = self.template_env.get_template("help_page.jinja")
-        page = template_template.render(entity_name=entity_name,
-                                             entity_properties=entity_properties,
-                                             all_properties=properties)
-        return page
-
-    def render_list_of_page(self, entity_name, entity_properties, properties):
-        template_template = self.template_env.get_template("list_of_page.jinja")
-        page = template_template.render(entity_name=entity_name,
-                                                entity_properties=entity_properties,
-                                                all_properties=properties)
-        return page
-
-    def render_category_page(self, entity_name, entity_properties, properties):
-        template_template = self.template_env.get_template("category_page.jinja")
-        page = template_template.render(entity_name=entity_name,
-                                             entity_properties=entity_properties,
-                                             all_properties=properties)
-        return page
-
-    def render_concept_page(self, entity_name, entity_properties, properties):
-        template_template = self.template_env.get_template("concept_page.jinja")
-        page = template_template.render(entity_name=entity_name,
-                                             entity_properties=entity_properties,
-                                             all_properties=properties)
-        return page
-
-    def render_template_page(self, entity_name, entity_properties, properties):
-        template_template = self.template_env.get_template("template_page.jinja")
-        page = template_template.render(entity_name=entity_name,
-                                        entity_properties=entity_properties,
-                                        all_properties=properties)
-        return page
-
-    def render_form_page(self, entity_name, entity_properties, properties):
-        template_template = self.template_env.get_template("form_page.jinja")
-        page = template_template.render(entity_name=entity_name,
-                                             entity_properties=entity_properties,
-                                             all_properties=properties,
-                                             regexps=self.regexps)
-        return page
-
 
 
 

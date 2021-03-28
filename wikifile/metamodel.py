@@ -7,14 +7,15 @@ import json
 import re
 import sys
 
-class MetaModelElement:
+
+class MetaModelElement():
     '''
     a generic MetaModelElement
     
     to handle the technicalities of being a MetaModelElement so that derive
     MetaModelElements can focus on the MetaModel domain specific aspects
     '''
-    def __init__(self, propList:list, properties: dict=None, template=None):
+    def __init__(self, propList: list = None, properties: dict = None, template=None, sample=None):
         '''
         construct me from the given properties and the given propertyMap
         
@@ -24,12 +25,12 @@ class MetaModelElement:
             template(str): the template to be used
             lenient(bool): if False throw an exception if invalid property names are in the properties dict
         '''
+        super().__init__()
         self.template=template
         self.propList=propList
         self.fromProperties(properties)
-        pass
-    
-    def fromProperties(self,properties:dict):
+
+    def fromProperties(self, properties: dict):
         '''
         initialize me from the given properties
         
@@ -42,7 +43,7 @@ class MetaModelElement:
         propMap={}
         for propName in self.propList:
             # https://stackoverflow.com/a/1176023/1497139
-            snakeName= re.sub(r'(?<!^)(?=[A-Z])', '_', propName).lower()
+            snakeName= MetaModelElement.get_snake_name(propName)
             propMap[propName]=snakeName
         for key in properties.keys():
             if key in propMap:
@@ -53,31 +54,48 @@ class MetaModelElement:
             fieldname=propMap[propName]
             if fieldname not in self.__dict__:
                 self.__dict__[fieldname]=None
-    
+
+    @staticmethod
+    def get_snake_name(name):
+        return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
+
+    @staticmethod
+    def render_parameters(parameter: list, oneliner=True):
+        separator = "" if oneliner else "\n"
+        res = ""
+        for parameter, value in parameter:
+            if isinstance(value, bool):
+                label = parameter.replace("_", " ")
+                res += f"|{label}{separator}"
+            elif value is not None:
+                label = parameter.replace("_", " ")
+                res += f"|{label}={value}{separator}"
+        return res
+
     @classmethod
-    def fromJson(cls,jsonStr):
+    def fromJson(cls, jsonStr):
         '''
         initialize my content from the given json string
-        
+
         Args:
             jsonStr(str): the json string to load
         '''
-        jsonl=json.loads(jsonStr)
+        jsonl = json.loads(jsonStr)
         if "data" in jsonl:
-            lod=jsonl["data"]
+            lod = jsonl["data"]
         else:
-            lod=jsonl
-        metamodelElementList=[]
+            lod = jsonl
+        metamodelElementList = []
         for row in lod:
-            metamodelElement=cls(row)
+            metamodelElement = cls(row)
             metamodelElementList.append(metamodelElement)
         return metamodelElementList
-    
     # def render() ... 
     # use self.template
     # which allows to use simplified templates like
     # """ %s do something  %s """ % (value1,value2) ..
-    
+
+
 class Context(MetaModelElement):
     """
     
@@ -86,27 +104,38 @@ class Context(MetaModelElement):
     
     def __init__(self,properties: dict=None):
         super(Context,self).__init__(Context.propList,properties,)
-        
-        
+
+
 class Topic(MetaModelElement):
     """
     Provides helper functions and constants for Topics
     """
-    propList=["name","pluralName","icon",
-            "iconUrl",
-            "documentation",
-            "wikiDocumentation",
-            "context"
-    ]
+    propList=["name", "pluralName", "icon", "iconUrl", "documentation", "wikiDocumentation", "context" ]
 
-    def __init__(self, properties: dict=None):
-        super(Topic,self).__init__(Topic.propList,properties)
-  
+    def __init__(self, properties: dict):
+        super(Topic, self).__init__(Topic.propList, properties=properties)
+
+    @staticmethod
+    def get_samples():
+        samples = [{"name": "Topic",
+                    "pluralName": "Topics",
+                    "icon": "File:Topic_icon.png",
+                    "iconUrl": "/images/a/ae/Index.png",
+                    "documentation": "A Topic is a Concept/Class/Thing/Entity",
+                    "wikiDocumentation": "A Topic is a Concept/Class/Thing/Entity",
+                    "context": "MetaModel",
+                    "cargo": True
+                    }]
+        return samples
+
     def get_related_topics(self, properties):
         """
         Returns a list of names of topics that are related to this topic.
-        :param properties: List of all properties of the wiki
-        :return: list of names of related topics
+        Args:
+            properties: List of all properties of the wiki
+
+        Returns:
+            list of names of related topics
         """
         res = set([])
         for p in UML.get_outgoing_edges(self.name, properties):
@@ -118,6 +147,13 @@ class Topic(MetaModelElement):
         if self.name in res:
             res.remove(self.name)
         return res
+
+    def render_entity(self, oneliner=True):
+        """Render tis topic to its template represntation"""
+        separator = "" if oneliner else "\n"
+        res = "{{Topic" + separator
+        res += MetaModelElement.render_parameters([(prop, self.__dict__[MetaModelElement.get_snake_name(prop)]) for prop in self.propList], oneliner)
+        return res + "}}"
 
 class Property(MetaModelElement):
     """
@@ -148,6 +184,32 @@ class Property(MetaModelElement):
     def __init__(self, properties: dict=None):
         super(Property,self).__init__(Property.propList,properties)
 
+    @staticmethod
+    def get_samples():
+        samples = [{"name": "Title",
+                    "label": "Offical Name",
+                    "type": "Special:Types/Test",
+                    "index": 2,
+                    "sortPos":2,
+                    "primaryKey": False,
+                    "mandatory": True,
+                    "namespace": "Test",
+                    "size": 25,
+                    "uploadable": False,
+                    "defaultValue": "Some Title",
+                    "inputType": "combobox",
+                    "allowedVaues": "Tile A, Title B",
+                    "documentation": " Documentation can contain\n line breaks",
+                    "values_from": "property=Title",
+                    "showInGrid": False,
+                    "isLink": False,
+                    "nullable": False,
+                    "topic": "Concept:Event",
+                    "regexp": "NaturalNumber",
+                    "used_for": "Concept:Event, Concept:Event series"
+                    }]
+        return samples
+
     def is_used_for(self):
         """"""
         res = []
@@ -167,41 +229,38 @@ class Property(MetaModelElement):
     def get_property_properties(properties: list):
         """Returns the properties that describe properties"""
         res = []
-        for p in properties:
-            p_obj = Property(p)
-            if "Concept:Property" in p_obj.is_used_for():
-                res.append(p)
-        return sorted(res, key=lambda k: Property(k).index if Property(k).index is not None else sys.maxsize)   # ToDo: Add sotPos to all properties. If done exchange index with sortPos
+        for property in properties:
+            if "Concept:Property" in property.is_used_for():
+                res.append(property)
+        return sorted(res, key=lambda k: property.index if property.index is not None else sys.maxsize)   # ToDo: Add sotPos to all properties. If done exchange index with sortPos
 
     @staticmethod
     def get_entity_properties(entity_name: str, properties: list):
         """
         Extracts the properties of an entity form the given property list
-        :param entity_name: Name of the property for which the properties should be extracted
-        :param properties: List of all properties
-        :return: List of all properties the are used by the given entity
+        Args:
+            entity_name: Name of the property for which the properties should be extracted
+            properties: List of all properties
+
+        Returns:
+            List of all properties the are used by the given entity
         """
         res = []
-        for p in properties:
-            p_obj = Property(p)
-            if f"Concept:{entity_name}" in p_obj.is_used_for():
-                res.append(p)
-        return sorted(res, key=lambda k: Property(k).index if Property(k).index is not None else sys.maxsize)
-
-    @staticmethod
-    def get_entity_property(entity_name, properties: list):
-        """Returns the properties of the given entity"""
-        for p in properties:
-            if Property(p).name == entity_name:
-                return p
-        return None
+        for property in properties:
+            if f"Concept:{entity_name}" in property.is_used_for():
+                res.append(property)
+        return sorted(res, key=lambda k: property.index if property.index is not None else sys.maxsize)
 
     @staticmethod
     def get_primitive_properties(entity_name: str, properties: list):
         """
         Returns a list of all primitive datatype of the given entity.
-        :param entity_name:
-        :return:
+        Args:
+            entity_name:
+            properties:
+
+        Returns:
+
         """
         primitive_datatypes = ["Special:Types/Boolean",
                                "Special:Types/Date",
@@ -219,12 +278,19 @@ class Property(MetaModelElement):
                                "Special:Types/number",
                                "Special:Types/code"]
         primitive_properties = []
-        for property_properties in properties:
-            p = Property(property_properties)
-            if f"Concept:{entity_name}" in p.is_used_for() and p.type in primitive_datatypes:
-                primitive_properties.append(property_properties)
+        for property in properties:
+            if f"Concept:{entity_name}" in property.is_used_for() and property.type in primitive_datatypes:
+                primitive_properties.append(property)
         return primitive_properties
-    
+
+    def render_entity(self, oneliner=True):
+        """Render tis topic to its template representation"""
+        separator = "" if oneliner else "\n"
+        res = "{{Property" + separator
+        res += MetaModelElement.render_parameters([(prop, self.__dict__[MetaModelElement.get_snake_name(prop)]) for prop in self.propList], oneliner)
+        return res + "}}"
+
+
 class UML:
     """
     Provides helper functions for uml generation
@@ -233,23 +299,22 @@ class UML:
     def get_outgoing_edges(entity_name: str, properties: list):
         """Reduce the given list of properties to those properties which have the given entity as subject"""
         outgoing_edges = []
-        for property_properties in properties:
-            p = Property(property_properties)
-            if f"Concept:{entity_name}" in p.is_used_for() and p.type == "Special:Types/Page" and p.values_from:
+        for property in properties:
+            if f"Concept:{entity_name}" in property.is_used_for() and property.type == "Special:Types/Page" and property.values_from:
                 uml_infos = {}
                 uml_infos["source"] = entity_name
-                if p.values_from:
-                    values_from = str(p.values_from).split("=")
+                if property.values_from:
+                    values_from = str(property.values_from).split("=")
                     if values_from[0] == "concept":
                         uml_infos["target"] = values_from[1]
                     else:
                         continue
-                if p.input_type == "tokens":
+                if property.input_type == "tokens":
                     uml_infos["target_cardinality"] = "*"
                 else:
                     uml_infos["target_cardinality"] = "1"
                 uml_infos["source_cardinality"] = "*"
-                uml_infos["property"] = property_properties
+                uml_infos["property"] = property
                 outgoing_edges.append(uml_infos)
         return outgoing_edges
 
@@ -257,18 +322,17 @@ class UML:
     def get_incoming_edges(entity_name: str, properties: list):
         """Reduce the given list of properties to those properties which have the given entity as object"""
         incoming_edges = []
-        for property_properties in properties:
-            p = Property(property_properties)
-            if p.values_from == f"concept={entity_name}" and p.type == "Special:Types/Page" and p.values_from:
+        for property in properties:
+            if property.values_from == f"concept={entity_name}" and property.type == "Special:Types/Page" and property.values_from:
                 uml_infos = {}
                 uml_infos["target"] = entity_name
-                if p.input_type == "tokens":
+                if property.input_type == "tokens":
                     uml_infos["source_cardinality"] = "*"
                 else:
                     uml_infos["source_cardinality"] = "1"
                 uml_infos["target_cardinality"] = "1"
-                uml_infos["property"] = property_properties
-                for source in p.is_used_for():
+                uml_infos["property"] = property
+                for source in property.is_used_for():
                     temp_uml_infos = uml_infos.copy()
                     temp_uml_infos["source"] = source.replace("Concept:","")
                     incoming_edges.append(temp_uml_infos)
@@ -285,9 +349,9 @@ class UML:
                 # merge edges
                 for x in res:
                     if x.get('source') == edge.get('source'):
-                        x.get('properties').append(Property(edge.get('property')).name)
+                        x.get('properties').append(edge.get('property').name)
             else:
-                edge['properties'] = [Property(edge.get('property')).name]
+                edge['properties'] = [edge.get('property').name]
                 res.append(edge)
         return res
 

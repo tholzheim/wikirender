@@ -22,7 +22,7 @@ class TestSMWPart(unittest.TestCase):
         test SMW Parts
         '''
         smwParts=SMWPart.getAll(None)
-        self.assertEqual(8,len(smwParts))
+        self.assertEqual(6,len(smwParts))
         self.assertEqual("list_of_page.jinja",smwParts["List of"].template)
         pass
 

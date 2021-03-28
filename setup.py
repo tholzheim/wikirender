@@ -22,7 +22,8 @@ setup(
 
     install_requires=[
       'wikitextparser',
-      'jinja2'
+      'jinja2',
+      'pylodstorage'
     ],
     entry_points={
       'console_scripts': [

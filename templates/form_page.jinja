@@ -2,27 +2,24 @@
 {#
 Generate the form of page for a entity.
 Input:
-    entity_name: name of the entity
-    entity_properties: properties defining the entity
-    all_properties: all properties of the wiki.
+    topic: topic entity
+    properties: all properties of the wiki.
     regexps: List of a regular expressions
 Output: Generates the page Category:<entity_name>
 #}
 {#---------------------------------Import-------------------------------------#}
 {% from 'macros/utils.jinja' import render_entity %}
 {% from 'macros/form.jinja' import render_field, for_template_tag, end_template_tag, form_table, form_preview_button, form_save_button, form_cancel_button, form_show_changes_button, forminput %}
-{#---------------------------Set Global Variables-----------------------------#}
-{% set entity_topic = Topic(entity_properties) %}
 {#-------------------------------Template-------------------------------------#}
 <noinclude>
-{{ forminput(entity_name) }}
+{{ forminput(topic.name) }}
 </noinclude>
 <includeonly>
 {# Form control buttons #}
-{{ form_save_button() }} {{ form_preview_button() }} {{ form_show_changes_button() }} {{ form_cancel_button() }}
-{{for_template_tag(entity_topic.name)}}
-{{ form_table(text,Property.get_entity_properties(entity_topic.name, all_properties), regexps=regexps) }}
+{{ Form.standard_input_tag("save") }} {{ Form.standard_input_tag("preview") }} {{ Form.standard_input_tag("changes") }} {{ Form.standard_input_tag("cancel") }}
+{{for_template_tag(topic.name)}}
+{{ form_table(text,Property.get_entity_properties(topic.name, properties), regexps=regexps) }}
 {{end_template_tag()}}
 {# Form control buttons #}
-{{ form_save_button() }} {{ form_preview_button() }} {{ form_show_changes_button() }} {{ form_cancel_button() }}
+{{ Form.standard_input_tag("save") }} {{ Form.standard_input_tag("preview") }} {{ Form.standard_input_tag("changes") }} {{ Form.standard_input_tag("cancel") }}
 </includeonly>

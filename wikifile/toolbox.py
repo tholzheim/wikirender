@@ -4,61 +4,81 @@ import sys
 import jinja2
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
-from wikifile.wikiExtract import extract_templates
-from wikifile.wikiFile import WikiFile, get_wiki_path
+
+from wikifile.metamodel import Property
+from wikifile.wikiExtract import WikiExtract
+from wikifile.wikiFile import WikiFile
 from wikifile.wikiRender import WikiRender, Topic
 from wikifile.smw import SMWPart
-
-def save_to_file(path, filename, data, overwrite=False):
-    """Save the given data in a file"""
-    mode = 'a'
-    if overwrite:
-        mode = 'w'
-    with open(get_wiki_path(path, filename), mode=mode) as f:
-        f.write(data)
+from lodstorage.jsonable import JSONAble, Types
 
 
-def update_or_create_templates(data: list,
-                               name_id: str,
-                               template_name: str,
-                               template_env: jinja2.Environment,
-                               backup_path: str,
-                               exclude_keys: list = None,
-                               overwrite=False):
-    """
-    :param exclude_keys: List of keys that is included in the data but should be excluded
-    :param template_name: Name of the template
-    :param data: json data containing the information for the templates
-    :param name_id: Name of the key that contains the page name
-    :param template_env:
-    :param backup_path: path to the directory were the wiki files are stored
-    :param overwrite: If True arguments that are already defined in the template are overwritten by the given data. If False only missing data is added
-    :return:
-    """
-    for page in data:
-        # check if page exists
-        if name_id not in page:
-            continue
-        page_name = page[name_id]
-        wiki_render = WikiRender(template_env)
-        wiki_file = WikiFile(page_name, backup_path, wiki_render=wiki_render)
-        if wiki_file.wikiText is None:
-            # create page and store it
-            page_content = wiki_render.render_template(template_name, page)
-            save_to_file(backup_path, page_name, page_content)
-        else:
-            # update existing template or create new one
-            wiki_file.add_template(template_name, page, exclude_keys)
-            wiki_file.save_to_file(overwrite=overwrite)
+class Toolbox:
+    """Bundles methods that are required by the commandline tools that this file provides"""
 
-    
+    def fromJson(self, listname: str, jsonStr: str, sample: list = None):
+        """
+        Convert the given string to JSON and convert the values to the corresponding datatype"
+        Args:
+            listname: name of the list the data is stored in
+            jsonStr: data as json string that should be converted
+            sample: sample data of the actual data. Used to convert the values to the vorrect type
+        Returns:
+            
+        """""
+        types = Types(listname)
+        types.getTypes("data", sample, 1)
+        json_parsed = JSONAble()
+        json_parsed.fromJson(jsonStr, types)
+        return json_parsed.__dict__[listname]
+
+    def update_or_create_templates(self,
+                                   data: list,
+                                   name_id: str,
+                                   template_name: str,
+                                   template_env: jinja2.Environment,
+                                   backup_path: str,
+                                   exclude_keys: list = None,
+                                   overwrite=False):
+        """
+        Iterates over the given data and updates or creates the corresponding wikifile. The parameter wiki_id is used
+        as the filename.
+        Args:
+            data: json data containing the information for the templates
+            name_id: Name of the key that contains the page name
+            template_name: Name of the template
+            template_env:
+            backup_path: path to the directory were the wiki files are stored
+            exclude_keys: List of keys that is included in the data but should be excluded
+            overwrite: If True arguments that are already defined in the template are overwritten by the given data. If False only missing data is added
+        Returns:
+
+        """
+        for page in data:
+            # check if page exists
+            if name_id not in page:
+                continue
+            page_name = page[name_id]
+            wiki_render = WikiRender(template_env)
+            wiki_file = WikiFile(page_name, backup_path, wiki_render=wiki_render)
+            if wiki_file.wikiText is None:
+                # create page and store it
+                page_content = wiki_render.render_template(template_name, page)
+                WikiFile(path=backup_path, name=page_name, wiki_render=wiki_render, wikiText=page_content).save_to_file(
+                    overwrite)
+            else:
+                # update existing template or create new one
+                wiki_file.add_template(template_name, page, exclude_keys)
+                wiki_file.save_to_file(overwrite=overwrite)
+
+
 def main_render(argv=None):
     # Modes of operation
     UPDATE_TEMPLATES_MODE = "update_templates"
     CREATE_FILE_MODE = "create"
     GENERATE_ENTITY_PAGES = "generate_entity_pages"
     modes = [UPDATE_TEMPLATES_MODE, CREATE_FILE_MODE, GENERATE_ENTITY_PAGES]
-    templateEnv=WikiRender.getTemplateEnv()
+    templateEnv = WikiRender.getTemplateEnv()
     wiki_render = WikiRender(templateEnv)
     try:
         # Setup argument parser
@@ -99,61 +119,21 @@ def main_render(argv=None):
                 raise Exception("The parameters --properties and --topics must be defined for this mode")
             # TODO:
             # use fromJson
-            properties = {}
+            properties = []
             with open(args.properties_file) as json_file:
-                properties = json.load(json_file).get('data')
-            topics = {}
+                properties = [Property(x) for x in Toolbox().fromJson("data", json_file.read(), Property.get_samples())]
+            topics = []
             with open(args.topics_file) as json_file:
-                topics = json.load(json_file).get('data')
+                topics = [Topic(x) for x in Toolbox().fromJson("data", json_file.read(), Topic.get_samples())]
             for topic in topics:
-                topic_obj = Topic(topic)
                 # Generate and save the entity pages
                 # Template
                 # TODO:
-                #for smwPart in SMWPart.getAll(wiki_render):
-                #    smwPart.render_template_page(topic,properties)
-                    
-                save_to_file(args.backupPath,
-                             f"Template:{topic_obj.name}",
-                             wiki_render.render_template_page(topic_obj.name, topic, properties),
-                             args.overwrite)
-                # Concept
-                save_to_file(args.backupPath,
-                             f"Concept:{topic_obj.name}",
-                             wiki_render.render_concept_page(topic_obj.name, topic, properties),
-                             args.overwrite)
-                # Category
-                save_to_file(args.backupPath,
-                             f"Category:{topic_obj.name}",
-                             wiki_render.render_category_page(topic_obj.name, topic, properties),
-                             args.overwrite)
-                # Help
-                save_to_file(args.backupPath,
-                             f"Help:{topic_obj.name}",
-                             wiki_render.render_help_page(topic_obj.name, topic, properties),
-                             args.overwrite)
-                # List of
-                save_to_file(args.backupPath,
-                             f"List of {topic_obj.plural_name}",
-                             wiki_render.render_list_of_page(topic_obj.name, topic, properties),
-                             args.overwrite)
-                # Form
-                save_to_file(args.backupPath,
-                             f"Form:{topic_obj.name}",
-                             wiki_render.render_form_page(topic_obj.name, topic, properties),
-                             args.overwrite)
-        if args.template == "Event":
-            if 'data' in data:
-                events = data['data']
-            else:
-                pass
-            update_or_create_templates(data=events,
-                                       name_id=args.page_name_id,
-                                       template_name=args.template,
-                                       template_env=templateEnv,
-                                       backup_path=args.backupPath,
-                                       overwrite=args.overwrite,
-                                       exclude_keys=args.exclude_keys)
+                for part, smwPart in SMWPart.getAll(wiki_render).items():
+                    page = smwPart.render_page(topic, properties)
+                    WikiFile(smwPart.get_page_name(topic), args.backupPath, wiki_render=wiki_render,
+                             wikiText=page).save_to_file(args.overwrite)
+
     except KeyboardInterrupt:
         ### handle keyboard interrupt ###
         return 1
@@ -190,9 +170,12 @@ def main_extract(argv=None):
                 "Multiple file selection options were used. Please use only one or none to select all files in the backup folder.")
             raise Exception("Invalid parameters")
 
-        res_templates = extrat_templates(args.template, stdIn=args.stdin, file_list=args.file_list,
-                                         page_titles=args.pages, backup_path=args.backupPath,
-                                         add_file_name=args.file_name_id)
+        res_templates = WikiExtract.extract_templates(args.template,
+                                                     stdIn=args.stdin,
+                                                     file_list=args.file_list,
+                                                     page_titles=args.pages,
+                                                     backup_path=args.backupPath,
+                                                     add_file_name=args.file_name_id)
         print(res_templates)
 
 
@@ -204,9 +187,20 @@ def main_extract(argv=None):
 
 
 if __name__ == "__main__":
-    sys.argv.append("-m=generate_entity_pages")
-    sys.argv.append("--properties=")
-    sys.argv.append("--topics=")
-    sys.argv.append("--BackupPath=")
-    main_render(sys.argv[1:])
+    templateEnv = WikiRender.getTemplateEnv(script_dir="..")
+    wiki_render = WikiRender(templateEnv)
+    properties = []
+    with open("/home/holzheim/wikibackup/rq_properties2.json") as json_file:
+        properties = [Property(x) for x in Toolbox().fromJson("data", json_file.read(), Property.get_samples())]
+    topics = []
+    with open("/home/holzheim/wikibackup/rq_topics2.json") as json_file:
+        topics = [Topic(x) for x in Toolbox().fromJson("data", json_file.read(), Topic.get_samples())]
+    for topic in topics:
+        # Generate and save the entity pages
+        # Template
+        # TODO:
+        for part, smwPart in SMWPart.getAll(wiki_render).items():
+            page = smwPart.render_page(topic, properties)
+            WikiFile(smwPart.get_page_name(topic), "/home/holzheim/wikibackup/rq_test", wiki_render=wiki_render,
+                     wikiText=page).save_to_file(True)
     pass

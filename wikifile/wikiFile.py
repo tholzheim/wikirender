@@ -4,24 +4,26 @@ from wikitextparser import Template
 from wikifile.wikiRender import WikiRender
 
 
-def get_wiki_path(path: str, name: str):
-    return f"{path}/{name}.wiki"
-
-
 class WikiFile:
     '''
-    what is this? !!!
+    Provides methods to modify, query, update and save wiki files.
     '''
 
-    def __init__(self, name, path, wiki_render: WikiRender):
+    def __init__(self, name, path, wiki_render: WikiRender, wikiText: str = None):
         """
 
-        :param name: Name of the file
-        :param path: Path to file location
+        Args:
+            name: Name of the file
+            path: Path to file location
+            wiki_render:
+            wikiText: WikiPage contend as string. If defined the file content will loaded and this value will be used instead
         """
         self.file_name = name
         self.file_path = path
-        self.wikiText = self.get_wikiText(self.file_name, self.file_path)
+        if wikiText is None:
+            self.wikiText = self.get_wikiText(self.file_name, self.file_path)
+        else:
+            self.wikiText = wtp.parse(wikiText)
         self.wiki_render = wiki_render
 
     def save_to_file(self, overwrite=False):
@@ -29,16 +31,20 @@ class WikiFile:
         mode = 'a'
         if overwrite:
             mode = 'w'
-        with open(WIKI_FILE_PATH(self.file_path, self.file_name), mode=mode) as f:
+        with open(WikiFile.get_wiki_path(self.file_path, self.file_name), mode=mode) as f:
             f.write(str(self.wikiText))
 
     def get_wikiText(self, name, path):
         """
         find the wiki file by name and return it as parsed object.
+        Args:
+            name: Name of the file
+            path: Path to the file
 
-        :return None if the file is not found
+        Returns:
+            WikiText object
         """
-        fname = WIKI_FILE_PATH(path, name)
+        fname = WikiFile.get_wiki_path(path, name)
         if os.path.isfile(fname):
             with open(fname, mode='r') as file:
                 page = file.read()
@@ -100,8 +106,11 @@ class WikiFile:
     def extract_template(self, name: str):
         """
         Extracts the template data and returns it as dict
-        :param name: name of the template that should be extracted
-        :return: Returns template content as dict
+        Args:
+            name: name of the template that should be extracted
+
+        Returns:
+            Returns template content as dict
         """
         template = self.get_template(name)
         if template is None:
@@ -112,3 +121,6 @@ class WikiFile:
             res[arg.name] = value
         return res
 
+    @staticmethod
+    def get_wiki_path(path: str, name: str):
+        return f"{path}/{name}.wiki"

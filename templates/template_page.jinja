@@ -2,69 +2,65 @@
 {#
 Generate the template of page for a entity.
 Input:
-    entity_name: name of the entity
-    entity_properties: properties defining the entity
-    all_properties: all properties of the wiki.
-Output: Generates the page Template:<entity_name>
+    topic: properties defining the entity
+    properties: all properties of the wiki.
+Output: Generates the page Template:<topic.name>
 #}
 {#---------------------------------Import-------------------------------------#}
 {% from 'macros/utils.jinja' import render_entity %}
 {% from 'macros/template.jinja' import viewmode_tablerow, viewmode_tableheader, blank_template_properties, storemode_subobject, storemode_default, storemode_property, template_arg, viewmode_default, pipe, viewmode_labelfield, template_arg, viewmode_masterdetail %}
-{#---------------------------Set Global Variables-----------------------------#}
-{% set entity_topic = Topic(entity_properties) %}
-
 {#-------------------------------Template-------------------------------------#}
 <noinclude>
-This is the template {{ '{{' }}Link|target=Template:{{ entity_topic.name }}|title={{ entity_topic.label }}{{ '}}' }}.
-It belongs to the concept/topic {{ '{{' }}Link|target=:Concept:{{ entity_topic.name }}{{ '}}' }}<br>
-You may find examples for the use of this template via the {{ '{{' }}Link|target=List of {{ entity_topic.plural_name }}{{ '}}' }}.
+This is the template {{ '{{' }}Link|target=Template:{{ topic.name }}|title={{ topic.label }}{{ '}}' }}.
+It belongs to the concept/topic {{ '{{' }}Link|target=:Concept:{{ topic.name }}{{ '}}' }}<br>
+You may find examples for the use of this template via the {{ '{{' }}Link|target=List of {{ topic.plural_name }}{{ '}}' }}.
 === Usage ===
 ==== storemode subobject ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |storemode=subobject
 {{ '}}' }}
 </pre>
 
 ==== storemode property ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |storemode=property
 {{ '}}' }}
 </pre>
 
 ==== storemode none ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |storemode=none
 {{ '}}' }}
 </pre>
 
 
 ==== viewmode tableheader ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |viewmode=tableheader
 {{ '}}' }}
 </pre>
 
 ==== viewmode tablerow ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |viewmode=tablerow
 {{ '}}' }}
 </pre>
 
 ==== viewmode tablefooter ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |viewmode=tablefooter
 {{ '}}' }}
 </pre>
 
 ==== viewmode labelfield ====
-<pre>{{ '{{' }}{{ entity_topic.name }}
-{{ blank_template_properties(entity_name, all_properties) -}}
+<pre>{{ '{{' }}{{ topic.name }}
+{{ blank_template_properties(topic.name, properties) -}}
 |viewmode=labelfield
 {{ '}}' }}
 </pre>
@@ -78,23 +74,23 @@ Click on "Edit" to edit the noinclude-part Source of this Template.
 <includeonly>
 {{ '{{' }}#switch: {{ template_arg('storemode') }}
 |none=
-|subobject= {{ storemode_subobject(entity_name, all_properties) }}
-|#default= {{ storemode_default(entity_name, all_properties) }}
+|subobject= {{ storemode_subobject(topic.name, properties) }}
+|#default= {{ storemode_default(topic.name, properties) }}
 {{ '}}' }}
 {{ '{{' }}#switch: {{ template_arg('viewmode') }}
 |hidden=
-|masterdetail= {{ viewmode_masterdetail(entity_name, all_properties) }}
-|tableheader= {{ '{' }}{{ viewmode_tableheader(entity_name, all_properties) }}
-|tablerow= {{ viewmode_tablerow(entity_name, all_properties) }}
+|masterdetail= {{ viewmode_masterdetail(topic.name, properties) }}
+|tableheader= {{ '{' }}{{ viewmode_tableheader(topic.name, properties) }}
+|tablerow= {{ viewmode_tablerow(topic.name, properties) }}
 |tablefooter={{ pipe() }}{{ '}' }}
-|labelfield={{ viewmode_labelfield(entity_name, all_properties) }}
+|labelfield={{ viewmode_labelfield(topic.name, properties) }}
 |#default={{ '{' }}{{ pipe() }} class='wikitable'
-! colspan='2' {{ pipe() }}{{ entity_topic.name }}
+! colspan='2' {{ pipe() }}{{ topic.name }}
 {{ pipe() }}-
 {{ '{{' }}#switch:{{ template_arg('storemode') }} {{ '}}' }}
-|property= {{ storemode_property(entity_name, all_properties) }}
+|property= {{ storemode_property(topic.name, properties) }}
 }}
-{{ viewmode_default(entity_name, all_properties) }}
+{{ viewmode_default(topic.name, properties) }}
 {{ '}}' }}
 {{ pipe() }}{{ '}' }}
-[[Category:{{ entity_topic.name }}]]{{ '{{' }}#default_form:{{ entity_topic.name }} {{ '}}' }}</includeonly>
+[[Category:{{ topic.name }}]]{{ '{{' }}#default_form:{{ topic.name }} {{ '}}' }}</includeonly>

@@ -17,7 +17,7 @@ Provides macros that help generating a Template page
 
 {%- macro blank_template_properties(name, properties) -%}
 {%- for p in Property.get_entity_properties(name, properties) -%}
-|{{ Property(p).name }}=
+|{{ p.name }}=
 {% endfor -%}
 {%- endmacro -%}
 
@@ -26,9 +26,9 @@ Provides macros that help generating a Template page
 {{ pipe() }} class='wikitable'
 {%- set entity_properties = Property.get_entity_properties(name, properties) %}
 {% if entity_properties[0] is defined %}
-!{{ Property(entity_properties[0]).name }}
+!{{ entity_properties[0].name }}
 {%- for p in entity_properties[1:] -%}
-!!{{ Property(p).name }}
+!!{{ p.name }}
 {%- endfor -%}
 {% endif %}
 {{ pipe() }}-
@@ -39,9 +39,9 @@ Provides macros that help generating a Template page
 {{ pipe() }} class='wikitable'
 {%- set entity_properties = Property.get_entity_properties(name, properties) %}
 {% if entity_properties[0] is defined %}
-{{ pipe() }}{{ Property(entity_properties[0]).name }}
+{{ pipe() }}{{ entity_properties[0].name }}
 {%- for p in entity_properties[1:] %}
-{{ pipe() }}{{ pipe() }}{{ template_arg(Property(p).name) }}
+{{ pipe() }}{{ pipe() }}{{ template_arg(p.name) }}
 {% endfor -%}
 {% endif %}
 {{ pipe() }}-
@@ -52,7 +52,7 @@ Provides macros that help generating a Template page
 {{ '{{' }}#subobject:-
 |isA={{ name }}
 {% for p in Property.get_entity_properties(name, properties) -%}
-|{{ Property(p).name }}={{ template_arg(Property(p).name) }}
+|{{ p.name }}={{ template_arg(p.name) }}
 {% endfor -%}
 {{ '}}' }}
 {%- endmacro -%}
@@ -62,7 +62,7 @@ Provides macros that help generating a Template page
 {{ '{{' }}#set:
 |isA={{ name }}
 {% for p in Property.get_entity_properties(name, properties) -%}
-|{{ Property(p).name }}={{ template_arg(Property(p).name) }}
+|{{ p.name }}={{ template_arg(p.name) }}
 {% endfor -%}
 {{ '}}' }}
 {%- endmacro -%}
@@ -84,7 +84,7 @@ Provides macros that help generating a Template page
 {%- endfor %}
 ::{{ '{{' }}FULLPAGENAME{{ '}}' }}]]
 {%- for p in Property.get_entity_properties(edge.get('source'), properties) -%}
-|?{{ Property(p).name }}={{ Property(p).label }}
+|?{{ p.name }}={{ p.label }}
 {% endfor -%}
 |sort=Event acronym
 |order=ascending
@@ -96,8 +96,8 @@ Provides macros that help generating a Template page
 {#  #}
 {%- macro viewmode_default(name, properties) -%}
 {%- for p in Property.get_entity_properties(name, properties) -%}
-!{{- Property(p).name }}
-{{ pipe() }}&nbsp;{{ '{{' }}#if:{{ template_arg(Property(p).name) }}|{{ template_arg(Property(p).name) }}|{{ '}}' }}
+!{{- p.name }}
+{{ pipe() }}&nbsp;{{ '{{' }}#if:{{ template_arg(p.name) }}|{{ template_arg(p.name) }}|{{ '}}' }}
 {{ pipe() }}-
 {% endfor -%}
 {%- endmacro -%}
@@ -105,6 +105,6 @@ Provides macros that help generating a Template page
 {#  #}
 {%- macro viewmode_labelfield(name, properties) -%}
 {%- for p in Property.get_entity_properties(name, properties) -%}
-{{ Property(p).name }}={{ '{{' }}#if:{{ template_arg(Property(p).name) }}|{{ template_arg(Property(p).name) }}|{{ '}}' }}<br>
+{{ p.name }}={{ '{{' }}#if:{{ template_arg(p.name) }}|{{ template_arg(p.name) }}|{{ '}}' }}<br>
 {%- endfor -%}
 {%- endmacro -%}

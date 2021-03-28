@@ -2,32 +2,29 @@
 {#
 Generate the category of page for a entity.
 Input:
-    entity_name: name of the entity
-    entity_properties: properties defining the entity
-    all_properties: all properties of the wiki.
-Output: Generates the page Category:<entity_name>
+    topic: properties defining the entity
+    properties: all properties of the wiki.
+Output: Generates the page Category:<topic.name>
 #}
 {#---------------------------------Import-------------------------------------#}
 {% from 'macros/utils.jinja' import render_entity %}
-{#---------------------------Set Global Variables-----------------------------#}
-{% set entity_topic = Topic(entity_properties) %}
 {#-------------------------------Template-------------------------------------#}
 __NOTOC__
-{{ '{{' }}#ask: [[Topic name::{{ entity_topic.name }}]] | ?Topic wikiDocumentation= | mainlabel=-{{ '}}' }}
-{{ entity_topic.plural_name }} may be added and edited with the form [[Form:{{ entity_topic.name }}]]
-* [[List of {{ entity_topic.plural_name }}]]
+{{ '{{' }}#ask: [[Topic name::{{ topic.name }}]] | ?Topic wikiDocumentation= | mainlabel=-{{ '}}' }}
+{{ topic.plural_name }} may be added and edited with the form [[Form:{{ topic.name }}]]
+* [[List of {{ topic.plural_name }}]]
 <div class="toccolours mw-collapsible mw-collapsed" style="width:1024px">
 City description
 <div class="mw-collapsible-content">
 === uml ===
 {% include "uml.jinja" %}
 
-* [[Help:{{ entity_topic.name }}]]
-* [[Concept:{{ entity_topic.name }}]]
-* [[:Template:{{ entity_topic.name }}]]
-* [[:Form:{{ entity_topic.name }}]]
+* [[Help:{{ topic.name }}]]
+* [[Concept:{{ topic.name }}]]
+* [[:Template:{{ topic.name }}]]
+* [[:Form:{{ topic.name }}]]
 === Properties ===
-{% for entity_property in Property.get_entity_properties(entity_topic.name, all_properties) -%}
+{% for entity_property in Property.get_entity_properties(topic.name, properties) -%}
 * [[Property:{{ entity_property.name }}]]
 {% endfor %}
 </div>

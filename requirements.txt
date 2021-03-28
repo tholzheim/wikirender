@@ -2,3 +2,5 @@
 wikitextparser
 # https://pypi.org/project/Jinja2/
 jinja2
+# https://pypi.org/project/pylodstorage/
+pylodstorage

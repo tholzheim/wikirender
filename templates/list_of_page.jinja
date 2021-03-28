@@ -2,19 +2,17 @@
 {#
 Generate the list of page for a entity.
 Input:
-    entity_name: name of the entity
-    entity_properties: properties defining the entity
-    all_properties: all properties of the wiki.
+    topic.name: name of the entity
+    topic: properties defining the entity
+    properties: all properties of the wiki.
 Output: Generates the page List of<entity_plural_name>
 #}
 {#---------------------------------Import-------------------------------------#}
 {% from 'macros/utils.jinja' import render_entity %}
 {% from 'macros/form.jinja' import forminput %}
-{#---------------------------Set Global Variables-----------------------------#}
-{% set entity_topic = Topic(entity_properties) %}
 {#-------------------------------Template-------------------------------------#}
 __NOCACHE__
-{{ '{{' }}#ask: [[Topic name::{{ entity_topic.name }}]]
+{{ '{{' }}#ask: [[Topic name::{{ topic.name }}]]
 |mainlabel=-
 |?Topic icon = icon
 |? = Topic
@@ -22,13 +20,13 @@ __NOCACHE__
 |?Topic pluralName = pluralName
 |?Topic documentation = documentation
 {{ '}}' }}
-== {{ entity_topic.plural_name }} ==
-{{ forminput(entity_topic.name, button_text='add ' + entity_topic.name) }}
-{{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]|format=count{{ '}}' }} {{ entity_topic.plural_name }}:
-{{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]
-|mainlabel={{ entity_topic.name }}
-{% for entity_property in Property.get_entity_properties(entity_topic.name, all_properties) -%}
-|?{{ Property(entity_property).name }} = {{ Property(entity_property).label }}
+== {{ topic.plural_name }} ==
+{{ forminput(topic.name, button_text='add ' + topic.name) }}
+{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]|format=count{{ '}}' }} {{ topic.plural_name }}:
+{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]
+|mainlabel={{ topic.name }}
+{% for entity_property in Property.get_entity_properties(topic.name, properties) -%}
+|?{{ entity_property.name }} = {{ entity_property.label }}
 {% endfor %}
 |order=ascending
 | limit=200
@@ -36,17 +34,17 @@ __NOCACHE__
 <div class="toccolours mw-collapsible mw-collapsed" style="width:1024px">
 === Example rendered with the correspinding Template ===
 <div class="mw-collapsible-content">
-{{ '{{' }}#ask: [[Concept:{{ entity_topic.name }}]]
+{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]
 | ?#=pageid
-{% for entity_property in Property.get_entity_properties(entity_topic.name, all_properties) -%}
-|?{{ Property(entity_property).name }} = {{ Property(entity_property).label }}
+{% for entity_property in Property.get_entity_properties(topic.name, properties) -%}
+|?{{ entity_property.name }} = {{ entity_property.label }}
 {% endfor %}
 | mainlabel=-
 | format=template
 | named args=yes
-| template={{ entity_topic.name }}
+| template={{ topic.name }}
 | limit=1
 {{ '}}' }}
 </div>
 </div>
-{# [[:Category:{{ entity_topic.name }}]] #}
+{# [[:Category:{{ topic.name }}]] #}
