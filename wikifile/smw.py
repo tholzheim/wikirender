@@ -110,7 +110,7 @@ class Form:
         return SMW.parser_function(function_name="forminput", **kwargs)
 
     @staticmethod
-    def forminput(**kwargs):
+    def formlink(**kwargs):
         """
         Renders a forminput parser function with the given input
         For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#formlink

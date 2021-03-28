@@ -3,6 +3,7 @@ Created on 2021-03-21
 
 @author: th
 '''
+import json
 import re
 import sys
 
@@ -13,33 +14,64 @@ class MetaModelElement:
     to handle the technicalities of being a MetaModelElement so that derive
     MetaModelElements can focus on the MetaModel domain specific aspects
     '''
-    def __init__(self, properties: dict,propList:list, template=None):
+    def __init__(self, propList:list, properties: dict=None, template=None):
         '''
         construct me from the given properties and the given propertyMap
         
         Args:
-            properties(dict): a dictionary of properties
             propList(list): a list of field names
+            properties(dict): a dictionary of properties
+            template(str): the template to be used
+            lenient(bool): if False throw an exception if invalid property names are in the properties dict
+        '''
+        self.template=template
+        self.propList=propList
+        self.fromProperties(properties)
+        pass
+    
+    def fromProperties(self,properties:dict):
+        '''
+        initialize me from the given properties
+        
+        Args:
+            properties(dict): a dictionary of properties
+            lenient(bool): if False throw an exception if invalid property names are in the properties dict
         '''
         if properties is None:
             properties = {}
-        self.template=template
         propMap={}
-        for propName in propList:
+        for propName in self.propList:
             # https://stackoverflow.com/a/1176023/1497139
             snakeName= re.sub(r'(?<!^)(?=[A-Z])', '_', propName).lower()
             propMap[propName]=snakeName
         for key in properties.keys():
-            if not key in propMap:
-                raise Exception ("Invalid property '%s' for %s" % (key,type(self)))
-            name=propMap[key]
-            value=properties[key]
-            self.__dict__[name]=value
+            if key in propMap:
+                name=propMap[key]
+                value=properties[key]
+                self.__dict__[name]=value
         for propName in propMap.keys():
             fieldname=propMap[propName]
             if fieldname not in self.__dict__:
                 self.__dict__[fieldname]=None
-        pass
+    
+    @classmethod
+    def fromJson(cls,jsonStr):
+        '''
+        initialize my content from the given json string
+        
+        Args:
+            jsonStr(str): the json string to load
+        '''
+        jsonl=json.loads(jsonStr)
+        if "data" in jsonl:
+            lod=jsonl["data"]
+        else:
+            lod=jsonl
+        metamodelElementList=[]
+        for row in lod:
+            metamodelElement=cls(row)
+            metamodelElementList.append(metamodelElement)
+        return metamodelElementList
     
     # def render() ... 
     # use self.template
@@ -48,27 +80,27 @@ class MetaModelElement:
     
 class Context(MetaModelElement):
     """
+    
     """
-    def __init__(self,properties: dict):
-        self.propMap={
-            "name":"name",
-        }
-        super(Context,self).__init__(properties,self.propMap)
+    propList=["name"]
+    
+    def __init__(self,properties: dict=None):
+        super(Context,self).__init__(Context.propList,properties,)
         
         
 class Topic(MetaModelElement):
     """
     Provides helper functions and constants for Topics
     """
-
-    def __init__(self, properties: dict):
-        propList=["name","pluralName","icon",
+    propList=["name","pluralName","icon",
             "iconUrl",
             "documentation",
             "wikiDocumentation",
             "context"
-        ]
-        super(Topic,self).__init__(properties,propList)
+    ]
+
+    def __init__(self, properties: dict=None):
+        super(Topic,self).__init__(Topic.propList,properties)
   
     def get_related_topics(self, properties):
         """
@@ -91,10 +123,8 @@ class Property(MetaModelElement):
     """
     Provides helper functions and constants for properties
     """
-
-    def __init__(self, properties: dict):
-      
-        propList=["name","label",
+    
+    propList=["name","label",
             "type",
             "index",
             "sortPos",
@@ -114,7 +144,9 @@ class Property(MetaModelElement):
             "topic",
             "regexp",
             "used_for"]
-        super(Property,self).__init__(properties,propList)
+
+    def __init__(self, properties: dict=None):
+        super(Property,self).__init__(Property.propList,properties)
 
     def is_used_for(self):
         """"""
