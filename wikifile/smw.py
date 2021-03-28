@@ -53,78 +53,71 @@ class SMWPart(object):
         return smwParts
 
 
+class SMW:
+    """Provides functions covering basic SMW features"""
+
+    @staticmethod
+    def parser_function(function_name: str, **kwargs):
+        """
+        Renders the given parameters and function name to the corresponding SMW parser function.
+        Parameter names containing a whitespace must be written with an underscore instead.
+        :param function_name: name of the function
+        :param kwargs: parameters of the parser function
+        :return:
+        """
+        return "{{#" + function_name + ":" + SMW.render_parameters(**kwargs) + "}}"
+
+    @staticmethod
+    def render_parameters(**kwargs):
+        res = ""
+        for parameter, value in kwargs.items():
+            if isinstance(value, bool):
+                label = parameter.replace("_", " ")
+                res += f"|{label}"
+            elif value is not None:
+                label = parameter.replace("_", " ")
+                res += f"|{label}={value}"
+        return res
+
 class Form:
     """"""
 
     @staticmethod
-    def standard_input_tag(input, label="", css_class="", style=""):
+    def page_form_function(tag, **kwargs):
+        return "{{{" + tag + SMW.render_parameters(**kwargs) + "}}}"
+
+    @staticmethod
+    def standard_input_tag(input, **kwargs):
         """
 
         :param input:
-        :param label:
-        :param css_class:
-        :param style:
         :return:
         """
         possible_input_tags = ["save", "preview", "save and continue", "changes", "summary", "minor edit", "watch", "cancel"]
         if input not in possible_input_tags:
             tags = ','.join(possible_input_tags)
             raise AttributeError(f"Form standard input \"{input}\" was given but must be one of the following values:{tags}")
-        input_tag = "{{{standard input|" + input
-        if label:
-            input_tag += "|label=" + label
-        if css_class:
-            input_tag += "|class=" + css_class
-        if style:
-            input_tag += "|style=" + style
-        return input_tag + "}}}"
+        return Form.page_form_function(tag="standard input", **{input:True, **kwargs})
 
     @staticmethod
-    def forminput(form: str,
-                  size=None,
-                  default_value=None,
-                  button_text=None,
-                  query_string=None,
-                  autocomplete_on_category=None,
-                  autocomplete_on_namespace=None,
-                  placeholder=None,
-                  namespace_selector=None,
-                  popup: bool = False,
-                  no_autofocus: bool = False,
-                  returnto=None,
-                  reload: bool = False):
+    def forminput(**kwargs):
         """
         Renders a forminput parser function with the given input
         For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#forminput
         :param form: the name of the PF form to be used.
-        :param size: the size of the text input
-        :param default_value: the starting value of the input
-        :param button_text: the text that will appear on the "submit" button (default is "Create or edit page").
-        :param query_string: used to pass information to the form; this information generally takes the form of templateName[fieldName]=value.
-        :param autocomplete_on_category: adds autocompletion to the input, using the names of all pages in a specific category.
-        :param autocomplete_on_namespace: adds autocompletion to the input, using the names of all pages in a specific namespace
-        :param placeholder: text that appears in the form input before the user types anything.
-        :param namespace_selector: add dropdown list before the input field to allow to select a namespace
-        :param popup: opens the form in a popup window.
-        :param no_autofocus:by default; the form input gets autofocus
-        :param returnto: the name of a page that the user will be sent to after submitting the form, instead of simply going to the saved page.
-        :param reload: if "popup" or "returnto" are specified, causes the page that the user ends up on after submitting the form to get reloaded with 'action=purge'.
         :return:
         """
-        value_parameter = ["form", "size", "default_value", "button_text", "query_string", "autocomplete_on_category",
-                          "autocomplete_on_namespace", "placeholder", "namespace_selector", "returnto"]
-        bool_parameter = ["popup", "no_autofocus", "reload"]
-        forminput = "{{#forminput:"
-        for parameter, value in locals().items():
-            if parameter in value_parameter:
-                if value is not None:
-                    label = parameter.replace("_", " ")
-                    forminput += f"|{label}={value}"
-            elif parameter in bool_parameter:
-                if value:
-                    label = parameter.replace("_", " ")
-                    forminput += f"|{label}"
-        return forminput + "}}"
+        return SMW.parser_function(function_name="forminput", **kwargs)
+
+    @staticmethod
+    def forminput(**kwargs):
+        """
+        Renders a forminput parser function with the given input
+        For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#formlink
+        :param form: the name of the PF form to be used.
+        :return:
+        """
+        return SMW.parser_function(function_name="formlink", **kwargs)
 
 
 
