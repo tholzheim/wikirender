@@ -28,7 +28,7 @@ class SMWPart(object):
         :param properties:
         :return: the page
         """
-        template_template = self.template_env.get_template(self.template)
+        template_template = self.wikiRender.template_env.get_template(self.template)
         page = template_template.render(entity_name=entity_name,
                                         entity_properties=entity_properties,
                                         all_properties=properties)
@@ -43,8 +43,9 @@ class SMWPart(object):
             SMWPart("Template"),
             SMWPart("Help"),
             SMWPart("List of"),
-            SMWPart("Properties"),
-            SMWPart("PythonCode")
+            #TODO: implement
+            #SMWPart("Properties"),
+            #SMWPart("PythonCode")
         ]
         smwParts = {}
         for smwPart in smwPartList:

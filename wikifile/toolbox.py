@@ -7,7 +7,7 @@ from argparse import RawDescriptionHelpFormatter
 from wikifile.wikiExtract import extract_templates
 from wikifile.wikiFile import WikiFile, get_wiki_path
 from wikifile.wikiRender import WikiRender, Topic
-
+from wikifile.smw import SMWPart
 
 def save_to_file(path, filename, data, overwrite=False):
     """Save the given data in a file"""
@@ -97,6 +97,8 @@ def main_render(argv=None):
             # Check if necessary parameters are set
             if not args.properties_file or not args.topics_file:
                 raise Exception("The parameters --properties and --topics must be defined for this mode")
+            # TODO:
+            # use fromJson
             properties = {}
             with open(args.properties_file) as json_file:
                 properties = json.load(json_file).get('data')
@@ -107,6 +109,10 @@ def main_render(argv=None):
                 topic_obj = Topic(topic)
                 # Generate and save the entity pages
                 # Template
+                # TODO:
+                #for smwPart in SMWPart.getAll(wiki_render):
+                #    smwPart.render_template_page(topic,properties)
+                    
                 save_to_file(args.backupPath,
                              f"Template:{topic_obj.name}",
                              wiki_render.render_template_page(topic_obj.name, topic, properties),
