@@ -4,7 +4,7 @@ Created on 2021-03-27
 @author: wf
 '''
 import unittest
-from wikifile.metamodel import Context, Topic,Property
+from wikifile.metamodel import Context, Topic, Property, UML
 
 
 class TestMetaModel(unittest.TestCase):
@@ -171,6 +171,157 @@ class TestMetaModel(unittest.TestCase):
         # TODO: wait for Type handling !!!
         #self.assertFalse(wprop.show_in_grid)
         self.assertTrue("f" in wprop.show_in_grid)
+
+    def testUMLOutgoingEdges(self):
+        data = {
+                "Property": "Property:Task goals",
+                "name": "Task goals",
+                "label": "Goals",
+                "type": "Special:Types/Page",
+                "index": None,
+                "sortPos": None,
+                "primaryKey": False,
+                "mandatory": False,
+                "namespace": None,
+                "size": None,
+                "uploadable": False,
+                "defaultValue": None,
+                "inputType": "tokens",
+                "allowedValues": None,
+                "documentation": "Goals that must be achieved to complete the task",
+                "values_from": "concept=Goal",
+                "showInGrid": False,
+                "isLink": False,
+                "nullable": False,
+                "topic": "Concept:Task",
+                "regexp": None
+              }
+        property = Property(properties=data)
+        expected_res = {
+            "target": "Goal",
+            "source": "Task",
+            "source_cardinality": "*",
+            "target_cardinality": "*",
+            "property": property
+        }
+        u = property.is_used_for()
+        res = UML.get_outgoing_edges(properties=[property], entity_name="Task")
+        self.assertTrue(len(res) == 1)
+        for key in expected_res.keys():
+            self.assertEqual(res[0][key], expected_res[key])
+        # Change Property inputType to test if cardinality is extracted correctly
+        property.input_type = "combobox"
+        res_2 = UML.get_outgoing_edges(properties=[property], entity_name="Task")
+        self.assertEqual(res_2[0]["target_cardinality"], "1")
+        # Test if only the properties of the given entity are used for the extraction
+        self.assertTrue(len(UML.get_outgoing_edges(properties=[property], entity_name="NoTopic")) == 0)
+
+    def testUMLIncomingEdges(self):
+        data = {
+                "Property": "Property:Task goals",
+                "name": "Task goals",
+                "label": "Goals",
+                "type": "Special:Types/Page",
+                "index": None,
+                "sortPos": None,
+                "primaryKey": False,
+                "mandatory": False,
+                "namespace": None,
+                "size": None,
+                "uploadable": False,
+                "defaultValue": None,
+                "inputType": "tokens",
+                "allowedValues": None,
+                "documentation": "Goals that must be achieved to complete the task",
+                "values_from": "concept=Goal",
+                "showInGrid": False,
+                "isLink": False,
+                "nullable": False,
+                "topic": "Concept:Task",
+                "regexp": None
+              }
+        property = Property(properties=data)
+        expected_res = {
+            "target": "Goal",
+            "source": "Task",
+            "source_cardinality": "*",
+            "target_cardinality": "*",
+            "property": property
+        }
+        u = property.is_used_for()
+        res = UML.get_incoming_edges_reduced(properties=[property], entity_name="Goal")
+        self.assertTrue(len(res) == 1)
+        for key in expected_res.keys():
+            self.assertEqual(res[0][key], expected_res[key])
+        # Change Property inputType to test if cardinality is extracted correctly
+        property.input_type = "combobox"
+        res_2 = UML.get_incoming_edges_reduced(properties=[property], entity_name="Goal")
+        self.assertEqual(res_2[0]["target_cardinality"], "1")
+        # Test if only the properties of the given entity are used for the extraction
+        self.assertTrue(len(UML.get_incoming_edges_reduced(properties=[property], entity_name="NoTopic")) == 0)
+
+    def testUMLReducedIncomingEdges(self):
+        data = [{
+                "Property": "Property:Task goals",
+                "name": "Task goals",
+                "label": "Goals",
+                "type": "Special:Types/Page",
+                "index": None,
+                "sortPos": None,
+                "primaryKey": False,
+                "mandatory": False,
+                "namespace": None,
+                "size": None,
+                "uploadable": False,
+                "defaultValue": None,
+                "inputType": "tokens",
+                "allowedValues": None,
+                "documentation": "Goals that must be achieved to complete the task",
+                "values_from": "concept=Goal",
+                "showInGrid": False,
+                "isLink": False,
+                "nullable": False,
+                "topic": "Concept:Project",
+                "regexp": None
+              },
+            {
+                "Property": "Property:Project goals",
+                "name": "Project goals",
+                "label": "Goals",
+                "type": "Special:Types/Page",
+                "index": None,
+                "sortPos": None,
+                "primaryKey": False,
+                "mandatory": False,
+                "namespace": None,
+                "size": None,
+                "uploadable": False,
+                "defaultValue": None,
+                "inputType": "tokens",
+                "allowedValues": None,
+                "documentation": "Goals that must be achieved to complete the task",
+                "values_from": "concept=Goal",
+                "showInGrid": False,
+                "isLink": False,
+                "nullable": False,
+                "topic": "Concept:Project",
+                "regexp": None
+            }
+        ]
+        properties = [Property(p) for p in data]
+        expected_res = {
+            "target": "Goal",
+            "source": "Project",
+            "source_cardinality": "*",
+            "target_cardinality": "*",
+            "properties": ["Task goals", "Project goals"]
+        }
+        res = UML.get_incoming_edges_reduced(properties=properties, entity_name="Goal")
+        self.assertTrue(len(res) == 1)
+        for key in expected_res.keys():
+            self.assertEqual(res[0][key], expected_res[key])
+        # Test if only the properties of the given entity are used for the extraction
+        self.assertTrue(len(UML.get_incoming_edges_reduced(properties=properties, entity_name="NoTopic")) == 0)
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

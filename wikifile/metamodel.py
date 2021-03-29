@@ -295,9 +295,27 @@ class UML:
     """
     Provides helper functions for uml generation
     """
+
     @staticmethod
     def get_outgoing_edges(entity_name: str, properties: list):
-        """Reduce the given list of properties to those properties which have the given entity as subject"""
+        """
+        Reduce the given list of properties to those properties which have the given entity as subject
+        Args:
+            entity_name: Name of the entity for which the outgoing edges should be extracted
+            properties: List of all properties
+        Returns:
+            List of dicts with each dict containing information for one edge.
+        Examples: For entity_name=Project
+            [{
+            "target": "Goal",
+            "source": "Project",
+            "source_cardinality": "*",
+            "target_cardinality": "1",
+            "properties": <Property object>
+            }]
+            Means in UML:
+            "Project" "*" --> "1" "Goal" : "<Property object>.name"
+        """
         outgoing_edges = []
         for property in properties:
             if f"Concept:{entity_name}" in property.is_used_for() and property.type == "Special:Types/Page" and property.values_from:
@@ -320,17 +338,34 @@ class UML:
 
     @staticmethod
     def get_incoming_edges(entity_name: str, properties: list):
-        """Reduce the given list of properties to those properties which have the given entity as object"""
+        """
+        Reduce the given list of properties to those properties which have the given entity as object
+        Args:
+            entity_name: Name of the entity for which the incoming edges should be extracted
+            properties: List of all properties
+        Returns:
+            List of dicts with each dict containing information for one edge.
+        Examples: For entity_name=Goal
+            [{
+            "target": "Goal",
+            "source": "Project",
+            "source_cardinality": "*",
+            "target_cardinality": "1",
+            "properties": <Property object>
+            }]
+            Means in UML:
+            "Project" "*" --> "1" "Goal" : "<Property object>.name"
+        """
         incoming_edges = []
         for property in properties:
             if property.values_from == f"concept={entity_name}" and property.type == "Special:Types/Page" and property.values_from:
                 uml_infos = {}
                 uml_infos["target"] = entity_name
                 if property.input_type == "tokens":
-                    uml_infos["source_cardinality"] = "*"
+                    uml_infos["target_cardinality"] = "*"
                 else:
-                    uml_infos["source_cardinality"] = "1"
-                uml_infos["target_cardinality"] = "1"
+                    uml_infos["target_cardinality"] = "1"
+                uml_infos["source_cardinality"] = "*"
                 uml_infos["property"] = property
                 for source in property.is_used_for():
                     temp_uml_infos = uml_infos.copy()
@@ -340,11 +375,30 @@ class UML:
 
     @staticmethod
     def get_incoming_edges_reduced(entity_name: str, properties: list):
+        """
+        Same as get_incoming_edges but merges the edges that come from teh same source.
+        Returns a list of dict. The edges lname is stored in the kex properties.
+        Args:
+            entity_name: Name of the entity for which the incoming edges should be extracted
+            properties: List of all properties
+        Returns:
+            List of dicts with each dict containing information for one edge.
+        Examples:
+            [{
+            "target": "Goal",
+            "source": "Project",
+            "source_cardinality": "*",
+            "target_cardinality": "*",
+            "properties": ["Task goals", "Project goals"]
+            }]
+            Means in UML:
+            "Project" "*" --> "*" "Goal" : "Task goals, Project goals"
+        """
         incoming_edges  = UML.get_incoming_edges(entity_name, properties)
         res = []
         for edge in incoming_edges:
             if edge.get('source') == entity_name:
-                break
+                continue
             if edge.get('source') in [x.get('source') for x in res]:
                 # merge edges
                 for x in res:
@@ -354,6 +408,4 @@ class UML:
                 edge['properties'] = [edge.get('property').name]
                 res.append(edge)
         return res
-
-
 
