@@ -2,6 +2,51 @@
 # WF 2021-03-27
 # Generator Pipeline
 
+# set for debugging
+#  set -x
+
+#ansi colors
+#http://www.csc.uvic.ca/~sae/seng265/fall04/tips/s265s047-tips/bash-using-colors.html
+blue='\033[0;34m'
+red='\033[0;31m'
+green='\033[0;32m' # '\e[1;32m' is too bright for white bg.
+endColor='\033[0m'
+
+#
+# a colored message
+#   params:
+#     1: l_color - the color of the message
+#     2: l_msg - the message to display
+#
+color_msg() {
+  local l_color="$1"
+  local l_msg="$2"
+  echo -e "${l_color}$l_msg${endColor}"
+}
+
+#
+# error
+#
+#   show an error message and exit
+#
+#   params:
+#     1: l_msg - the message to display
+error() {
+  local l_msg="$1"
+  # use ansi red for error
+  color_msg $red "Error: $l_msg" 1>&2
+  exit 1
+}
+
+#
+# show the usage
+#
+usage() {
+  echo "usage: $0 [-h|--help] -t|--target wiki"
+  echo "  -h|--help: show this usage"
+  echo "  -t|--target: target wiki"
+}
+
 #
 # query
 #
@@ -11,17 +56,62 @@ query() {
   local l_json="$3"
   if [ ! -f $l_json ]
   then
-    echo "quering $l_json from $l_wiki"
+    color_msg $blue "quering $l_json from $l_wiki"
     wikiquery -l --source $l_wiki --query "$l_ask"  > "$l_json"
   else
-    echo "$l_json already queried"
+    color_msg $green "$l_json already queried"
+  fi
+}
+
+#
+# show the count of entries in the given json file
+#
+showCount() {
+  local l_json="$1"
+  local l_title="$2"
+  jq=$(which jq)
+  if [ $? -ne 0 ]
+  then
+     color_msg $red "jq is not installed"
+  else
+     count=$($jq '.[] | length' $l_json)
+     color_msg $green "$count $l_title found"
   fi
 }
 
 topicAsk="[[Topic name::+]]|mainlabel=Topic|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
 propAsk="[[Property name::+]]| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
 
-wiki="rq"
+wiki=""
+# commandline option
+while [  "$1" != ""  ]
+do
+  option=$1
+  shift
+  case $option in
+    -h|--help)
+       usage;;
+    -t|--target)
+      if [ $# -lt 1 ]
+      then
+        usage
+      fi
+      wiki=$1
+      backupPath=$HOME/.wikibackup/$wiki
+      shift
+      ;;
+  esac
+done
+
+# target wiki is mandatory
+if [ "$wiki" = "" ]
+then
+  usage
+  exit
+fi
+
 cd /tmp
 query $wiki "$topicAsk" topic.json
+showCount topic.json Topics
 query $wiki "$propAsk" properties.json
+showCount properties.json Properties

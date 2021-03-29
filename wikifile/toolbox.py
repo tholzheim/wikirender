@@ -22,7 +22,7 @@ class Toolbox:
         Args:
             listname: name of the list the data is stored in
             jsonStr: data as json string that should be converted
-            sample: sample data of the actual data. Used to convert the values to the vorrect type
+            sample: sample data of the actual data. Used to convert the values to the correct type
         Returns:
             
         """""
