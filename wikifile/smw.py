@@ -60,18 +60,19 @@ class SMW:
     """Provides functions covering basic SMW features"""
 
     @staticmethod
-    def parser_function(function_name: str, **kwargs):
+    def parser_function(function_name: str, presence_is_true=False, **kwargs):
         """
         Renders the given parameters and function name to the corresponding SMW parser function.
         Parameter names containing a whitespace must be written with an underscore instead.
         Args:
             function_name: name of the function
+            presence_is_true: If true only the name of bool parameters is displayed. Otherwise the bool value is printed out.
             **kwargs: parameters of the parser function
 
         Returns:
 
         """
-        return "{{#" + function_name + ":" + SMW.render_parameters(**kwargs) + "}}"
+        return "{{#" + function_name + ":" + SMW.render_parameters(presence_is_true=presence_is_true, **kwargs)[1:] + "}}"
 
     @staticmethod
     def render_entity(template: str, oneliner=True, **kwargs):
@@ -98,13 +99,27 @@ class SMW:
         return "{{" + template + separator + SMW.render_parameters(oneliner=oneliner, **kwargs) + "}}"
 
     @staticmethod
-    def render_parameters(oneliner=True, **kwargs):
+    def render_parameters(oneliner=True, presence_is_true=False, **kwargs):
+        """
+
+        Args:
+            oneliner: If true parameters are rendered in one line.
+            presence_is_true: If true only the name of bool parameters is displayed. Otherwise the bool value is printed out.
+            **kwargs: All paramerters with there values. If a parameter has a whitespace escape it with an underscore.
+        Returns:
+            Returns the given parameters as rendered mediawiki template parameters
+        """
         separator = "" if oneliner else "\n"
         res = ""
         for parameter, value in kwargs.items():
             if isinstance(value, bool):
                 label = parameter.replace("_", " ")
-                res += f"|{label}{separator}"
+                if presence_is_true:
+                    res += f"|{label}{separator}"
+                else:
+                    # ToDo: Update bool values if decided how to query wiki config
+                    bool_value = "true" if value else "false"
+                    res += f"|{label}={bool_value}{separator}"
             elif value is not None:
                 label = parameter.replace("_", " ")
                 res += f"|{label}={value}{separator}"
@@ -149,7 +164,15 @@ class Form(SMWPart):
 
     @staticmethod
     def page_form_function(tag, **kwargs):
-        return "{{{" + tag + SMW.render_parameters(**kwargs) + "}}}"
+        """
+
+        Args:
+            tag: Type of the form function. e.g.: field, form, info, ...
+            **kwargs: parameters of the form function
+        Returns:
+
+        """
+        return "{{{" + tag + SMW.render_parameters(presence_is_true=True, **kwargs) + "}}}"
 
     @staticmethod
     def standard_input_tag(input, **kwargs):
@@ -173,10 +196,10 @@ class Form(SMWPart):
         Renders a forminput parser function with the given input
         For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#forminput
         Args:
-            **kwargs:
+            **kwargs: parameters of the forminput
         Returns:
         """
-        return SMW.parser_function(function_name="forminput", **kwargs)
+        return SMW.parser_function(function_name="forminput", presence_is_true=True, **kwargs)
 
     @staticmethod
     def formlink(**kwargs):
@@ -184,27 +207,32 @@ class Form(SMWPart):
         Renders a formlink parser function with the given input
         For more details see: https://www.mediawiki.org/wiki/Extension:Page_Forms/Linking_to_forms#Using_#formlink
         Args:
-            **kwargs:
+            **kwargs: parameters of the formlink
         Returns:
 
         """
-        return SMW.parser_function(function_name="formlink", **kwargs)
+        return SMW.parser_function(function_name="formlink", presence_is_true=True, **kwargs)
 
     @staticmethod
     def field(property: Property,regexps={}):
-        prop_map = {"inputType":"input_type",
+        prop_map = {"input_type":"input_type",
                     "placeholder":"placeholder",
-                    "defaultValue":"default",
+                    "default_value":"default",
                     "values_from":"values_from",
                     "uploadable":"uploadable",
-                    "primaryKey":"unique"}
+                    "primary_key":"unique"}
         parameters = {}
         for prop in prop_map.keys():
             if prop in property.__dict__ and property.__dict__[prop] is not None:
-                parameters[prop_map[prop]] = property.__dict__[prop]
+                if prop == "values_from":
+                    # values_from contains data like "concept=Country" so we add an auxiliary property "values from concept" with the value "Country"
+                    vals = property.__dict__[prop].split("=")
+                    parameters[f"{prop_map[prop]} {vals[0]}" ] = vals[1]
+                else:
+                    parameters[prop_map[prop]] = property.__dict__[prop]
                 if prop == "inputType" and property.__dict__[prop] == "regexp":
                     parameters.update(Form.regexps.get(property.regexp))
-        return Form.page_form_function(tag="field", **parameters)
+        return Form.page_form_function(tag="field", **{property.label:True, **parameters})
 
 
 class Query:
@@ -314,7 +342,7 @@ class Query:
         Returns:
 
         """
-        self.sort = ",".join(properties)
+        self.sort = ", ".join(properties)
         return self
 
     class PrintoutStatement:

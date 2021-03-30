@@ -184,23 +184,3 @@ def main_extract(argv=None):
         return 1
     except Exception as e:
         print(e)
-
-
-if __name__ == "__main__":
-    templateEnv = WikiRender.getTemplateEnv(script_dir="..")
-    wiki_render = WikiRender(templateEnv)
-    properties = []
-    with open("/home/holzheim/wikibackup/rq_properties2.json") as json_file:
-        properties = [Property(x) for x in Toolbox().fromJson("data", json_file.read(), Property.get_samples())]
-    topics = []
-    with open("/home/holzheim/wikibackup/rq_topics2.json") as json_file:
-        topics = [Topic(x) for x in Toolbox().fromJson("data", json_file.read(), Topic.get_samples())]
-    for topic in topics:
-        # Generate and save the entity pages
-        # Template
-        # TODO:
-        for part, smwPart in SMWPart.getAll(wiki_render).items():
-            page = smwPart.render_page(topic, properties)
-            WikiFile(smwPart.get_page_name(topic), "/home/holzheim/wikibackup/rq_test", wiki_render=wiki_render,
-                     wikiText=page).save_to_file(True)
-    pass

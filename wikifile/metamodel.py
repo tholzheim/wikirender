@@ -8,7 +8,7 @@ import re
 import sys
 
 
-class MetaModelElement():
+class MetaModelElement(object):
     '''
     a generic MetaModelElement
     
@@ -60,13 +60,18 @@ class MetaModelElement():
         return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
     @staticmethod
-    def render_parameters(parameter: list, oneliner=True):
+    def render_parameters(oneliner=True, presence_is_true=False, **kwargs):
         separator = "" if oneliner else "\n"
         res = ""
-        for parameter, value in parameter:
+        for parameter, value in kwargs.items():
             if isinstance(value, bool):
                 label = parameter.replace("_", " ")
-                res += f"|{label}{separator}"
+                if presence_is_true:
+                    res += f"|{label}{separator}"
+                else:
+                    # ToDo: Update bool values if decided how to query wiki config
+                    bool_value = "true" if value else "false"
+                    res += f"|{label}={bool_value}{separator}"
             elif value is not None:
                 label = parameter.replace("_", " ")
                 res += f"|{label}={value}{separator}"
@@ -90,6 +95,23 @@ class MetaModelElement():
             metamodelElement = cls(row)
             metamodelElementList.append(metamodelElement)
         return metamodelElementList
+
+    @staticmethod
+    def get_parameters(attr: dict, prop_list: list):
+        """
+        Converts given attr dict to the names given in prop_list.
+        Conversion is based on the name mapping applied in get_snake_name.
+        Args:
+            attr: Dict of attributes with values that should be used for the conversion
+            prop_list: List of properties that should be converted
+        Returns:
+            Returns list of dict containing the property names from the given prop_list with the corresponding value from attr
+        """
+        para_map = {}
+        for para_item in [{prop: attr[MetaModelElement.get_snake_name(prop)]} for prop in prop_list]:
+            para_map.update(para_item)
+        return para_map
+
     # def render() ... 
     # use self.template
     # which allows to use simplified templates like
@@ -149,10 +171,10 @@ class Topic(MetaModelElement):
         return res
 
     def render_entity(self, oneliner=True):
-        """Render tis topic to its template represntation"""
+        """Render tis topic to its template representation"""
         separator = "" if oneliner else "\n"
         res = "{{Topic" + separator
-        res += MetaModelElement.render_parameters([(prop, self.__dict__[MetaModelElement.get_snake_name(prop)]) for prop in self.propList], oneliner)
+        res += MetaModelElement.render_parameters(oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
 
 class Property(MetaModelElement):
@@ -179,7 +201,8 @@ class Property(MetaModelElement):
             "nullable",
             "topic",
             "regexp",
-            "used_for"]
+            "used_for",
+            "placeholder"]
 
     def __init__(self, properties: dict=None):
         super(Property,self).__init__(Property.propList,properties)
@@ -211,7 +234,7 @@ class Property(MetaModelElement):
         return samples
 
     def is_used_for(self):
-        """"""
+        """Returns the topics this property is used for/by"""
         res = []
         if self.topic:
             if isinstance(self.topic, list):
@@ -228,11 +251,7 @@ class Property(MetaModelElement):
     @staticmethod
     def get_property_properties(properties: list):
         """Returns the properties that describe properties"""
-        res = []
-        for property in properties:
-            if "Concept:Property" in property.is_used_for():
-                res.append(property)
-        return sorted(res, key=lambda k: property.index if property.index is not None else sys.maxsize)   # ToDo: Add sotPos to all properties. If done exchange index with sortPos
+        return Property.get_entity_properties(entity_name="Property", properties=properties)
 
     @staticmethod
     def get_entity_properties(entity_name: str, properties: list):
@@ -249,18 +268,17 @@ class Property(MetaModelElement):
         for property in properties:
             if f"Concept:{entity_name}" in property.is_used_for():
                 res.append(property)
-        return sorted(res, key=lambda k: property.index if property.index is not None else sys.maxsize)
+        return sorted(res, key=lambda k: int(k.index) if k.index is not None else sys.maxsize) # ToDo: Add sortPos to all properties. If done exchange index with sortPos
 
     @staticmethod
     def get_primitive_properties(entity_name: str, properties: list):
         """
         Returns a list of all primitive datatype of the given entity.
         Args:
-            entity_name:
-            properties:
-
+            entity_name: name of the entity for which the primitive properties should be returned
+            properties: list of all properties
         Returns:
-
+            List of primitive properties of the given entity
         """
         primitive_datatypes = ["Special:Types/Boolean",
                                "Special:Types/Date",
@@ -284,10 +302,10 @@ class Property(MetaModelElement):
         return primitive_properties
 
     def render_entity(self, oneliner=True):
-        """Render tis topic to its template representation"""
+        """Render this property to its template representation"""
         separator = "" if oneliner else "\n"
         res = "{{Property" + separator
-        res += MetaModelElement.render_parameters([(prop, self.__dict__[MetaModelElement.get_snake_name(prop)]) for prop in self.propList], oneliner)
+        res += MetaModelElement.render_parameters(oneliner=oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
 
 
