@@ -232,8 +232,8 @@ class Template(SMWPart):
 
         """
         label = lambda p: Property.get_description_page_link(property) if clickable_links else p.label
-        table_str = "{| class='wikitable'\n! colspan=2 |  {{UtfIcon|utf=✎|size=24}}{{Link|target=Special:FormEdit/{{FULLPAGENAME}}|title=edit}} "
-        table_str += topic.name + "\n|-\n"
+        formlink = Form.formlink(form=topic.name, link_text="✎", target="{{FULLPAGENAME}}", tooltip="Start editing this " + topic.name)
+        table_str = "{| class='wikitable'\n! colspan=2 | " + formlink + topic.name + "\n|-\n"
         for property in properties:
             table_str += "!style=\"text-align:left\" |" + label(property) + "\n"
             table_str += "| {{#if:" + Template.template_arg(property.name) + "|" + Template.template_arg(property.name) + "|}}\n"
