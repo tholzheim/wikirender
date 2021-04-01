@@ -84,11 +84,7 @@
 {#----------------------------------------------------------------------------#}
 
 {%- macro render_field_label(property) -%}
-{{ property['name'] }}
-{%- if 'documentation' in property.__dict__.keys() and property.__dict__['documentation'] is not none-%}
-{{ render_info(text=property['documentation'],icon='note')}}
-{%- endif -%}
-:
+{{ "[["+property['name']+"::@@@]]" }}:
 {%- endmacro -%}
 
 {#----------------------------------------------------------------------------#}

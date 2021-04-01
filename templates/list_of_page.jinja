@@ -12,39 +12,30 @@ Output: Generates the page List of<entity_plural_name>
 {% from 'macros/form.jinja' import forminput %}
 {#-------------------------------Template-------------------------------------#}
 __NOCACHE__
-{{ '{{' }}#ask: [[Topic name::{{ topic.name }}]]
-|mainlabel=-
-|?Topic icon = icon
-|? = Topic
-|?Topic name = name
-|?Topic pluralName = pluralName
-|?Topic documentation = documentation
-{{ '}}' }}
+{{ Query(mainlabel="-").select("Topic name::"+topic.name)
+                       .printout("Topic icon", "icon")
+                       .printout("","Topic")
+                       .printout("Topic pluralName", "pluralName")
+                       .printout("Topic documentation", "documentation")
+                       .render(oneliner=False) }}
+
 == {{ topic.plural_name }} ==
-{{ forminput(topic.name, button_text='add ' + topic.name) }}
-{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]|format=count{{ '}}' }} {{ topic.plural_name }}:
-{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]
-|mainlabel={{ topic.name }}
-{% for entity_property in Property.get_entity_properties(topic.name, properties) -%}
-|?{{ entity_property.name }} = {{ entity_property.label }}
-{% endfor %}
-|order=ascending
-| limit=200
-{{ '}}' }}
+{{ Form.forminput(form=topic.name, button_text='add ' + topic.name) }}
+{{ Query(format="count").select("Concept:" + topic.name).render()}} {{ topic.plural_name }}:
+{{ Query(mainlabel=topic.name, format="table", limit=200,order="ascending")
+                       .select("Concept:" + topic.name)
+                       .printout_list_of_properties(Property.get_entity_properties(topic.name, properties))
+                       .render(oneliner=False)}}
+== See also ==
+{{ SMWPart.getAllAsPageLink(topic) }}
 <div class="toccolours mw-collapsible mw-collapsed" style="width:1024px">
-=== Example rendered with the correspinding Template ===
+=== Example rendered with the corresponding Template ===
 <div class="mw-collapsible-content">
-{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]
-| ?#=pageid
-{% for entity_property in Property.get_entity_properties(topic.name, properties) -%}
-|?{{ entity_property.name }} = {{ entity_property.label }}
-{% endfor %}
-| mainlabel=-
-| format=template
-| named args=yes
-| template={{ topic.name }}
-| limit=1
-{{ '}}' }}
+{{ Query(mainlabel=topic.name, format="template", limit=1,order="ascending", template=topic.name)
+                       .select("Concept:" + topic.name)
+                       .printout("#", "pageid")
+                       .printout_list_of_properties(Property.get_entity_properties(topic.name, properties))
+                       .render(oneliner=False)}}
 </div>
 </div>
 {# [[:Category:{{ topic.name }}]] #}

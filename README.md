@@ -112,7 +112,7 @@ Example pipeline to generate enity pages for all topics in the wiki with the use
 ```
 $ bash scripts/gen -t <wikiId> &&
 wikirender -m "generate_entity_pages" --BackupPath . --topics /tmp/topics.json --properties /tmp/properties.json &&
-wikirestore -t <wikiId> --BackupPath .
+wikirestore -t <wikiId> --backupPath .
 ```
 
 #### Example Pipeline

@@ -1,0 +1,56 @@
+{#---------------------------------Form Page-----------------------------------#}
+{#
+Generate the form of page for a entity.
+Input:
+    topic: topic entity
+    properties: all properties of the wiki.
+    regexps: List of a regular expressions
+Output: Generates the page Category:<entity_name>
+#}
+{% macro CreateFormHeader(header, subheader, class)%}
+<div id="collapse-pre-one"  class="mw-collapsible {{ class }}">
+    <div class="mw-collapsible-toggle toccolours" style="float: none;">
+    <div class="mw-collapsible-toggle-row">
+    <div class="mw-collapsible-toggle-header"><big>'''{{ header }}'''<br>{{ subheader }}</big></div>
+    <div class="mw-collapsible-toggle-indicator">[[File:right-black-arrow.png|150px|link=]]</div>
+  </div>
+ </div>
+<div class="mw-collapsible-content">
+{% endmacro %}
+{% macro EndCreateFormHeader() %}
+</div>
+</div>
+{% endmacro %}
+{#----------------------------Global Variables--------------------------------#}
+{% set topic_properties = Property.get_entity_properties(topic.name, properties) %}
+{#-------------------------------Template-------------------------------------#}
+<noinclude>
+{{ Form.forminput(form=topic.name, button_text='add ' + topic.name) }}
+== See also ==
+{{ SMWPart.getAllAsPageLink(topic) }}
+</noinclude>
+<includeonly>
+{# Form control buttons #}
+{{ Form.standard_input_tag(["save","preview","changes","cancel"]) }}
+{{ Form.page_form_function("for template", **{topic.name:True }) }}
+
+{{ CreateFormHeader("General Information","Includes all the field with general information of the Event. This does include some mandatory fields", "mw-collapsed") }}
+{# Properties that cover general information -#}
+{{ Form.form_table(None, Property.filterLoP(topic_properties, "type", ["Special:Types/External Identifier", "Special:Types/ExternalIdentifier"], invert=True), is_collapsible=False) }}
+{{ EndCreateFormHeader() }}
+----
+{{ CreateFormHeader("Identification Numbers", "External Event Ids", "mw-collapsed") }}
+{{ Form.form_table(None, Property.filterLoP(topic_properties, "type", ["Special:Types/External Identifier", "Special:Types/ExternalIdentifier"]), is_collapsible=False) }}
+{{ EndCreateFormHeader() }}
+----
+{{ CreateFormHeader("Topics", "General topics of the events in Free Text form", "mw-collapsed") }}
+{| class="formtable InfoBox" style="width:100%;"
+|-
+| {{ Form.page_form_function("section", **{"Topics": True, "level":2, "autogrow":True, "restricted":True,"class":"FormInputField" }) }}
+|}
+{{ EndCreateFormHeader() }}
+----
+{{ Form.page_form_function("end template") }}
+{# Form control buttons -#}
+{{ Form.standard_input_tag(["save","preview","changes","cancel"]) }}
+</includeonly>

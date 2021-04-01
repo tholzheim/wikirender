@@ -2,48 +2,32 @@
 {#
 Generate a help page for a entity.
 Input:
-    topic.name: name of the entity
     topic: properties defining the entity
-    all_properties: all properties of the wiki.
+    properties: all properties of the wiki.
 Output: Generates the page Help:<topic.name>
 #}
-{#---------------------------------Import-------------------------------------#}
-{% from 'macros/utils.jinja' import render_entity %}
+{#----------------------------Global Variables--------------------------------#}
+{% set property_properties = Property.get_property_properties(properties) %}
 {#-------------------------------Template-------------------------------------#}
 == Help for {{ topic.name }} ==
-{{'{{' }}#ask: [[Topic name::{{ topic.name }}]]
-|mainlabel=-
-|?Topic icon = icon
-|? = Topic
-|?Topic name = name
-|?Topic pluralName = pluralName
-|?Topic documentation = documentation
-{{ '}}' }}
+{{ Query(mainlabel="-").select("Topic name::"+topic.name)
+                       .printout("Topic icon", "icon")
+                       .printout("","Topic")
+                       .printout("Topic pluralName", "pluralName")
+                       .printout("Topic documentation", "documentation")
+                       .render(oneliner=False) }}
 === Documentation ===
-[https://www.wikidata.org/wiki/Q515 large permanent human settlement]
+{{ topic.wiki_documentation }}
 === Example {{ topic.plural_name }} ===
-{{ '{{' }}#ask: [[Concept:{{ topic.name }}]]
-|limit=25
-|searchlabel=...more examples
-{{ '}}' }}
+{{ Query(limit=10, searchlabel="...more examples").select("Concept:" + topic.name).render() }}
 === Properties ===
-{{ '{{' }}#ask: [[Concept:Property]][[Used for::Concept:{{ topic.name }}]]
-{% for var in Property.get_property_properties(all_properties) -%}
-|?Property {{ var.name }} = {{ var.label }}
-{% endfor %}
-|format=table
-{{ '}}' }}
+{{ Query(format="table").select("Concept:Property").select("Used for::Concept:"+topic.name).printout_list_of_properties(property_properties).render(oneliner=False)}}
 === uml ===
 {% include "uml.jinja" %}
 
-see also
-* [[List of {{ topic.plural_name }}]]
-* [[Help:{{ topic.name }}]]
-* [[Concept:{{ topic.name }}]]
-* [[:Category:{{ topic.name }}]]
-* [[:Template:{{ topic.name }}]]
-* [[:Form:{{ topic.name }}]]
-topic links:
-* [[:Category:{{ topic.name }}]]
+== See also ==
+{{ SMWPart.getAllAsPageLink(topic) }}
+== Topics ==
+{# Add all topics that are related to this topic as list of page links -#}
+{{ SMW.render_as_list(map(Topic.get_page_link, topic.get_related_topics(properties))) }}
 
-{# [[Category:{{ topic.name }}]] #}

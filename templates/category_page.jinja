@@ -10,22 +10,19 @@ Output: Generates the page Category:<topic.name>
 {% from 'macros/utils.jinja' import render_entity %}
 {#-------------------------------Template-------------------------------------#}
 __NOTOC__
-{{ '{{' }}#ask: [[Topic name::{{ topic.name }}]] | ?Topic wikiDocumentation= | mainlabel=-{{ '}}' }}
-{{ topic.plural_name }} may be added and edited with the form [[Form:{{ topic.name }}]]
-* [[List of {{ topic.plural_name }}]]
+{{ Query(mainlabel="-").select("Topic name::" + topic.name).printout("Topic wikiDocumentation"," ").render() }}
+{{ topic.plural_name }} may be added and edited with the form [[{{ Form.get_page_name(topic) }}]]
+* [[{{ ListOf.get_page_name(topic) }}]]
 <div class="toccolours mw-collapsible mw-collapsed" style="width:1024px">
-City description
+{{ topic.name }} description
 <div class="mw-collapsible-content">
-=== uml ===
+== uml ==
 {% include "uml.jinja" %}
 
-* [[Help:{{ topic.name }}]]
-* [[Concept:{{ topic.name }}]]
-* [[:Template:{{ topic.name }}]]
-* [[:Form:{{ topic.name }}]]
-=== Properties ===
-{% for entity_property in Property.get_entity_properties(topic.name, properties) -%}
-* [[Property:{{ entity_property.name }}]]
-{% endfor %}
+== See also ==
+{{ SMWPart.getAllAsPageLink(topic) }}
+
+== Properties ==
+{{ SMW.render_as_list(map(Property.get_page_link, Property.get_entity_properties(topic.name, properties))) }}
 </div>
 </div>

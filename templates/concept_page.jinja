@@ -12,25 +12,21 @@ Output: Generates the page Concept:<topic.name>
 {#-------------------------------Template-------------------------------------#}
 __NOCACHE__
 {{ topic.render_entity(oneliner=False) }}
-{{ forminput('Property', button_text='add Property') }}
+{{ Form.forminput(form="Property", button_text='add Property') }}
+
 === Documentation ===
 {{ topic.wiki_documentation }}
+
 === uml ===
 {% include "uml.jinja" %}
 
 {{ '{{' }}#concept:
  [[Category:{{ topic.name }}]]
  |{{ topic.plural_name }}
-see also
-* [[List of {{ topic.plural_name }}]]
-* [[Help:{{ topic.name }}]]
-* [[Concept:{{ topic.name }}]]
-* [[:Category:{{ topic.name }}]]
-* [[:Template:{{ topic.name }}]]
-* [[:Form:{{ topic.name }}]]
-topic links:
-{% for rel_topic in topic.get_related_topics(properties) -%}
-* [[:Category:{{ rel_topic }}]]
-{% endfor %}
+== See also ==
+{{ SMWPart.getAllAsPageLink(topic) }}
+== Topics ==
+{# Add all topics that are related to this topic as list of page links -#}
+{{ SMW.render_as_list(map(Topic.get_page_link, topic.get_related_topics(properties))) }}
 {{ '}}' }}
 {# [[:Category:{{ topic.name }}]] #}

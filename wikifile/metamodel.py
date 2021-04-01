@@ -67,7 +67,8 @@ class MetaModelElement(object):
             if isinstance(value, bool):
                 label = parameter.replace("_", " ")
                 if presence_is_true:
-                    res += f"|{label}{separator}"
+                    if value:
+                        res += f"|{label}{separator}"
                 else:
                     # ToDo: Update bool values if decided how to query wiki config
                     bool_value = "true" if value else "false"
@@ -177,6 +178,14 @@ class Topic(MetaModelElement):
         res += MetaModelElement.render_parameters(oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
 
+    @staticmethod
+    def get_page_link(value):
+        if isinstance(value, Topic):
+            return f"[[Concept:{value.name}]]"
+        else:
+            return f"[[Concept:{value}]]"
+
+
 class Property(MetaModelElement):
     """
     Provides helper functions and constants for properties
@@ -193,7 +202,7 @@ class Property(MetaModelElement):
             "uploadable",
             "defaultValue",
             "inputType",
-            "allowedVaues",
+            "allowedValues",
             "documentation",
             "values_from",
             "showInGrid",
@@ -202,7 +211,8 @@ class Property(MetaModelElement):
             "topic",
             "regexp",
             "used_for",
-            "placeholder"]
+            "placeholder",
+            "pageName"]
 
     def __init__(self, properties: dict=None):
         super(Property,self).__init__(Property.propList,properties)
@@ -229,7 +239,8 @@ class Property(MetaModelElement):
                     "nullable": False,
                     "topic": "Concept:Event",
                     "regexp": "NaturalNumber",
-                    "used_for": "Concept:Event, Concept:Event series"
+                    "used_for": "Concept:Event, Concept:Event series",
+                    "pageName": "Propertry:Title"
                     }]
         return samples
 
@@ -247,6 +258,12 @@ class Property(MetaModelElement):
             else:
                 res.append(self.used_for)
         return res
+
+    def get_pageName(self, withNamespace=True):
+        if self.page_name:
+            return self.page_name if withNamespace else self.page_name.replace("Property:", "")
+        else:
+            return None
 
     @staticmethod
     def get_property_properties(properties: list):
@@ -307,6 +324,27 @@ class Property(MetaModelElement):
         res = "{{Property" + separator
         res += MetaModelElement.render_parameters(oneliner=oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
+
+    @staticmethod
+    def get_page_link(value):
+        if isinstance(value, Property):
+            return f"[[Property:{value.get_pageName(withNamespace=False)}|{value.label}]]"
+        else:
+            return f"[[Property:{value}]]"
+
+    @staticmethod
+    def get_description_page_link(value):
+        if isinstance(value, Property):
+            return f"[[{value.get_pageName(withNamespace=False)}::@@@|{value.label}]]"
+        else:
+            return f"[[{value}::@@@]]"
+
+    @staticmethod
+    def filterLoP(lop: list, key: str, match: list, invert=False):
+        if invert:
+            return [p for p in lop if p.__dict__[key] not in match]
+        else:
+            return [p for p in lop if p.__dict__[key] in match]
 
 
 class UML:

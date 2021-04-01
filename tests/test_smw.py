@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from wikifile.metamodel import Property, Topic
-from wikifile.smw import Query, Form, SMWPart
+from wikifile.smw import Query, Form, SMWPart, SMW, Table
 
 
 class TestSMWPart(TestCase):
@@ -9,10 +9,8 @@ class TestSMWPart(TestCase):
     def setUp(self):
         pass
 
-
     def tearDown(self):
         pass
-
 
     def testSMWPart(self):
         '''
@@ -37,6 +35,17 @@ class TestSMWPart(TestCase):
             self.assertTrue(page_name in all_page_names)
             all_page_names.remove(page_name)
 
+    def test_getAllAsPageLink(self):
+        expected_str = """*[[:List of Tests]]
+*[[:Help:Test]]
+*[[:Category:Test]]
+*[[:Concept:Test]]
+*[[:Form:Test]]
+*[[:Template:Test]]
+"""
+        self.assertEqual(expected_str, SMWPart.getAllAsPageLink(Topic({"name": "Test", "pluralName": "Tests"})))
+
+
 class TestForm(TestCase):
     def test_get_page_name(self):
         self.assertEqual("Form:Task", Form.get_page_name(Topic(properties={"name": "Task", "pluralName": "Tasks"})))
@@ -52,6 +61,9 @@ class TestForm(TestCase):
                          Form.standard_input_tag("save", label="Save Page", class_="test", style="width:100%"))
         # test invalid input tag
         self.assertRaises(AttributeError, Form.standard_input_tag, "invalid tag that should raise an error")
+        # test rendering of multiple tags
+        exp_multi_tag = "{{{standard input|save}}}{{{standard input|preview}}}{{{standard input|cancel}}}"
+        self.assertEqual(exp_multi_tag, Form.standard_input_tag(["save", "preview", "cancel"]))
 
     def test_forminput(self):
         expected_forminput = "{{#forminput:form=Event|size=25|placeholder=Enter Event|popup}}"
@@ -81,11 +93,11 @@ class TestForm(TestCase):
             "type": "Special:Types/Page",
             "index": None,
             "sortPos": None,
-            "primaryKey": False,
+            "primaryKey": True,
             "mandatory": False,
             "namespace": None,
             "size": None,
-            "uploadable": False,
+            "uploadable": True,
             "defaultValue": None,
             "inputType": "combobox",
             "allowedValues": None,
@@ -101,6 +113,68 @@ class TestForm(TestCase):
         }
         property = Property(data)
         self.assertEqual(test_field, Form.field(property))
+
+    def test_form_table(self):
+        exp_form_table ="""{| class="formtable InfoBox mw-collapsible" style="width:100%" 
+|-
+|colspan="2"  |Basic Information
+|-
+!style="text-align: left"  |[[Task goals::@@@]]:
+|{{{field|goals|input type=tokens|values from concept=Goal}}}
+|-
+!style="text-align: left"  |[[Project description::@@@]]<span style="color:#f00">*</span>:
+|{{{field|description|input type=text}}}
+|}"""
+        data = [{
+            "Property": "Property:Task goals",
+            "name": "Task goals",
+            "label": "goals",
+            "type": "Special:Types/Page",
+            "index": None,
+            "sortPos": None,
+            "primaryKey": False,
+            "mandatory": False,
+            "namespace": None,
+            "size": None,
+            "uploadable": False,
+            "defaultValue": None,
+            "inputType": "tokens",
+            "allowedValues": None,
+            "documentation": "Goals that must be achieved to complete the task",
+            "values_from": "concept=Goal",
+            "showInGrid": False,
+            "isLink": False,
+            "nullable": False,
+            "topic": "Concept:Task",
+            "regexp": None
+        },
+            {
+                "Property": "Property:Task description",
+                "name": "Project description",
+                "label": "description",
+                "type": "Special:Types/Test",
+                "index": None,
+                "sortPos": None,
+                "primaryKey": False,
+                "mandatory": True,
+                "namespace": None,
+                "size": None,
+                "uploadable": False,
+                "defaultValue": None,
+                "inputType": "text",
+                "allowedValues": None,
+                "documentation": "Goals that must be achieved to complete the task",
+                "values_from": None,
+                "showInGrid": False,
+                "isLink": False,
+                "nullable": False,
+                "topic": "Concept:Task",
+                "regexp": None
+            }
+        ]
+        properties = [Property(p) for p in data]
+        actual_form_table = Form.form_table("Basic Information", properties)
+        self.assertEqual(exp_form_table, actual_form_table)
 
 
 class TestQuery(TestCase):
@@ -147,3 +221,88 @@ class TestQuery(TestCase):
         self.assertEqual("Property name", query.sort)
 
 
+class TestSMW(TestCase):
+
+    def test_parser_function(self):
+        expected_parser_function = "{{#switch:test|foo=Foo|baz=Baz|Bar}}"
+        actual_parser_function = SMW.parser_function("switch", presence_is_true=True, test=True, foo="Foo", baz="Baz",
+                                                     Bar=True)
+        self.assertEqual(expected_parser_function, actual_parser_function)
+        self.assertEqual("{{#test:test=Test|bool=true}}", SMW.parser_function("test", test="Test", bool=True))
+
+    def test_render_entity(self):
+        exp_oneliner = "{{Event|Title=SMWCon|Year=2020}}"
+        exp_pretty = "{{Event\n|Title=SMWCon\n|Year=2020\n}}"
+        self.assertEqual(exp_oneliner, SMW.render_entity("Event", **{"Title": "SMWCon", "Year": 2020}))
+        self.assertEqual(exp_pretty, SMW.render_entity("Event", oneliner=False, **{"Title": "SMWCon", "Year": 2020}))
+
+    def test_render_sample_entity_with_properties(self):
+        exp_oneliner = "{{Event|Title=Some Title|Year=Some Year}}"
+        exp_pretty = "{{Event\n|Title=Some Title\n|Year=Some Year\n}}"
+        event = Topic({"name": "Event", "pluralName": "Events"})
+        properties = [Property({"name": "EventTitle", "label": "Title"}),
+                      Property({"name": "EventYear", "label": "Year"})]
+        self.assertEqual(exp_oneliner, SMW.render_sample_entity_with_properties(event, properties))
+        self.assertEqual(exp_pretty, SMW.render_sample_entity_with_properties(event, properties, oneliner=False))
+
+    def test_render_parameters(self):
+        exp_oneliner = "|Title=Some Title|Year=2020|Foo=bar|isTrue=true"
+        exp_pretty = "|Title=Some Title\n|Year=2020\n|Foo=bar\n|isTrue=true\n"
+        parameters = {
+            "Title": "Some Title",
+            "Year": 2020,
+            "Foo": "bar",
+            "isTrue": True
+        }
+        self.assertEqual(exp_oneliner, SMW.render_parameters(oneliner=True, **parameters))
+        self.assertEqual(exp_pretty, SMW.render_parameters(oneliner=False, **parameters))
+        self.assertEqual(exp_oneliner.replace("=true", ""),
+                         SMW.render_parameters(oneliner=True, presence_is_true=True, **parameters))
+        self.assertEqual(exp_pretty.replace("=true", ""),
+                         SMW.render_parameters(oneliner=False, presence_is_true=True, **parameters))
+
+    def test_set_entity_parameter(self):
+        exp_oneliner = "{{#set:isA=Event|EventTitle={{{Title|}}}|EventYear={{{Year|}}}}}"
+        exp_pretty = "{{#set:isA=Event\n|EventTitle={{{Title|}}}\n|EventYear={{{Year|}}}\n}}"
+        event = Topic({"name": "Event", "pluralName": "Events"})
+        properties = [Property({"name": "EventTitle", "label": "Title"}),
+                      Property({"name": "EventYear", "label": "Year"})]
+        self.assertEqual(exp_oneliner, SMW.set_entity_parameter(event, properties, oneliner=True))
+        self.assertEqual(exp_pretty, SMW.set_entity_parameter(event, properties, oneliner=False))
+
+    def test_render_as_list(self):
+        exp_simple = "*item1\n*item2\n*item3\n"
+        exp_advanced = "*item1\n**item11\n**item12\n**item13\n*item2\n**item21\n***item211\n*item3\n"
+        data_simple = ["item1", "item2", "item3"]
+        data_advanced = ["item1", ["item11", "item12", "item13"], "item2", ["item21", ["item211"]], "item3"]
+        self.assertEqual(exp_simple, SMW.render_as_list(data_simple))
+        self.assertEqual(exp_advanced, SMW.render_as_list(data_advanced))
+        self.assertEqual(exp_simple.replace("*", "#"), SMW.render_as_list(data_simple, is_ordered=True))
+        self.assertEqual(exp_advanced.replace("*", "#"), SMW.render_as_list(data_advanced, is_ordered=True))
+
+
+class TestTable(TestCase):
+    def test_render(self):
+        table_style = {"css_class": "wikitable", "style": "width:100%"}
+        row_style = {"style": "color:red"}
+        cell_style = {"style": "color:blue"}
+        table = Table(**table_style)
+        first = table.add_row(**row_style)
+        first.add_cell("col 1; row 1", is_header=True)
+        first.add_cell("col 2; row 1", is_header=True)
+        second = table.add_row()
+        second.add_cell("col 1; row 2", is_header=True)
+        second.add_cell("col 2; row 2", **cell_style)
+        third = table.add_row()
+        third.add_cell("Test Table", colspan=2)
+        exp_table="""{| class="wikitable" style="width:100%" 
+|-style="color:red" 
+!col 1; row 1
+!col 2; row 1
+|-
+!col 1; row 2
+|style="color:blue"  |col 2; row 2
+|-
+|colspan="2"  |Test Table
+|}"""
+        self.assertEqual(exp_table, table.render())

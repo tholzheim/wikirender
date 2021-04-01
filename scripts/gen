@@ -79,8 +79,8 @@ showCount() {
   fi
 }
 
-topicAsk="[[Topic name::+]]|mainlabel=Topic|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
-propAsk="[[Property name::+]]| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
+topicAsk="[[Topic name::+]]|mainlabel=pageName|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
+propAsk="[[Property name::+]]|mainlabel=pageName| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp|?Used_for=used_for"
 
 wiki=""
 # commandline option
@@ -111,7 +111,7 @@ then
 fi
 
 cd /tmp
-query $wiki "$topicAsk" topic.json
-showCount topic.json Topics
+query $wiki "$topicAsk" topics.json
+showCount topics.json Topics
 query $wiki "$propAsk" properties.json
 showCount properties.json Properties
