@@ -237,11 +237,11 @@ class TestSMW(TestCase):
         self.assertEqual(exp_pretty, SMW.render_entity("Event", oneliner=False, **{"Title": "SMWCon", "Year": 2020}))
 
     def test_render_sample_entity_with_properties(self):
-        exp_oneliner = "{{Event|Title=Some Title|Year=Some Year}}"
-        exp_pretty = "{{Event\n|Title=Some Title\n|Year=Some Year\n}}"
-        event = Topic({"name": "Event", "pluralName": "Events"})
-        properties = [Property({"name": "EventTitle", "label": "Title"}),
-                      Property({"name": "EventYear", "label": "Year"})]
+        exp_oneliner = "{{Event|EventTitle=Some Title|EventYear=Some Year}}"
+        exp_pretty = "{{Event\n|EventTitle=Some Title\n|EventYear=Some Year\n}}"
+        event = Topic({"pageName": "Concept:Event", "name": "Event", "pluralName": "Events"})
+        properties = [Property({"pageName": "Property:Event title","name": "EventTitle", "label": "Title"}),
+                      Property({"pageName": "Property:Event year","name": "EventYear", "label": "Year"})]
         self.assertEqual(exp_oneliner, SMW.render_sample_entity_with_properties(event, properties))
         self.assertEqual(exp_pretty, SMW.render_sample_entity_with_properties(event, properties, oneliner=False))
 
@@ -262,11 +262,12 @@ class TestSMW(TestCase):
                          SMW.render_parameters(oneliner=False, presence_is_true=True, **parameters))
 
     def test_set_entity_parameter(self):
-        exp_oneliner = "{{#set:isA=Event|EventTitle={{{Title|}}}|EventYear={{{Year|}}}}}"
-        exp_pretty = "{{#set:isA=Event\n|EventTitle={{{Title|}}}\n|EventYear={{{Year|}}}\n}}"
+        exp_oneliner = "{{#set:isA=Event|Event title={{{EventTitle|}}}|Event year={{{EventYear|}}}}}"
+        exp_pretty = "{{#set:isA=Event\n|Event title={{{EventTitle|}}}\n|Event year={{{EventYear|}}}\n}}"
         event = Topic({"name": "Event", "pluralName": "Events"})
-        properties = [Property({"name": "EventTitle", "label": "Title"}),
-                      Property({"name": "EventYear", "label": "Year"})]
+        event = Topic({"pageName": "Concept:Event", "name": "Event", "pluralName": "Events"})
+        properties = [Property({"pageName": "Property:Event title", "name": "EventTitle", "label": "Title"}),
+                      Property({"pageName": "Property:Event year", "name": "EventYear", "label": "Year"})]
         self.assertEqual(exp_oneliner, SMW.set_entity_parameter(event, properties, oneliner=True))
         self.assertEqual(exp_pretty, SMW.set_entity_parameter(event, properties, oneliner=False))
 
