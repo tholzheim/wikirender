@@ -127,3 +127,6 @@ query $wiki "$topicAsk" topics.json $cache
 showCount topics.json Topics
 query $wiki "$propAsk" properties.json $cache
 showCount properties.json Properties
+#python -m wikifile.toolbox
+#wikirender -m "generate_entity_pages" --BackupPath . --topics /tmp/topics.json --properties /tmp/properties.json -f
+
