@@ -1,13 +1,57 @@
+
+from wikifile.wikiFile import WikiFile
 import json
 import logging
 import os
-from wikifile.wikiFile import WikiFile
+import sys
+
+from wikifile.toolbox import Toolbox
 
 
-class WikiExtract:
+class WikiExtract(Toolbox):
     """
     Provides methods to extract data from wiki files.
     """
+    def __init__(self, argv=None, debug=False):
+        if argv is None:
+            argv = sys.argv
+        super(WikiExtract, self).__init__(argv)
+        # Add parser arguments
+        self.parser.add_argument("-t", "--template", dest="template",
+                            help="Select a template in which the data is being rendered", required=True)
+        self.parser.add_argument("-id", "--file_name_id", dest="file_name_id",
+                            help="Name of the key in which the file name is stored.")
+        self.parser.add_argument("--listFile", dest="file_list",
+                            help="List of pages form which the data should be extracted", required=False)
+
+        try:
+            # Process arguments
+            args = self.parser.parse_args(argv)
+            if args.debug:
+                logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+            else:
+                logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+            file_parameters = [args.stdin, args.pages, args.file_list]
+            if len(file_parameters) - (file_parameters.count(None) + file_parameters.count(False)) > 1:
+                logging.error(
+                    "Multiple file selection options were used. Please use only one or none to select all files in the backup folder.")
+                raise Exception("Invalid parameters")
+
+            res_templates = WikiExtract.extract_templates(args.template,
+                                                          stdIn=args.stdin,
+                                                          file_list=args.file_list,
+                                                          page_titles=args.pages,
+                                                          backup_path=args.backupPath,
+                                                          add_file_name=args.file_name_id)
+            print(res_templates)
+
+
+        except KeyboardInterrupt:
+            ### handle keyboard interrupt ###
+            return 1
+        except Exception as e:
+            print(e)
 
     @staticmethod
     def extract_templates(template_name: str, stdIn, page_titles, file_list, backup_path, add_file_name):
@@ -60,3 +104,6 @@ class WikiExtract:
                 res.append(template)
         return json.dumps({"data": res}, default=str, indent=3)
 
+
+if __name__ == '__main__':
+    sys.exit(WikiExtract(debug=True))

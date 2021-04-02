@@ -1,3 +1,6 @@
+from wikifile.wikiFile import WikiFile
+from wikifile.smw import SMWPart
+from wikifile.metamodel import Property
 import json
 import logging
 import sys
@@ -5,16 +8,25 @@ import jinja2
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 
-from wikifile.metamodel import Property
-from wikifile.wikiExtract import WikiExtract
-from wikifile.wikiFile import WikiFile
-from wikifile.wikiRender import WikiRender, Topic
-from wikifile.smw import SMWPart
+
 from lodstorage.jsonable import JSONAble, Types
 
 
-class Toolbox:
+class Toolbox(object):
     """Bundles methods that are required by the commandline tools that this file provides"""
+
+    def __init__(self, argv=None):
+        # Setup argument parser
+        self.parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
+        self.parser.add_argument('-p', '--pages', dest="pages",
+                            help="Names of the pages the action should be applied to")
+        self.parser.add_argument('--BackupPath', dest="backupPath", help="Path to store/update the wiki entries",
+                            required=True)
+        self.parser.add_argument('-stdin', dest="stdin", action='store_true',
+                            help='Use the input from STD IN using pipes')
+        self.parser.add_argument('-ex', '--exclude', dest="exclude_keys",
+                            help="List of keys that should be excluded")
+        self.parser.add_argument('--debug', dest="debug", action='store_true', default=False, help="Enable debug mode")
 
     def fromJson(self, listname: str, jsonStr: str, sample: list = None):
         """
@@ -71,116 +83,3 @@ class Toolbox:
                 wiki_file.add_template(template_name, page, exclude_keys)
                 wiki_file.save_to_file(overwrite=overwrite)
 
-
-def main_render(argv=None):
-    # Modes of operation
-    UPDATE_TEMPLATES_MODE = "update_templates"
-    CREATE_FILE_MODE = "create"
-    GENERATE_ENTITY_PAGES = "generate_entity_pages"
-    modes = [UPDATE_TEMPLATES_MODE, CREATE_FILE_MODE, GENERATE_ENTITY_PAGES]
-    templateEnv = WikiRender.getTemplateEnv()
-    wiki_render = WikiRender(templateEnv)
-    try:
-        # Setup argument parser
-        parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-m", "--mode", dest="mode",
-                            help="Select a mode.\n\tupdate_templates: updates the wikifiles at the provided location with the provided data\n\tcreate: creates a wikifile with the given data.",
-                            required=True)
-        parser.add_argument("-t", "--template", dest="template",
-                            help="Select a template in which the data is being rendered")
-        parser.add_argument("-id", "--page_name_id", dest="page_name_id",
-                            help="Select a template in which the data is being rendered")
-        parser.add_argument('-d', '--data', dest="data_input", help="Input data which should be rendered")
-        parser.add_argument('--properties', dest="properties_file", help="Json file containing properties")
-        parser.add_argument('--topics', dest="topics_file", help="Json file containing topics")
-        parser.add_argument('--BackupPath', dest="backupPath", help="Path to store/update the wiki entries",
-                            required=True)
-        parser.add_argument('-stdin', dest="stdin", action='store_true', help='Use the input from STD IN using pipes')
-        parser.add_argument('-ex', '--exclude', dest="exclude_keys",
-                            help="List of keys that should be excluded")
-        parser.add_argument('-f', dest="overwrite", action='store_true', default=False,
-                            help='If true template arguments will be overwritten with the given data if present')
-        # ToDo: Add parameter to allow custom templates that can load the macros from here
-
-        # Process arguments
-        args = parser.parse_args(argv)
-        if args.mode not in modes:
-            raise Exception(f"Please select of of the operation modes: {modes}")
-        data = {}
-        if args.data_input:
-            data = json.loads(args.data_input)
-        elif args.stdin:
-            data = json.load(sys.stdin)
-        else:
-            pass
-        if args.mode == GENERATE_ENTITY_PAGES:
-            # Check if necessary parameters are set
-            if not args.properties_file or not args.topics_file:
-                raise Exception("The parameters --properties and --topics must be defined for this mode")
-            # TODO:
-            # use fromJson
-            properties = []
-            with open(args.properties_file) as json_file:
-                properties = [Property(x) for x in Toolbox().fromJson("data", json_file.read(), Property.get_samples())]
-            topics = []
-            with open(args.topics_file) as json_file:
-                topics = [Topic(x) for x in Toolbox().fromJson("data", json_file.read(), Topic.get_samples())]
-            for topic in topics:
-                # Generate and save the entity pages
-                # Template
-                # TODO:
-                for part, smwPart in SMWPart.getAll(wiki_render).items():
-                    page = smwPart.render_page(topic, properties)
-                    WikiFile(smwPart.get_page_name(topic), args.backupPath, wiki_render=wiki_render,
-                             wikiText=page).save_to_file(args.overwrite)
-
-    except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
-        return 1
-    except Exception as e:
-        print(e)
-
-
-def main_extract(argv=None):
-    try:
-        # Setup argument parser
-        parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
-        parser.add_argument("-t", "--template", dest="template",
-                            help="Select a template in which the data is being rendered", required=True)
-        parser.add_argument("-id", "--file_name_id", dest="file_name_id",
-                            help="Name of the key in which the file name is stored.")
-        parser.add_argument('-p', '--pages', dest="pages",
-                            help="Input data which should be rendered. If none given whole folder will be used.")
-        parser.add_argument('--BackupPath', dest="backupPath", help="Path to the wikifiles", required=True)
-        parser.add_argument('-stdin', dest="stdin", action='store_true', help='Use the input from STD IN using pipes')
-        parser.add_argument('--debug', dest="debug", action='store_true', default=False, help="Path to the wikifiles")
-        parser.add_argument("--listFile", dest="file_list",
-                            help="List of pages form which the data should be extracted", required=False)
-
-        # Process arguments
-        args = parser.parse_args(argv)
-        if args.debug:
-            logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
-        else:
-            logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-        file_parameters = [args.stdin, args.pages, args.file_list]
-        if len(file_parameters) - (file_parameters.count(None) + file_parameters.count(False)) > 1:
-            logging.error(
-                "Multiple file selection options were used. Please use only one or none to select all files in the backup folder.")
-            raise Exception("Invalid parameters")
-
-        res_templates = WikiExtract.extract_templates(args.template,
-                                                     stdIn=args.stdin,
-                                                     file_list=args.file_list,
-                                                     page_titles=args.pages,
-                                                     backup_path=args.backupPath,
-                                                     add_file_name=args.file_name_id)
-        print(res_templates)
-
-
-    except KeyboardInterrupt:
-        ### handle keyboard interrupt ###
-        return 1
-    except Exception as e:
-        print(e)

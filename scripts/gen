@@ -81,8 +81,8 @@ showCount() {
   fi
 }
 
-topicAsk="[[Topic name::+]]|mainlabel=Topic|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
-propAsk="[[Property name::+]]| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
+topicAsk="[[Topic name::+]]|mainlabel=pageName|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
+propAsk="[[Property name::+]]|mainlabel=pageName| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
 
 wiki=""
 cache=true
@@ -114,7 +114,7 @@ then
   usage
   exit
 fi
-
+pwd
 scriptbase=$(pwd)
 base=/tmp/wikirender/$wiki
 if [ ! -d $base ]
@@ -123,10 +123,10 @@ then
 fi
 
 cd $base
-query $wiki "$topicAsk" topics.json $cache
+query $wiki "$topicAsk" topics.json $cache $base
 showCount topics.json Topics
-query $wiki "$propAsk" properties.json $cache
+query $wiki "$propAsk" properties.json $cache $base
 showCount properties.json Properties
-#python -m wikifile.toolbox
-#wikirender -m "generate_entity_pages" --BackupPath . --topics /tmp/topics.json --properties /tmp/properties.json -f
+cd $scriptbase
+python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topics /tmp/topics.json --properties /tmp/properties.json -f
 

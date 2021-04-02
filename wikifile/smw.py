@@ -3,8 +3,11 @@ Created on 2021-03-07
 
 @author: wf
 '''
-from wikifile.metamodel import Topic, Property
-from wikifile.wikiRender import WikiRender
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from wikifile.wikiRender import WikiRender
+from wikifile.metamodel import Topic, Property, UML, Context
 
 
 class SMWPart(object):
@@ -42,6 +45,10 @@ class SMWPart(object):
             wikiRender.template_env.globals['ListOf'] = ListOf
             wikiRender.template_env.globals['Query'] = Query
             wikiRender.template_env.globals['map'] = map
+            wikiRender.template_env.globals['UML'] = UML
+            wikiRender.template_env.globals['Property'] = Property
+            wikiRender.template_env.globals['Topic'] = Topic
+            wikiRender.template_env.globals['Context'] = Context
         smwPartList = [
             ListOf(wikiRender),
             SMWPart("Help"),

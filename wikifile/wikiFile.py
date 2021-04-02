@@ -1,7 +1,6 @@
 import os
 import wikitextparser as wtp
 from wikitextparser import Template
-from wikifile.wikiRender import WikiRender
 
 
 class WikiFile:
@@ -9,7 +8,7 @@ class WikiFile:
     Provides methods to modify, query, update and save wiki files.
     '''
 
-    def __init__(self, name, path, wiki_render: WikiRender, wikiText: str = None):
+    def __init__(self, name, path, wiki_render, wikiText: str = None):
         """
 
         Args:

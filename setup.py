@@ -27,8 +27,8 @@ setup(
     ],
     entry_points={
       'console_scripts': [
-        'wikirender = wikifile.toolbox:main_render',
-        'wikiextract = wikifile.toolbox:main_extract',
+        'wikirender = wikifile.wikiRender:WikiRender',
+        'wikiextract = wikifile.wikiExtract:WikiExtract',
       ],
     },
     package_data={'templates': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'],'templates/macros': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja']},

@@ -119,14 +119,14 @@ class TestForm(TestCase):
 |-
 |colspan="2"  |Basic Information
 |-
-!style="text-align: left"  |[[Task goals::@@@]]:
-|{{{field|goals|input type=tokens|values from concept=Goal}}}
+!style="text-align: left"  |[[Task goals::@@@|goals]]:
+|{{{field|Task goals|input type=tokens|values from concept=Goal}}}
 |-
-!style="text-align: left"  |[[Project description::@@@]]<span style="color:#f00">*</span>:
+!style="text-align: left"  |[[Task description::@@@|description]]<span style="color:#f00">*</span>:
 |{{{field|description|input type=text}}}
 |}"""
         data = [{
-            "Property": "Property:Task goals",
+            "pageName": "Property:Task goals",
             "name": "Task goals",
             "label": "goals",
             "type": "Special:Types/Page",
@@ -149,8 +149,8 @@ class TestForm(TestCase):
             "regexp": None
         },
             {
-                "Property": "Property:Task description",
-                "name": "Project description",
+                "pageName": "Property:Task description",
+                "name": "description",
                 "label": "description",
                 "type": "Special:Types/Test",
                 "index": None,
