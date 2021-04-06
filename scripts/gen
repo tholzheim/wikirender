@@ -45,7 +45,7 @@ usage() {
   echo "usage: $0 [-h|--help] -t|--target wiki"
   echo "  -h|--help: show this usage"
   echo "  -t|--target: target wiki"
-  echo "  -p|--pages: name of the topics that should be generated"
+  echo "  --topic: name of the topic that should be generated"
 }
 
 #
@@ -82,11 +82,10 @@ showCount() {
   fi
 }
 
-topicAsk="[[Topic name::+]]|mainlabel=pageName|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
-propAsk="[[Property name::+]]|mainlabel=pageName| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
 
 wiki=""
 cache=true
+topic=""
 # commandline option
 while [ "$1" != "" ]
 do
@@ -106,21 +105,19 @@ do
       wiki=$1
       shift
       ;;
-    -p|--pages)
+    --topic)
       if [ $# -lt 1 ]
       then
         usage
       fi
-      pages+=" $1"
-      next=2
-      while [ "$next" -le "$#" ] && [ "${!next:0:1}" != "-" ]; do
-        pages+=" ${!next}"
-        next="$(expr $next \+ 1)"
-      done
+      topic="$1"
       shift
       ;;
   esac
 done
+
+topicAsk="[[Topic name::$topic]]|mainlabel=pageName|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
+propAsk="[[Property name::+]][[Property topic::Concept:$topic]]|mainlabel=pageName| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
 
 # target wiki is mandatory
 if [ "$wiki" = "" ]
@@ -128,10 +125,13 @@ then
   usage
   exit
 fi
-if [ "$pages" != "" ]
+
+if [ "$topic" = "" ]
 then
- pages="-p$pages"
+  usage
+  exit
 fi
+
 scriptbase=$(pwd)
 base=/tmp/wikirender/$wiki
 if [ ! -d $base ]
@@ -145,5 +145,4 @@ showCount topics.json Topics
 query $wiki "$propAsk" properties.json $cache $base
 showCount properties.json Properties
 cd $scriptbase
-python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topics $base/topics.json --properties $base/properties.json -f $pages
-
+python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topics $base/topics.json --properties $base/properties.json -f -p $topic

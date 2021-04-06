@@ -15,7 +15,10 @@ from lodstorage.jsonable import JSONAble, Types
 class Toolbox(object):
     """Bundles methods that are required by the commandline tools that this file provides"""
 
-    def __init__(self, argv=None):
+    def __init__(self):
+        self.getParser()
+        
+    def getParser(self):
         # Setup argument parser
         self.parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
         self.parser.add_argument('-p', '--pages', dest="pages",  nargs='+',

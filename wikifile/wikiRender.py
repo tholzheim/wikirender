@@ -10,24 +10,31 @@ import jinja2
 from distutils.sysconfig import get_python_lib
 from wikifile.toolbox import Toolbox
 
-
-
 class WikiRender(Toolbox):
     """
     Provides functions to render json data to wiki files
     """
 
-    def __init__(self, argv=None, debug=False):
+    def __init__(self,template_env=None,debug=False):
+        ''' constructor
+        '''
+        self.debug=debug  # debug state before args.debug is available
+        super(WikiRender, self).__init__() # side effect: set self.parser
+        script_dir= os.path.dirname(wikifile.__file__) + "/.."
+        if template_env is None:
+            template_env=WikiRender.getTemplateEnv(script_dir=script_dir)
+        self.template_env = template_env
+            
+    def main(self, argv=None):
         if argv is None:
             argv = sys.argv
-        super(WikiRender, self).__init__()
+        
         # Modes of operation
         UPDATE_TEMPLATES_MODE = "update_templates"
         CREATE_FILE_MODE = "create"
         GENERATE_ENTITY_PAGES = "generate_entity_pages"
         modes = [UPDATE_TEMPLATES_MODE, CREATE_FILE_MODE, GENERATE_ENTITY_PAGES]
-        script_dir= os.path.dirname(wikifile.__file__) + "/.." if debug else None
-        self.template_env = WikiRender.getTemplateEnv(script_dir=script_dir)
+       
         # Setup argument parser
         self.parser.add_argument("-m", "--mode", dest="mode",
                                 help="Select a mode.\n\tupdate_templates: updates the wikifiles at the provided location with the provided data\n\tcreate: creates a wikifile with the given data.",
@@ -41,6 +48,7 @@ class WikiRender(Toolbox):
         try:
             # Process arguments
             args = self.parser.parse_args(argv)
+            self.debug=args.debug
             if args.mode not in modes:
                 raise Exception(f"Please select of of the operation modes: {modes}")
             data = {}
@@ -66,6 +74,8 @@ class WikiRender(Toolbox):
                 if args.pages is not None:
                     topics = [x for x in topics if x.name in args.pages]
                 for topic in topics:
+                    if self.debug:
+                        print("generating topic %s" % topic.name)
                     # Generate and save the entity pages
                     # Template
                     # TODO:
@@ -125,5 +135,6 @@ class WikiRender(Toolbox):
 
 
 if __name__ == '__main__':
-    WikiRender(sys.argv[1:], debug=True)
+    wikirender=WikiRender()
+    wikirender.main(sys.argv[1:])
     sys.exit()
