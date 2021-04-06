@@ -18,7 +18,7 @@ class Toolbox(object):
     def __init__(self, argv=None):
         # Setup argument parser
         self.parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
-        self.parser.add_argument('-p', '--pages', dest="pages",
+        self.parser.add_argument('-p', '--pages', dest="pages",  nargs='+',
                             help="Names of the pages the action should be applied to")
         self.parser.add_argument('--BackupPath', dest="backupPath", help="Path to store/update the wiki entries",
                             required=True)

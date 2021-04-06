@@ -45,6 +45,7 @@ usage() {
   echo "usage: $0 [-h|--help] -t|--target wiki"
   echo "  -h|--help: show this usage"
   echo "  -t|--target: target wiki"
+  echo "  -p|--pages: name of the topics that should be generated"
 }
 
 #
@@ -87,7 +88,7 @@ propAsk="[[Property name::+]]|mainlabel=pageName| ?Property name = name | ?Prope
 wiki=""
 cache=true
 # commandline option
-while [  "$1" != ""  ]
+while [ "$1" != "" ]
 do
   option=$1
   shift
@@ -105,6 +106,19 @@ do
       wiki=$1
       shift
       ;;
+    -p|--pages)
+      if [ $# -lt 1 ]
+      then
+        usage
+      fi
+      pages+=" $1"
+      next=2
+      while [ "$next" -le "$#" ] && [ "${!next:0:1}" != "-" ]; do
+        pages+=" ${!next}"
+        next="$(expr $next \+ 1)"
+      done
+      shift
+      ;;
   esac
 done
 
@@ -114,7 +128,10 @@ then
   usage
   exit
 fi
-pwd
+if [ "$pages" != "" ]
+then
+ pages="-p$pages"
+fi
 scriptbase=$(pwd)
 base=/tmp/wikirender/$wiki
 if [ ! -d $base ]
@@ -128,5 +145,5 @@ showCount topics.json Topics
 query $wiki "$propAsk" properties.json $cache $base
 showCount properties.json Properties
 cd $scriptbase
-python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topics /tmp/topics.json --properties /tmp/properties.json -f
+python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topics $base/topics.json --properties $base/properties.json -f $pages
 

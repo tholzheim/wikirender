@@ -63,6 +63,8 @@ class WikiRender(Toolbox):
                 topics = []
                 with open(args.topics_file) as json_file:
                     topics = [Topic(x) for x in self.fromJson("data", json_file.read(), Topic.get_samples())]
+                if args.pages is not None:
+                    topics = [x for x in topics if x.name in args.pages]
                 for topic in topics:
                     # Generate and save the entity pages
                     # Template
@@ -82,8 +84,6 @@ class WikiRender(Toolbox):
         except Exception as e:
             print(e)
 
-        
-    
     @staticmethod
     def getTemplateEnv(script_dir: str=None, template_dir: str='/templates'):
         if script_dir is None:
@@ -125,7 +125,5 @@ class WikiRender(Toolbox):
 
 
 if __name__ == '__main__':
-    sys.argv.extend(['--mode','generate_entity_pages', '--BackupPath','/tmp/wikirender/orth/', '--topics','/tmp/wikirender/orth/topics.json', '--properties','/tmp/wikirender/orth/properties.json'])
-    #sys.argv.append("-h")
     WikiRender(sys.argv[1:], debug=True)
     sys.exit()
