@@ -17,8 +17,7 @@ class TestUtilsTemplate(unittest.TestCase):
 
     def setUp(self):
         self.debug = False
-        is_public_ci = self.inPublicCI()
-        self.templateEnv = WikiRender.getTemplateEnv(is_public_ci)
+        self.templateEnv = WikiRender.getTemplateEnv()
 
     def tearDown(self):
         pass

@@ -16,15 +16,14 @@ class WikiRender(Toolbox):
     Provides functions to render json data to wiki files
     """
 
-    def __init__(self, template_env=None, debug=False, is_module_call=False):
+    def __init__(self, template_env=None, debug=False):
         ''' constructor
         '''
         self.debug=debug  # debug state before args.debug is available
         super(WikiRender, self).__init__()
         if template_env is None:
-            template_env = WikiRender.getTemplateEnv(is_module_call)
+            template_env = WikiRender.getTemplateEnv()
         self.template_env = template_env
-        self.extend_template_env()
 
     def main(self, argv=None):
         if argv is None:
@@ -55,6 +54,9 @@ class WikiRender(Toolbox):
                 # Check if necessary parameters are set
                 if not args.properties_file or not args.topic_file:
                     raise Exception("The parameters --properties and --topics must be defined for this mode")
+                if args.templates_folder:
+                    # update templateEnv
+                    self.template_env = self.getTemplateEnv(additional_loader=args.template_folder)
                 properties_json = ""
                 with open(args.properties_file) as json_file:
                     properties_json = json_file.read()
@@ -91,31 +93,36 @@ class WikiRender(Toolbox):
                                  help='If true template arguments will be overwritten with the given data if present')
         self.parser.add_argument("-t", "--template", dest="template",
                                  help="Select a template in which the data is being rendered")
+        self.parser.add_argument("--templates", dest="templates_folder",
+                                 help="Path to additional templates")
 
     @staticmethod
-    def getTemplateEnv(is_module_call=False, template_dir: str='/templates'):
-        if is_module_call:
-            script_dir = get_python_lib()
-        else:
-            script_dir = os.path.dirname(wikifile.__file__) + "/.."
-        template_folder = script_dir + template_dir
-        templateLoader = jinja2.FileSystemLoader(searchpath=template_folder)
+    def getTemplateEnv(template_dir: str='/templates', additional_loader=None):
+        loader = []
+        if additional_loader is not None:
+            loader.append(jinja2.FileSystemLoader(searchpath=additional_loader))
+        script_dir = os.path.dirname(wikifile.__file__) + "/.."
+        loader.append(jinja2.FileSystemLoader(script_dir + template_dir))
+        loader.append(jinja2.ModuleLoader(get_python_lib() + template_dir))
+        templateLoader = jinja2.ChoiceLoader(loader)
         templateEnv = jinja2.Environment(loader=templateLoader)
-        return templateEnv
+        return WikiRender.extend_template_env(templateEnv)
 
-    def extend_template_env(self):
+    @staticmethod
+    def extend_template_env(template_env):
         """Add SMW classes and MetaModel classse to the template environment along with other use full functions"""
-        self.template_env.globals['SMW'] = SMW
-        self.template_env.globals['SMWPart'] = SMWPart
-        self.template_env.globals['Form'] = Form
-        self.template_env.globals['ListOf'] = ListOf
-        self.template_env.globals['Query'] = Query
-        self.template_env.globals['UML'] = UML
-        self.template_env.globals['Property'] = Property
-        self.template_env.globals['Topic'] = Topic
-        self.template_env.globals['Context'] = Context
+        template_env.globals['SMW'] = SMW
+        template_env.globals['SMWPart'] = SMWPart
+        template_env.globals['Form'] = Form
+        template_env.globals['ListOf'] = ListOf
+        template_env.globals['Query'] = Query
+        template_env.globals['UML'] = UML
+        template_env.globals['Property'] = Property
+        template_env.globals['Topic'] = Topic
+        template_env.globals['Context'] = Context
         # Further functionc
-        self.template_env.globals['map'] = map
+        template_env.globals['map'] = map
+        return template_env
 
     def render_template(self, template_name: str, data: dict, exclude_keys: list = None):
         """
@@ -165,7 +172,7 @@ class WikiRender(Toolbox):
             wiki_file.save_to_file(overwrite)
 
 def main_module_call():
-    wikirender = WikiRender(is_module_call=True)
+    wikirender = WikiRender()
     wikirender.main(sys.argv[1:])
     sys.exit()
 
