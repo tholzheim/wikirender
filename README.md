@@ -111,7 +111,7 @@ wikirender -m "generate_entity_pages" --BackupPath . --topics topics.json --prop
 Example pipeline to generate enity pages for all topics in the wiki with the use of [py-3rdparty-mediawiki](https://github.com/WolfgangFahl/py-3rdparty-mediawiki)
 ```
 $ bash scripts/gen -t <wikiId> &&
-wikirender -m "generate_entity_pages" --BackupPath . --topics /tmp/topics.json --properties /tmp/properties.json &&
+wikirender -m "generate_entity_pages" --BackupPath . --topic /tmp/wikirender/<wikiId>/topics.json --properties /tmp/wikirender/<wikiId>/properties.json &&
 wikirestore -t <wikiId> --backupPath .
 ```
 

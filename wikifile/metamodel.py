@@ -7,6 +7,9 @@ import json
 import re
 import sys
 
+from lodstorage.jsonable import Types, JSONAble
+from wikifile.smw import SMW, Query
+import pkgutil
 
 class MetaModelElement(object):
     '''
@@ -15,7 +18,13 @@ class MetaModelElement(object):
     to handle the technicalities of being a MetaModelElement so that derive
     MetaModelElements can focus on the MetaModel domain specific aspects
     '''
-    def __init__(self, propList: list = None, properties: dict = None, template=None, sample=None):
+
+    @classmethod
+    def get_samples(cls):
+        samples = [{"name": "Element"}]
+        return samples
+
+    def __init__(self, propList: list = None, properties: dict = None, template=None):
         '''
         construct me from the given properties and the given propertyMap
         
@@ -27,24 +36,24 @@ class MetaModelElement(object):
         '''
         super().__init__()
         self.template=template
+        if propList is None:
+            propList = MetaModelElement.get_prop_list_from_samples(MetaModelElement.get_samples())
         self.propList=propList
         self.fromProperties(properties)
 
     def fromProperties(self, properties: dict):
         '''
         initialize me from the given properties
-        
         Args:
             properties(dict): a dictionary of properties
-            lenient(bool): if False throw an exception if invalid property names are in the properties dict
         '''
         if properties is None:
             properties = {}
         propMap={}
         for propName in self.propList:
             # https://stackoverflow.com/a/1176023/1497139
-            snakeName= MetaModelElement.get_snake_name(propName)
-            propMap[propName]=snakeName
+            # snakeName= MetaModelElement.get_snake_name(propName)
+            propMap[propName]=propName
         for key in properties.keys():
             if key in propMap:
                 name=propMap[key]
@@ -57,51 +66,31 @@ class MetaModelElement(object):
 
     @staticmethod
     def get_snake_name(name):
+        # ToDo: Check if this method is still needed after migrating to camelCase property names
         return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
-    @staticmethod
-    def render_parameters(oneliner=True, presence_is_true=False, **kwargs):
-        separator = "" if oneliner else "\n"
-        res = ""
-        for parameter, value in kwargs.items():
-            if isinstance(value, bool):
-                label = parameter.replace("_", " ")
-                if presence_is_true:
-                    if value:
-                        res += f"|{label}{separator}"
-                else:
-                    # ToDo: Update bool values if decided how to query wiki config
-                    bool_value = "true" if value else "false"
-                    res += f"|{label}={bool_value}{separator}"
-            elif value is not None:
-                label = parameter.replace("_", " ")
-                res += f"|{label}={value}{separator}"
-        return res
 
     @classmethod
-    def fromJson(cls, jsonStr):
-        '''
-        initialize my content from the given json string
-
+    def fromJson(self, listname: str, jsonStr: str, sample: list = None):
+        """
+        Convert the given string to JSON and convert the values to the corresponding datatype"
         Args:
-            jsonStr(str): the json string to load
-        '''
-        jsonl = json.loads(jsonStr)
-        if "data" in jsonl:
-            lod = jsonl["data"]
-        else:
-            lod = jsonl
-        metamodelElementList = []
-        for row in lod:
-            metamodelElement = cls(row)
-            metamodelElementList.append(metamodelElement)
-        return metamodelElementList
+            listname: name of the list the data is stored in
+            jsonStr: data as json string that should be converted
+            sample: sample data of the actual data. Used to convert the values to the correct type
+        Returns:
+
+        """""
+        types = Types(listname)
+        types.getTypes("data", sample, 1)
+        json_parsed = JSONAble()
+        json_parsed.fromJson(jsonStr, types)
+        return json_parsed.__dict__[listname]
 
     @staticmethod
     def get_parameters(attr: dict, prop_list: list):
         """
-        Converts given attr dict to the names given in prop_list.
-        Conversion is based on the name mapping applied in get_snake_name.
+        Removes all key value pairs for which the key is not in the given prop_list.
         Args:
             attr: Dict of attributes with values that should be used for the conversion
             prop_list: List of properties that should be converted
@@ -109,21 +98,30 @@ class MetaModelElement(object):
             Returns list of dict containing the property names from the given prop_list with the corresponding value from attr
         """
         para_map = {}
-        for para_item in [{prop: attr[MetaModelElement.get_snake_name(prop)]} for prop in prop_list]:
+        for para_item in [{prop: attr[prop]} for prop in prop_list]:
             para_map.update(para_item)
         return para_map
 
-    # def render() ... 
-    # use self.template
-    # which allows to use simplified templates like
-    # """ %s do something  %s """ % (value1,value2) ..
+    @staticmethod
+    def get_prop_list_from_samples(samples: list):
+        """Returns a list of used keys by the given list of dicts"""
+        prop_list = []
+        for sample in samples:
+            for key in sample.keys():
+                if key not in prop_list:
+                    prop_list.append(key)
+        return prop_list
 
 
 class Context(MetaModelElement):
     """
-    
+    A Context groups some topics like a Namespace/Package.
+    This class provides helper functions and constants to render a Context to corresponding wiki pages
     """
-    propList=["name"]
+    samples = [{
+        "name": "MetaModel"
+    }]
+    propList = MetaModelElement.get_prop_list_from_samples(samples)
     
     def __init__(self,properties: dict=None):
         super(Context,self).__init__(Context.propList,properties,)
@@ -133,23 +131,34 @@ class Topic(MetaModelElement):
     """
     Provides helper functions and constants for Topics
     """
-    propList=["name", "pluralName", "icon", "iconUrl", "documentation", "wikiDocumentation", "context" ]
+    samples = [{"pageTitle": "Concept:Topic",
+                "name": "Topic",
+                "pluralName": "Topics",
+                "icon": "File:Topic_icon.png",
+                "iconUrl": "/images/a/ae/Index.png",
+                "documentation": "A Topic is a Concept/Class/Thing/Entity",
+                "wikiDocumentation": "A Topic is a Concept/Class/Thing/Entity",
+                "context": "MetaModel",
+                "listLimit": 7,
+                "cargo": True
+                }]
+    # propList contains all attributes that belong to the Topic domain (needed to distinguish them from technical attributes)
+    propList = MetaModelElement.get_prop_list_from_samples(samples)
 
-    def __init__(self, properties: dict):
-        super(Topic, self).__init__(Topic.propList, properties=properties)
+    @classmethod
+    def get_samples(cls):
+        return Topic.samples
 
-    @staticmethod
-    def get_samples():
-        samples = [{"name": "Topic",
-                    "pluralName": "Topics",
-                    "icon": "File:Topic_icon.png",
-                    "iconUrl": "/images/a/ae/Index.png",
-                    "documentation": "A Topic is a Concept/Class/Thing/Entity",
-                    "wikiDocumentation": "A Topic is a Concept/Class/Thing/Entity",
-                    "context": "MetaModel",
-                    "cargo": True
-                    }]
-        return samples
+    def __init__(self, topic_properties: dict, properties: list=None):
+        """
+        Initialize topic with the given parameters
+        Args:
+            topic_properties: properties defining/describing the topic
+            properties: properties that the topic uses
+        """
+        super(Topic, self).__init__(Topic.propList, properties=topic_properties)
+        self.properties = properties
+
 
     def get_related_topics(self, properties):
         """
@@ -175,74 +184,121 @@ class Topic(MetaModelElement):
         """Render tis topic to its template representation"""
         separator = "" if oneliner else "\n"
         res = "{{Topic" + separator
-        res += MetaModelElement.render_parameters(oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
+        res += SMW.render_parameters(oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
 
-    @staticmethod
-    def get_page_link(value):
-        if isinstance(value, Topic):
-            return f"[[Concept:{value.name}]]"
+    def get_page_link(self):
+        """Returns a link to this page"""
+        if self.pageTitle:
+            return f"[[{self.pageTitle}]]"
         else:
-            return f"[[Concept:{value}]]"
+            return f"[[Concept:{self.name}]]"
+
+    @classmethod
+    def from_wiki_json(cls, topic_json, prop_json=None):
+        """
+        Parse given topic_json to attributes of this Topic and convert the values to proper python types.
+        If prop_json is also given it will be converted to a list of Properties of this topic
+        Args:
+            topic_json: json string containing all information about the topic that should be created
+            prop_json: json string containing all properties of this topic
+
+        Returns:
+            Topic object based on the given parameters
+        """
+        key = "data"
+        topic_props = MetaModelElement.fromJson(key, topic_json, Topic.get_samples())
+        properties = None
+        if prop_json:
+            properties = [Property(x) for x in MetaModelElement.fromJson("data", prop_json, Property.get_samples())]
+        return Topic(topic_props[0], properties)
+
+    def query_topic_overview(self, oneliner=False):
+        """Returns a SMW query querying a brief description over this topic"""
+        query = Query(mainlabel="-").select("Topic name::" + self.name)
+        query.printout("Topic icon", "icon")
+        query.printout("", "Topic")
+        query.printout("Topic pluralName", "pluralName")
+        query.printout("Topic documentation", "documentation")
+        return query.render(oneliner=oneliner)
+
+    def query_entities(self, limit=200, order="ascending", oneliner=False, withProperties=True, **kwargs):
+        """Returns a SMW query that queries entities of this topic"""
+        mainlabel = None
+        if withProperties:
+            mainlabel = self.name
+        query = Query(mainlabel=mainlabel, limit=limit, order=order, **kwargs)
+        query.select("Concept:" + self.name)
+        if withProperties:
+            query.printout_list_of_properties(Property.get_entity_properties(self.name, self.properties))
+        return query.render(oneliner=oneliner)
+
+    def query_examples(self, limit=10, oneliner=False, **kwargs):
+        """Returns a SMW query that queries some examples of this topic entity"""
+        return self.query_entities(limit=limit, order=None, searchlabel="...more examples", withProperties=False, oneliner=True, **kwargs)
+        #return Query(limit=limit, searchlabel="...more examples").select("Concept:" + self.name).render(oneliner)
+
+    def query_entity_properties(self, format="wikitable", oneliner=False):
+        """Returns a SMW query querying all properties of this entity"""
+        query = Query(format=format)
+        query.select("Concept:Property")
+        query.select("Used for::Concept:" + self.name)
+        query.printout_list_of_properties(Property.get_property_properties())
+        return query.render(oneliner=oneliner)
+
+    def query_number_entities(self, oneliner=True):
+        """Returns a SMW query querying the number of entities of this topic in the wiki"""
+        return Query(format="count").select("Concept:" + self.name).render(oneliner)
+
+    def query_documentation(self, **kwargs):
+        """Returns a SMW query querying the documentation of this topic"""
+        query = Query(mainlabel="-", **kwargs)
+        query.select("Topic name::" + self.name)
+        query.printout("Topic wikiDocumentation", " ")
+        return query.render()
 
 
 class Property(MetaModelElement):
     """
     Provides helper functions and constants for properties
     """
-    
-    propList=["name","label",
-            "type",
-            "index",
-            "sortPos",
-            "primaryKey",
-            "mandatory",
-            "namespace",
-            "size",
-            "uploadable",
-            "defaultValue",
-            "inputType",
-            "allowedValues",
-            "documentation",
-            "values_from",
-            "showInGrid",
-            "isLink",
-            "nullable",
-            "topic",
-            "regexp",
-            "used_for",
-            "placeholder",
-            "pageName"]
+    samples = [{"name": "Title",
+                "label": "Offical Name",
+                "type": "Special:Types/Test",
+                "index": 2,
+                "sortPos": 2,
+                "primaryKey": False,
+                "mandatory": True,
+                "namespace": "Test",
+                "size": 25,
+                "uploadable": False,
+                "defaultValue": "Some Title",
+                "inputType": "combobox",
+                "allowedVaues": "Tile A, Title B",
+                "documentation": " Documentation can contain\n line breaks",
+                "values_from": "property=Title",
+                "showInGrid": False,
+                "isLink": False,
+                "nullable": False,
+                "topic": "Concept:Event"
+                },
+               # Properties that are not included in the MetaModel
+               {"placeholder": "e.g. SMWCon",
+                "regexp": "NaturalNumber",
+                "usedFor": "Concept:Event, Concept:Event series",
+                "pageTitle": "Property:Title"
+                }]
+    @classmethod
+    def get_samples(cls):
+        """Returns a list of property samples as list of dicts."""
+        return Property.samples
+
+    # propList contains all attributes that belong to the Property domain / Needed to distinguish them from technical attributes
+    propList = MetaModelElement.get_prop_list_from_samples(samples)
 
     def __init__(self, properties: dict=None):
-        super(Property,self).__init__(Property.propList,properties)
-
-    @staticmethod
-    def get_samples():
-        samples = [{"name": "Title",
-                    "label": "Offical Name",
-                    "type": "Special:Types/Test",
-                    "index": 2,
-                    "sortPos":2,
-                    "primaryKey": False,
-                    "mandatory": True,
-                    "namespace": "Test",
-                    "size": 25,
-                    "uploadable": False,
-                    "defaultValue": "Some Title",
-                    "inputType": "combobox",
-                    "allowedVaues": "Tile A, Title B",
-                    "documentation": " Documentation can contain\n line breaks",
-                    "values_from": "property=Title",
-                    "showInGrid": False,
-                    "isLink": False,
-                    "nullable": False,
-                    "topic": "Concept:Event",
-                    "regexp": "NaturalNumber",
-                    "used_for": "Concept:Event, Concept:Event series",
-                    "pageName": "Propertry:Title"
-                    }]
-        return samples
+        """Initialize property with the given properties as attributes"""
+        super(Property, self).__init__(Property.propList, properties)
 
     def is_used_for(self):
         """Returns the topics this property is used for/by"""
@@ -252,23 +308,34 @@ class Property(MetaModelElement):
                 res.extend(self.topic)
             else:
                 res.append(self.topic)
-        if self.used_for:
-            if isinstance(self.used_for, list):
-                res.extend(self.used_for)
+        if self.usedFor:
+            if isinstance(self.usedFor, list):
+                res.extend(self.usedFor)
             else:
-                res.append(self.used_for)
+                res.append(self.usedFor)
         return res
 
     def get_pageName(self, withNamespace=True):
-        if self.page_name:
-            return self.page_name if withNamespace else self.page_name.replace("Property:", "")
+        """
+        Returns page name of this property. If pageTitle is not defined, it is assumed that name corresponds to the pageTitle.
+        Args:
+            withNamespace: If true also the namespace of this property is returned. Otherwise, without namespace.
+        Returns:
+            Returns page name of this property.
+        """
+        if self.pageTitle:
+            return self.pageTitle if withNamespace else self.pageTitle.replace("Property:", "")
+        elif self.name:
+            # ToDo if the properties from meta model are taken they do not have a page title name current assumption is that property.name is then the pageTitle (without namespace)
+            return f"Property:{self.name}" if withNamespace else self.name
         else:
             return None
 
     @staticmethod
-    def get_property_properties(properties: list):
+    def get_property_properties():
         """Returns the properties that describe properties"""
-        return Property.get_entity_properties(entity_name="Property", properties=properties)
+        properties_json = json.loads(pkgutil.get_data("wikifile", "/resources/metamodel/Property_properties.json"))
+        return [Property(x) for x in properties_json]
 
     @staticmethod
     def get_entity_properties(entity_name: str, properties: list):
@@ -322,33 +389,71 @@ class Property(MetaModelElement):
         """Render this property to its template representation"""
         separator = "" if oneliner else "\n"
         res = "{{Property" + separator
-        res += MetaModelElement.render_parameters(oneliner=oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
+        res += SMW.render_parameters(oneliner=oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
 
-    @staticmethod
-    def get_page_link(value):
-        if isinstance(value, Property):
-            return f"[[Property:{value.get_pageName(withNamespace=False)}|{value.label}]]"
+    def get_page_link(self, name=None):
+        """
+        Returns a page link to this property. If a name is provided this name will be used instead
+        Args:
+            name: Name of the property page. If not given pageTitle of this object will be used.
+        Returns:
+            SMW page link to this property
+        """
+        if name is None:
+            name = self.get_pageName(withNamespace=True)
+        if self.label:
+            return f"[[{name}|{self.label}]]"
         else:
-            return f"[[Property:{value}]]"
+            return f"[[{name}]]"
 
-    @staticmethod
-    def get_description_page_link(value):
-        if isinstance(value, Property):
-            return f"[[{value.get_pageName(withNamespace=False)}::@@@|{value.label}]]"
-        else:
-            return f"[[{value}::@@@]]"
+    def get_description_page_link(self):
+        """
+        Returns a page link to this property with the addition that a wiki language dependent description is shown if
+        defined.
+        For more details see https://www.semantic-mediawiki.org/wiki/Help:Special_property_Has_property_description
+        Returns:
+            SMW page link to this property
+        """
+        name = f"{self.get_pageName(withNamespace=False)}::@@@"
+        return self.get_page_link(name)
+
 
     @staticmethod
     def filterLoP(lop: list, key: str, match: list, invert=False):
+        """
+        Filter given list of dicts by key value match
+        Args:
+            lop: list of dicts that should be filtered
+            key: key to look for the match
+            match: list of allowed values for the given key
+            invert: If True all dicts that do NOT match are returned. Otherwise all dicts that match are returned
+        Returns:
+            List of dicts that have the given key with a matching value
+        """
         if invert:
             return [p for p in lop if p.__dict__[key] not in match]
         else:
             return [p for p in lop if p.__dict__[key] in match]
 
+    @classmethod
+    def from_wiki_json(cls, prop_json):
+        """
+        Parse given prop_json to attributes of this Property and convert the values to proper python types
+        Args:
+            prop_json: json containing the property properties
+        Returns:
+            Property object
+        """
+        key = "data"
+        prop_props = MetaModelElement.fromJson(key, prop_json, Property.get_samples())
+        return Property(prop_props[0])
+
+
 
 class UML:
     """
+    ToDo: Migrate the functionality of this class to Topic
     Provides helper functions for uml generation
     """
 
@@ -383,7 +488,7 @@ class UML:
                         uml_infos["target"] = values_from[1]
                     else:
                         continue
-                if property.input_type == "tokens":
+                if property.inputType == "tokens":
                     uml_infos["target_cardinality"] = "*"
                 else:
                     uml_infos["target_cardinality"] = "1"
@@ -417,7 +522,7 @@ class UML:
             if property.values_from == f"concept={entity_name}" and property.type == "Special:Types/Page" and property.values_from:
                 uml_infos = {}
                 uml_infos["target"] = entity_name
-                if property.input_type == "tokens":
+                if property.inputType == "tokens":
                     uml_infos["target_cardinality"] = "*"
                 else:
                     uml_infos["target_cardinality"] = "1"

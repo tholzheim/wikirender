@@ -27,7 +27,7 @@ class TestSMWPart(TestCase):
         self.assertEqual("list_of_page.jinja", smwParts["List of"].template)
 
     def test_get_page_name(self):
-        topic = Topic(properties={"name": "Task", "pluralName": "Tasks"})
+        topic = Topic(topic_properties={"name": "Task", "pluralName": "Tasks"})
         smwParts = SMWPart.getAll(None)
         all_page_names = ["Category:Task", "Concept:Task", "Help:Task", "Template:Task", "Form:Task", "List of Tasks"]
         for part, smwPart in smwParts.items():
@@ -48,7 +48,7 @@ class TestSMWPart(TestCase):
 
 class TestForm(TestCase):
     def test_get_page_name(self):
-        self.assertEqual("Form:Task", Form.get_page_name(Topic(properties={"name": "Task", "pluralName": "Tasks"})))
+        self.assertEqual("Form:Task", Form.get_page_name(Topic(topic_properties={"name": "Task", "pluralName": "Tasks"})))
 
     def test_page_form_function(self):
         exp_tag = "{{{form|label=Save Page|class =test|style=width:100%}}}"
@@ -115,7 +115,7 @@ class TestForm(TestCase):
         self.assertEqual(test_field, Form.field(property))
 
     def test_form_table(self):
-        exp_form_table ="""{| class="formtable InfoBox mw-collapsible" style="width:100%" 
+        exp_form_table = """{| class="formtable InfoBox mw-collapsible" style="width:100%" 
 |-
 |colspan="2"  |Basic Information
 |-
@@ -126,7 +126,7 @@ class TestForm(TestCase):
 |{{{field|description|input type=text}}}
 |}"""
         data = [{
-            "pageName": "Property:Task goals",
+            "pageTitle": "Property:Task goals",
             "name": "Task goals",
             "label": "goals",
             "type": "Special:Types/Page",
@@ -149,7 +149,7 @@ class TestForm(TestCase):
             "regexp": None
         },
             {
-                "pageName": "Property:Task description",
+                "pageTitle": "Property:Task description",
                 "name": "description",
                 "label": "description",
                 "type": "Special:Types/Test",
@@ -240,8 +240,8 @@ class TestSMW(TestCase):
         exp_oneliner = "{{Event|EventTitle=Some Title|EventYear=Some Year}}"
         exp_pretty = "{{Event\n|EventTitle=Some Title\n|EventYear=Some Year\n}}"
         event = Topic({"pageName": "Concept:Event", "name": "Event", "pluralName": "Events"})
-        properties = [Property({"pageName": "Property:Event title","name": "EventTitle", "label": "Title"}),
-                      Property({"pageName": "Property:Event year","name": "EventYear", "label": "Year"})]
+        properties = [Property({"pageName": "Property:Event title", "name": "EventTitle", "label": "Title"}),
+                      Property({"pageName": "Property:Event year", "name": "EventYear", "label": "Year"})]
         self.assertEqual(exp_oneliner, SMW.render_sample_entity_with_properties(event, properties))
         self.assertEqual(exp_pretty, SMW.render_sample_entity_with_properties(event, properties, oneliner=False))
 
@@ -265,9 +265,9 @@ class TestSMW(TestCase):
         exp_oneliner = "{{#set:isA=Event|Event title={{{EventTitle|}}}|Event year={{{EventYear|}}}}}"
         exp_pretty = "{{#set:isA=Event\n|Event title={{{EventTitle|}}}\n|Event year={{{EventYear|}}}\n}}"
         event = Topic({"name": "Event", "pluralName": "Events"})
-        event = Topic({"pageName": "Concept:Event", "name": "Event", "pluralName": "Events"})
-        properties = [Property({"pageName": "Property:Event title", "name": "EventTitle", "label": "Title"}),
-                      Property({"pageName": "Property:Event year", "name": "EventYear", "label": "Year"})]
+        event = Topic({"pageTitle": "Concept:Event", "name": "Event", "pluralName": "Events"})
+        properties = [Property({"pageTitle": "Property:Event title", "name": "EventTitle", "label": "Title"}),
+                      Property({"pageTitle": "Property:Event year", "name": "EventYear", "label": "Year"})]
         self.assertEqual(exp_oneliner, SMW.set_entity_parameter(event, properties, oneliner=True))
         self.assertEqual(exp_pretty, SMW.set_entity_parameter(event, properties, oneliner=False))
 
@@ -283,6 +283,17 @@ class TestSMW(TestCase):
 
 
 class TestTable(TestCase):
+
+    def test_add_row(self):
+        table_style = {"css_class": "wikitable", "style": "width:100%"}
+        table = Table(**table_style)
+        table.add_row(css_class="Row_1")
+        table.add_row(css_class="Row_2")
+        self.assertTrue(len(table.rows) == 2)
+        # check order of the rows
+        self.assertEqual("Row_1", table.rows[0].css_class)
+        self.assertEqual("Row_2", table.rows[1].css_class)
+
     def test_render(self):
         table_style = {"css_class": "wikitable", "style": "width:100%"}
         row_style = {"style": "color:red"}
@@ -296,7 +307,7 @@ class TestTable(TestCase):
         second.add_cell("col 2; row 2", **cell_style)
         third = table.add_row()
         third.add_cell("Test Table", colspan=2)
-        exp_table="""{| class="wikitable" style="width:100%" 
+        exp_table = """{| class="wikitable" style="width:100%" 
 |-style="color:red" 
 !col 1; row 1
 !col 2; row 1
@@ -307,3 +318,39 @@ class TestTable(TestCase):
 |colspan="2"  |Test Table
 |}"""
         self.assertEqual(exp_table, table.render())
+
+
+class TestRow(TestCase):
+    """Test behavior of the internal class of class Table"""
+
+    def test_add_cell(self):
+        row = Table.Row(css_class="RowStyle", style="color:red")
+        row.add_cell("Test value header", css_class="Test class", style="color:red", is_header=True, colspan=2)
+        row.add_cell("Test value", css_class="Test class", style="color:red")
+        self.assertTrue(len(row.cells) == 2)
+        # Check order of the cells
+        self.assertEqual("Test value header", row.cells[0].content)
+        self.assertEqual("Test value", row.cells[1].content)
+
+    def test_render(self):
+        row = Table.Row(css_class="RowStyle", style="color:red")
+        row.add_cell("Test value header", css_class="Test class", style="color:red", is_header=True, colspan=2)
+        row.add_cell("Test value", css_class="Test class", style="color:red")
+        exp_val = """|-class="RowStyle" style="color:red" 
+!class="Test class" style="color:red" colspan="2"  |Test value header
+|class="Test class" style="color:red"  |Test value
+"""
+        self.assertEqual(exp_val, row.render())
+
+
+class TestCell(TestCase):
+    """Test behavior of the internal class of class Table"""
+
+    def test_render(self):
+        cell = Table.Row.Cell("Test value", css_class="Test class", style="color:red")
+        exp_val = '|class="Test class" style="color:red"  |Test value'
+        self.assertEqual(exp_val, cell.render())
+        cell_header = Table.Row.Cell("Test value", css_class="Test class", style="color:red", is_header=True, colspan=2)
+        exp_val_2 = '!class="Test class" style="color:red" colspan="2"  |Test value'
+        self.assertEqual(exp_val_2, cell_header.render())
+

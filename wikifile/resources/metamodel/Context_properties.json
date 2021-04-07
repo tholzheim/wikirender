@@ -1,0 +1,17 @@
+[
+    {
+        "isA": "Property",
+        "name": "name",
+        "label": "name",
+        "type": "Text",
+        "index": 1,
+        "sortPos": 1,
+        "primaryKey": true,
+        "mandatory": true,
+        "size": 80,
+        "uploadable": false,
+        "documentation": "Name of the context",
+        "isLink": false,
+        "topic": "Context"
+    }
+]

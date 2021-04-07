@@ -1,0 +1,13 @@
+{
+    "isA": "Topic",
+    "name": "Topic",
+    "pluralName": "Topics",
+    "documentation": "A Topic is a Concept/Class/Thing/Entity",
+    "wikiDocumentation": "A Topic is a Concept/Class/Thing/Entity",
+    "icon": "File:Index.png",
+    "iconUrl": "/images/master/a/ae/Index.png",
+    "defaultstoremode": "property",
+    "cargo": false,
+    "context": "MetaModel",
+    "addsTo": "Topic_cargo"
+}

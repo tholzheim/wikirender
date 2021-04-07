@@ -3,25 +3,17 @@
 Generate a help page for a entity.
 Input:
     topic: properties defining the entity
-    properties: all properties of the wiki.
 Output: Generates the page Help:<topic.name>
 #}
-{#----------------------------Global Variables--------------------------------#}
-{% set property_properties = Property.get_property_properties(properties) %}
 {#-------------------------------Template-------------------------------------#}
 == Help for {{ topic.name }} ==
-{{ Query(mainlabel="-").select("Topic name::"+topic.name)
-                       .printout("Topic icon", "icon")
-                       .printout("","Topic")
-                       .printout("Topic pluralName", "pluralName")
-                       .printout("Topic documentation", "documentation")
-                       .render(oneliner=False) }}
+{{ topic.query_topic_overview() }}
 === Documentation ===
 {{ topic.wiki_documentation }}
 === Example {{ topic.plural_name }} ===
-{{ Query(limit=10, searchlabel="...more examples").select("Concept:" + topic.name).render() }}
+{{ topic.query_examples() }}
 === Properties ===
-{{ Query(format="table").select("Concept:Property").select("Used for::Concept:"+topic.name).printout_list_of_properties(property_properties).render(oneliner=False)}}
+{{ topic.query_entity_properties()}}
 === uml ===
 {% include "uml.jinja" %}
 

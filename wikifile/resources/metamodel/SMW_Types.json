@@ -1,0 +1,100 @@
+[
+    {
+        "isA": "SMW_Type",
+        "type": "Annotation URI",
+        "typepage": "Special:Types/Annotation_URI",
+        "documentation": "Holds URIs, but has some technical differences during export compared to the 'URL' type",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Annotation_URI"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Boolean",
+        "typepage": "Special:Types/Boolean",
+        "documentation": "Holds boolean (true/false) values",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Boolean"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Code",
+        "typepage": "Special:Types/Code",
+        "documentation": "Holds technical, pre-formatted texts (similar to type Text)",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Code"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Date",
+        "typepage": "Special:Types/Date",
+        "documentation": "Holds particular points in time",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Date"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Email",
+        "typepage": "Special:Types/Email",
+        "documentation": "Holds e-mail addresses",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Email"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Geographic coordinate",
+        "typepage": "Special:Types/Geographic_coordinate",
+        "documentation": "Holds coordinates describing geographic locations",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Geographic_coordinate"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Number",
+        "typepage": "Special:Types/Number",
+        "documentation": "Holds integer and decimal numbers, with an optional exponent",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Number"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Page",
+        "typepage": "Special:Types/Page",
+        "documentation": "Holds names of wiki pages, and displays them as a link",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Page"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Quantity",
+        "typepage": "Special:Types/Quantity",
+        "documentation": "Holds values that describe quantities, containing both a number and a unit",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Quantity"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Record",
+        "typepage": "Special:Types/Record",
+        "documentation": "Allows saving compound property values that consist of a short list of values with fixed type and order",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Record"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Telephone number",
+        "typepage": "Special:Types/Telephone_number",
+        "documentation": "Holds international telephone numbers based on the [https://tools.ietf.org/html/rfc3966 RFC 3966 standard]",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Telephone_number"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Temperature",
+        "typepage": "Special:Types/Temperature",
+        "documentation": "Holds temperature values (similar to type Quantity)",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Temperature"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "Text",
+        "typepage": "Special:Types/Text",
+        "documentation": "Holds text of arbitrary length",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_Text"
+    },
+    {
+        "isA": "SMW_Type",
+        "type": "URL",
+        "typepage": "Special:Types/URL",
+        "documentation": "Holds URIs, URNs and URLs",
+        "helppage": "https://semantic-mediawiki.org/wiki/Help:Type_URL"
+    }
+]

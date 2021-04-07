@@ -8,7 +8,7 @@ class WikiFile:
     Provides methods to modify, query, update and save wiki files.
     '''
 
-    def __init__(self, name, path, wiki_render, wikiText: str = None):
+    def __init__(self, name, path, wiki_render, wikiText: str = None, debug=False):
         """
 
         Args:
@@ -19,6 +19,7 @@ class WikiFile:
         """
         self.file_name = name
         self.file_path = path
+        self.debug = debug
         if wikiText is None:
             self.wikiText = self.get_wikiText(self.file_name, self.file_path)
         else:
@@ -26,12 +27,28 @@ class WikiFile:
         self.wiki_render = wiki_render
 
     def save_to_file(self, overwrite=False):
-        """Save the given data in a file"""
-        mode = 'a'
+        """
+        Save the given data in a file.
+        Args:
+            overwrite: If True existing files will be over written and if the path does not exist the missing folder will be created. Otherwise, only missing files will be saved.
+        Returns:
+
+        """
+        wiki_file_path = WikiFile.get_wiki_path(self.file_path, self.file_name)
+        mode = "a"
         if overwrite:
             mode = 'w'
-        with open(WikiFile.get_wiki_path(self.file_path, self.file_name), mode=mode) as f:
+            os.makedirs(os.path.dirname(wiki_file_path), exist_ok=True)
+        else:
+            if os.path.isfile(wiki_file_path):
+                # file already exists
+                if self.debug:
+                    print(f"File {wiki_file_path} exists \t-> Generated page not saved. To save also existing pages use -f to overwrite them.", )
+                return
+        with open(wiki_file_path, mode=mode) as f:
             f.write(str(self.wikiText))
+        if self.debug:
+            print(f"{self.file_name} saved to {wiki_file_path}")
 
     def get_wikiText(self, name, path):
         """

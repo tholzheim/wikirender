@@ -1,0 +1,12 @@
+{
+    "isA": "Topic",
+    "name": "TopicLink",
+    "pluralName": "TopicLinks",
+    "documentation": "A TopicLink links two Concepts",
+    "wikiDocumentation": "A TopicLink links two [[Concept:Topic]]s",
+    "icon": "File:Link.png",
+    "iconUrl": "/images/f/fd/Link.png",
+    "defaultstoremode": "subobject",
+    "context": "MetaModel",
+    "addsTo": "TopicLink_masterDetail"
+}

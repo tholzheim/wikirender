@@ -116,8 +116,8 @@ do
   esac
 done
 
-topicAsk="[[Topic name::$topic]]|mainlabel=pageName|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
-propAsk="[[Property name::+]][[Property topic::Concept:$topic]]|mainlabel=pageName| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
+topicAsk="[[Topic name::$topic]]|mainlabel=pageTitle|?topic name=name|?topic pluralName=pluralName|?topic documentation=documentation|?topic wikiDocumentation=wikiDocumentation"
+propAsk="[[Property name::+]][[Property topic::Concept:$topic]]|mainlabel=pageTitle| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
 
 # target wiki is mandatory
 if [ "$wiki" = "" ]
@@ -145,4 +145,4 @@ showCount topics.json Topics
 query $wiki "$propAsk" properties.json $cache $base
 showCount properties.json Properties
 cd $scriptbase
-python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topics $base/topics.json --properties $base/properties.json -f -p $topic
+python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topic $base/topics.json --properties $base/properties.json -f -p $topic --debug

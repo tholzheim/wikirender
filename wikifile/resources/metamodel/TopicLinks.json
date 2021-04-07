@@ -1,0 +1,35 @@
+[
+    {
+        "isA": "TopicLink",
+        "name": "containedProperties",
+        "sourceRole": "topic",
+        "sourceMultiple": false,
+        "source": "Topic",
+        "targetRole": "properties",
+        "targetMultiple": true,
+        "target": "Property"
+    },
+    {
+        "isA": "TopicLink",
+        "name": "containedTopics",
+        "sourceRole": "context",
+        "sourceMultiple": false,
+        "source": "Context",
+        "targetRole": "topics",
+        "targetMultiple": true,
+        "target": "Topic"
+    },
+    {
+        "isA": "TopicLink",
+        "name": "typeOfProperty",
+        "sourceRole": "usedByProperties",
+        "sourceMultiple": true,
+        "source": "Property",
+        "sourceDocumentation": "the properties having this type",
+        "targetRole": "smw_type",
+        "targetMultiple": false,
+        "target": "SMW_Type",
+        "masterDetail": false,
+        "targetDocumentation": "the smw_type being used by this property"
+    }
+]

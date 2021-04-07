@@ -1,0 +1,12 @@
+{
+    "isA": "Topic",
+    "name": "Property",
+    "pluralName": "Properties",
+    "documentation": "a Property is a Feature/Attribute of a Topic",
+    "wikiDocumentation": "see\n* https://semantic-mediawiki.org/wiki/Help:Properties_and_types\n* https://semantic-mediawiki.org/wiki/Help:Special_properties\n* https://semantic-mediawiki.org/wiki/Help:List_of_datatypes",
+    "icon": "File:Element_into_input.png",
+    "iconUrl": "/images/6/6a/Element_into_input.png",
+    "defaultstoremode": "property",
+    "context": "MetaModel",
+    "addsTo": "Property_nullable"
+}

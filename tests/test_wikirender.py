@@ -121,10 +121,10 @@ class TestWikiRender(unittest.TestCase):
     "regexp": null
   }]
 }"""
-        topic=Topic.fromWikiJson(topicJson,propJson)
-        self.assertEqual(4,len(topic.properties))
-        wikiRender=WikiRender()
-        wikiRender.generateTopic(topic)
+        topic=Topic.from_wiki_json(topicJson, propJson)
+        self.assertEqual(4, len(topic.properties))
+        wikiRender=WikiRender(debug=True)
+        wikiRender.generateTopic(topic, path="/tmp/wikirender/unittest", overwrite=True)
         
         pass
 

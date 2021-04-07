@@ -16,7 +16,7 @@ class Toolbox(object):
     """Bundles methods that are required by the commandline tools that this file provides"""
 
     def __init__(self):
-        self.getParser()
+        pass
         
     def getParser(self):
         # Setup argument parser

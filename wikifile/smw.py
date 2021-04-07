@@ -7,7 +7,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from wikifile.wikiRender import WikiRender
-from wikifile.metamodel import Topic, Property, UML, Context
+    from wikifile.metamodel import Topic, Property, UML, Context
 
 
 class SMWPart(object):
@@ -23,7 +23,7 @@ class SMWPart(object):
         self.wikiRender = wikiRender
         self.template = "%s_page.jinja" % part.lower().replace(" ", "_")
 
-    def render_page(self, topic: Topic, properties: list):
+    def render_page(self, topic: Topic):
         """
         Renders the help page for the given entity using the provided properties
         Args:
@@ -33,22 +33,11 @@ class SMWPart(object):
 
         """
         template_template = self.wikiRender.template_env.get_template(self.template)
-        page = template_template.render(topic=topic, properties=properties)
+        page = template_template.render(topic=topic)
         return page
 
     @staticmethod
     def getAll(wikiRender: WikiRender):
-        if wikiRender is not None:
-            wikiRender.template_env.globals['SMW'] = SMW
-            wikiRender.template_env.globals['SMWPart'] = SMWPart
-            wikiRender.template_env.globals['Form'] = Form
-            wikiRender.template_env.globals['ListOf'] = ListOf
-            wikiRender.template_env.globals['Query'] = Query
-            wikiRender.template_env.globals['map'] = map
-            wikiRender.template_env.globals['UML'] = UML
-            wikiRender.template_env.globals['Property'] = Property
-            wikiRender.template_env.globals['Topic'] = Topic
-            wikiRender.template_env.globals['Context'] = Context
         smwPartList = [
             ListOf(wikiRender),
             SMWPart("Help"),
@@ -230,7 +219,7 @@ class Template(SMWPart):
     @staticmethod
     def table_of_arguments(topic: Topic, properties: list, clickable_links=True):
         """
-
+        ToDo
         Args:
             topic:
             properties:
@@ -258,7 +247,7 @@ class ListOf(SMWPart):
 
     @staticmethod
     def get_page_name(topic: Topic):
-        return f"List of {topic.plural_name}"
+        return f"List of {topic.pluralName}"
 
 
 class Form(SMWPart):
@@ -288,7 +277,7 @@ class Form(SMWPart):
     @staticmethod
     def page_form_function(tag, **kwargs):
         """
-
+        ToDo
         Args:
             tag: Type of the form function. e.g.: field, form, info, ...
             **kwargs: parameters of the form function
@@ -345,17 +334,24 @@ class Form(SMWPart):
         return SMW.parser_function(function_name="formlink", presence_is_true=True, **kwargs)
 
     @staticmethod
-    def field(property: Property,regexps={}):
-        prop_map = {"input_type":"input_type",
-                    "placeholder":"placeholder",
-                    "default_value":"default",
-                    "values_from":"values_from",
-                    "uploadable":"uploadable",
-                    "primary_key":"unique",
-                    "allowed_values": "values"}
+    def field(property: Property):
+        """
+        Get the form field of the given property
+        Args:
+            property: property for which the field should be rendered
+        Returns:
+            Returns a form field of given property
+        """
+        prop_map = {"inputType": "input_type",
+                    "placeholder": "placeholder",
+                    "defaultValue": "default",
+                    "values_from": "values_from",
+                    "uploadable": "uploadable",
+                    "primaryKey": "unique",
+                    "allowedValues": "values"}
         parameters = {}
         for prop in prop_map.keys():
-            if prop == "input_type"and property.__dict__[prop] is None:
+            if prop == "inputType"and property.__dict__[prop] is None:
                     property.__dict__[prop] = "text"
             if prop in property.__dict__ and property.__dict__[prop] is not None:
 
@@ -370,11 +366,23 @@ class Form(SMWPart):
         return Form.page_form_function(tag="field", **{property.name: True, **parameters})
 
     @staticmethod
-    def form_table(label: str, properties, is_collapsible=True, ):
+    def form_table(label: str, properties: list, is_collapsible=True, ):
+        """
+        Generate a form table based on the given parameters.
+        Note: the result is not a complete form (start and end tags are missing)   # ToDo: Since the result is not complete form consider renaming this method to field_table
+        Args:
+            label: Headline of the table
+            properties: List of properties for which a field should be added to the form table
+            is_collapsible: If true the table is collapsible. Other wise the table will be static
+        Returns:
+            Returns a table containing form fields based on the given properties
+        """
+        # Define styling
         table_style = {"css_class": "formtable InfoBox", "style": "width:100%"}
         if is_collapsible:
             table_style["css_class"] += " mw-collapsible"
         field_label_style = {"style": "text-align: left"}
+        # Define the table
         table = Table(**table_style)
         # Add table headline
         if label:
@@ -383,7 +391,7 @@ class Form(SMWPart):
         for property in properties:
             property_row = table.add_row()
             # Add field label
-            field_label = Property.get_description_page_link(property)
+            field_label = property.get_description_page_link()
             if property.mandatory:
                 field_label += "<span style=\"color:#f00\">*</span>"
             field_label += ":"
@@ -446,17 +454,16 @@ class Query:
 
     def render(self, oneliner=True):
         """
-        Render this Query to the string format of an SMW query
+        Render this query to the string format of an SMW query
         Args:
             oneliner: If True the query is rendered into one line. Otherwise the query is rendered in a prettier format.
-
         Returns:
-
+            Returns SMW query of this query object
         """
         separator = ""
         if not oneliner:
             separator = "\n"
-        query = f"{{{{#{self.mode}:"
+        query = "{{#" + self.mode + ":"
         for selector in self.page_selections:
             query += f"[[{selector}]]"
         query += separator
@@ -479,10 +486,10 @@ class Query:
         Returns:
             Returns the query itself
         """
-        if isinstance(property, Property):
-            self.printout_statements.append(self.PrintoutStatement(property.get_pageName(withNamespace=False), label))
-        else:
+        if isinstance(property, str):
             self.printout_statements.append(self.PrintoutStatement(property, label))
+        else:
+            self.printout_statements.append(self.PrintoutStatement(property.get_pageName(withNamespace=False), label))
         return self
 
     def select(self, selector):
@@ -497,7 +504,7 @@ class Query:
         self.page_selections.append(selector)
         return self
 
-    def printout_list_of_properties(self, properties: list):
+    def printout_list_of_properties(self, properties: list, withNamespace=False):
         """
         Add a printout statement for each property of the given properties
         Args:
@@ -506,7 +513,7 @@ class Query:
             The query object itself
         """
         for property in properties:
-            self.printout(property.get_pageName(withNamespace=False), property.label)
+            self.printout(property.get_pageName(withNamespace), property.label)
         return self
 
     def sort_by(self, *properties):
@@ -552,23 +559,40 @@ class Table:
     """
 
     def __init__(self, css_class: str=None, style: str=None ):
+        """
+        Initialize the table with the given style/ style class
+        Args:
+            css_class: css class the table should have
+            style: individual css styles that should be applied to the class such as "width:100%"
+        """
         self.rows = []
         self.css_class = css_class
         self.style = style
 
     def render(self):
+        """Renders this table as wiki table"""
         res =  "{| " + Table.render_parameter(self.css_class, self.style) +"\n"
         for row in self.rows:
             res += row.render()
         return res + "|}"
 
     def add_row(self, css_class: str=None, style: str=None, **kwargs):
+        """
+        Add a row to this table with the given styling configs
+        Args:
+            css_class: css class that the row should have
+            style: individual css style that should be applied dto the row
+            **kwargs: Additional parameter that should be set
+        Returns:
+            Returns the row object that was added to the table.
+        """
         row = self.Row(css_class, style, **kwargs)
         self.rows.append(row)
         return row
 
     @staticmethod
     def render_parameter(css_class: str=None, style: str=None, **kwargs):
+        """Render given parameter to the syntax of wiki tables"""
         res = ""
         res += f"class=\"{css_class}\" " if css_class else ""
         res += f"style=\"{style}\" " if style else ""
@@ -578,25 +602,58 @@ class Table:
         return res
 
     class Row:
+        """
+        Representing a row of a wiki table
+        """
 
         def __init__(self, css_class: str=None, style: str=None):
+            """
+            Initialize table row with the given row style
+            Args:
+                css_class: css class of this row
+                style: individual css style that should be applied to the row
+            """
             self.cells = []
             self.css_class = css_class
             self.style = style
 
         def render(self):
+            """Render this row as wiki table row"""
             res = "|-" + Table.render_parameter(self.css_class, self.style) +"\n"
             for cell in self.cells:
                 res += cell.render() + "\n"
             return res[:-1] + "\n"
 
         def add_cell(self, content, is_header=False, colspan=None, css_class: str=None, style: str=None):
+            """
+            Add a cell to this row. The order of inserting cells corresponds to the ordering in the rendered table.
+            First cell added is first column in the table.
+            Args:
+                content: Content of the cell
+                is_header: True if this cell is a header cell.
+                colspan: span of the cell
+                css_class: css class of this cell
+                style: individual css style that should be applied to the cell
+            Returns:
+
+            """
             cell = self.Cell(content, is_header, colspan, css_class, style)
             self.cells.append(cell)
-            return cell
 
         class Cell:
-            def __init__(self, content, is_header=False, colspan=None, css_class: str=None, style: str=None):
+            """
+            Representing a cell of a wiki table
+            """
+            def __init__(self, content, is_header=False, colspan: int=None, css_class: str=None, style: str=None):
+                """
+                Initialize table cell with the given content and style configs
+                Args:
+                    content: Content of the cell
+                    is_header: True if this cell is a header cell.
+                    colspan: span of the cell
+                    css_class: css class of this cell
+                    style: individual css style that should be applied to the cell
+                """
                 self.content = content
                 self.is_header = is_header
                 self.colspan = colspan
@@ -604,6 +661,7 @@ class Table:
                 self.style = style
 
             def render(self):
+                """Render this cell as wiki table cell"""
                 separator = "!" if self.is_header else "|"
                 config = Table.render_parameter(self.css_class, self.style, colspan=self.colspan)
                 config += " |" if config else ""

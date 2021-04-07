@@ -11,10 +11,9 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 setup(
     name='wikirender',
     version='0.0.3',
-    packages=['wikifile','templates','templates/macros'],
+    packages=['wikifile','templates','templates/macros', 'wikifile/resources/metamodel'],
     classifiers=[
             'Programming Language :: Python',
-            'Programming Language :: Python :: 3.6',
             'Programming Language :: Python :: 3.7',
             'Programming Language :: Python :: 3.8',
             'Programming Language :: Python :: 3.9'
@@ -27,11 +26,11 @@ setup(
     ],
     entry_points={
       'console_scripts': [
-        'wikirender = wikifile.wikiRender:WikiRender',
-        'wikiextract = wikifile.wikiExtract:WikiExtract',
+        'wikirender = wikifile.wikiRender:main_module_call',
+        'wikiextract = wikifile.wikiExtract:main_module_call',
       ],
     },
-    package_data={'templates': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'],'templates/macros': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja']},
+    package_data={'templates': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'],'templates/macros': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'], "wikifile/resources/metamodel":['*.json']},
     author='Tim Holzheim',
     maintainer='Tim Holzheim',
     url='',

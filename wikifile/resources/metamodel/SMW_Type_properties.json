@@ -1,0 +1,72 @@
+[
+    {
+        "isA": "Property",
+        "name": "type",
+        "label": "type",
+        "type": "Text",
+        "index": 1,
+        "primaryKey": true,
+        "mandatory": true,
+        "size": 50,
+        "uploadable": false,
+        "documentation": "The Semantic MediaWiki type  without the prefix e.g. Text, Number, Boolean",
+        "isLink": false,
+        "topic": "SMW_Type"
+    },
+    {
+        "isA": "Property",
+        "name": "documentation",
+        "label": "type",
+        "type": "Text",
+        "index": 2,
+        "primaryKey": false,
+        "mandatory": false,
+        "size": 50,
+        "uploadable": false,
+        "documentation": "The documentation of this Semantic Media Wiki type",
+        "isLink": false,
+        "topic": "SMW_Type"
+    },
+    {
+        "isA": "Property",
+        "name": "helppage",
+        "label": "type",
+        "type": "URL",
+        "index": 3,
+        "primaryKey": false,
+        "mandatory": false,
+        "size": 50,
+        "uploadable": false,
+        "documentation": "The url of the 'official' documentation page of this type",
+        "isLink": false,
+        "topic": "SMW_Type"
+    },
+    {
+        "isA": "Property",
+        "name": "typepage",
+        "label": "typepage",
+        "type": "Page",
+        "index": 4,
+        "primaryKey": false,
+        "mandatory": false,
+        "size": 50,
+        "uploadable": false,
+        "documentation": "The Semantic Media Wiki Special page for this specific type e.g. Special:Types/Text, Special:Types/Boolean, Special:Types/Date, Special:Types/Number, Special:Types/Page",
+        "isLink": false,
+        "topic": "SMW_Type"
+    },
+    {
+        "isA": "Property",
+        "name": "javaType",
+        "label": "java Type",
+        "type": "Text",
+        "index": 5,
+        "primaryKey": false,
+        "mandatory": false,
+        "size": 50,
+        "uploadable": false,
+        "documentation": "Java mapping of this type",
+        "isLink": false,
+        "topic": "SMW_Type"
+    }
+]

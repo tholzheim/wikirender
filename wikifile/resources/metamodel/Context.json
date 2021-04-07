@@ -1,0 +1,12 @@
+{
+    "isA": "Topic",
+    "name": "Context",
+    "pluralName": "Contexts",
+    "documentation": "A Context groups some topics like a Namespace/Package",
+    "wikiDocumentation": "A Context groups some topics like a Namespace/Package",
+    "icon": "File:Registry.png",
+    "iconUrl": "/images/d/d2/Registry.png",
+    "defaultstoremode": "property",
+    "context": "MetaModel",
+    "addsTo": "Context_name"
+}

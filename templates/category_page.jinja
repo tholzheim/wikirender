@@ -6,11 +6,9 @@ Input:
     properties: all properties of the wiki.
 Output: Generates the page Category:<topic.name>
 #}
-{#---------------------------------Import-------------------------------------#}
-{% from 'macros/utils.jinja' import render_entity %}
 {#-------------------------------Template-------------------------------------#}
 __NOTOC__
-{{ Query(mainlabel="-").select("Topic name::" + topic.name).printout("Topic wikiDocumentation"," ").render() }}
+{{ topic.query_documentation()}}
 {{ topic.plural_name }} may be added and edited with the form [[{{ Form.get_page_name(topic) }}]]
 * [[{{ ListOf.get_page_name(topic) }}]]
 <div class="toccolours mw-collapsible mw-collapsed" style="width:1024px">

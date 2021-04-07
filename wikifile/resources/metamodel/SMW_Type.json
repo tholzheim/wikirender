@@ -1,0 +1,12 @@
+{
+    "isA": "Topic",
+    "name": "SMW_Type",
+    "pluralName": "SMW_Types",
+    "documentation": "an SMW_Type is a data type which determines the possible values for that type e.g. a Boolean can hold true/fals values while a Number can hold 3.1459 or 20. A Page can hold the name of a Wiki page see https://semantic-mediawiki.org/wiki/Help:List_of_datatypes",
+    "wikiDocumentation": "see \n* https://semantic-mediawiki.org/wiki/Special:Types \n* https://semantic-mediawiki.org/wiki/Help:List_of_datatypes",
+    "icon": "File:Component.png",
+    "iconUrl": "/images/4/40/Component.png",
+    "defaultstoremode": "subobject",
+    "context": "MetaModel",
+    "addsTo": "SMW_Type_javaType"
+}

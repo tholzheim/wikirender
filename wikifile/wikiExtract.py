@@ -12,18 +12,14 @@ class WikiExtract(Toolbox):
     """
     Provides methods to extract data from wiki files.
     """
-    def __init__(self, argv=None, debug=False):
+    def __init__(self, debug=False):
+        super(WikiExtract, self).__init__()
+
+    def main(self, argv=None):
         if argv is None:
             argv = sys.argv
-        super(WikiExtract, self).__init__(argv)
-        # Add parser arguments
-        self.parser.add_argument("-t", "--template", dest="template",
-                            help="Select a template in which the data is being rendered", required=True)
-        self.parser.add_argument("-id", "--file_name_id", dest="file_name_id",
-                            help="Name of the key in which the file name is stored.")
-        self.parser.add_argument("--listFile", dest="file_list",
-                            help="List of pages form which the data should be extracted", required=False)
 
+        self.getParser()
         try:
             # Process arguments
             args = self.parser.parse_args(argv)
@@ -52,6 +48,22 @@ class WikiExtract(Toolbox):
             return 1
         except Exception as e:
             print(e)
+
+    def getParser(self):
+        # Setup argument parser
+        super().getParser() # setup default parser arguments
+        if self.parser is None:
+            raise AttributeError("parser of this object should be defined at this point.")
+        self.parser.add_argument("-m", "--mode", dest="mode",
+                                 help="Select a mode.\n\tupdate_templates: updates the wikifiles at the provided location with the provided data\n\tcreate: creates a wikifile with the given data.",
+                                 required=True)
+        # Add parser arguments
+        self.parser.add_argument("-t", "--template", dest="template",
+                                 help="Select a template in which the data is being rendered", required=True)
+        self.parser.add_argument("-id", "--file_name_id", dest="file_name_id",
+                                 help="Name of the key in which the file name is stored.")
+        self.parser.add_argument("--listFile", dest="file_list",
+                                 help="List of pages form which the data should be extracted", required=False)
 
     @staticmethod
     def extract_templates(template_name: str, stdIn, page_titles, file_list, backup_path, add_file_name):
@@ -104,6 +116,12 @@ class WikiExtract(Toolbox):
                 res.append(template)
         return json.dumps({"data": res}, default=str, indent=3)
 
+def main_module_call():
+    wikiextract = WikiExtract(is_module_call=True)
+    wikiextract.main(sys.argv[1:])
+    sys.exit()
 
 if __name__ == '__main__':
-    sys.exit(WikiExtract(debug=True))
+    wikiextract = WikiExtract(is_module_call=True)
+    wikiextract.main(sys.argv[1:])
+    sys.exit()
