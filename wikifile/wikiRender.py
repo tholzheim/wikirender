@@ -97,7 +97,7 @@ class WikiRender(Toolbox):
         if is_module_call:
             script_dir = get_python_lib()
         else:
-            script_dir = script_dir = os.path.dirname(wikifile.__file__) + "/.."
+            script_dir = os.path.dirname(wikifile.__file__) + "/.."
         template_folder = script_dir + template_dir
         templateLoader = jinja2.FileSystemLoader(searchpath=template_folder)
         templateEnv = jinja2.Environment(loader=templateLoader)

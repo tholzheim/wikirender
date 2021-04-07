@@ -1,5 +1,7 @@
 import os
 import unittest
+from distutils.sysconfig import get_python_lib
+import getpass
 from wikifile.wikiRender import WikiRender
 
 class TestUtilsTemplate(unittest.TestCase):
@@ -7,10 +9,16 @@ class TestUtilsTemplate(unittest.TestCase):
     Test the jinja template utils
     """
 
+    def inPublicCI(self):
+        '''
+        are we running in a public Continuous Integration Environment?
+        '''
+        return getpass.getuser() in [ "travis", "runner" ];
+
     def setUp(self):
         self.debug = False
-        script_dir = os.path.dirname(os.path.abspath(__file__)) + "/.."
-        self.templateEnv = WikiRender.getTemplateEnv(script_dir)
+        is_public_ci = self.inPublicCI()
+        self.templateEnv = WikiRender.getTemplateEnv(is_public_ci)
 
     def tearDown(self):
         pass
