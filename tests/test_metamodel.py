@@ -307,7 +307,7 @@ class TestProperty(TestCase):
         p_without_label = Property({"name": "title", "pageTitle": "Property:Event title"})
         self.assertEqual("[[Event title::@@@]]", p_without_label.get_description_page_link())
 
-    def test_query_entity_overview(self):
+    def test_query_topic_overview(self):
         topic = Topic({"name": "Test Title"})
         expected_query = """{{#ask:[[Topic name::Test Title]]
 |mainlabel=-
@@ -316,7 +316,7 @@ class TestProperty(TestCase):
 |?Topic pluralName=pluralName
 |?Topic documentation=documentation
 }}"""
-        actual_query = topic.query_entity_overview()
+        actual_query = topic.query_topic_overview()
         self.assertEqual(expected_query, actual_query)
 
     def test_query_examples(self):
