@@ -35,7 +35,7 @@ class WikiFile:
 
         """
         wiki_file_path = WikiFile.get_wiki_path(self.file_path, self.file_name)
-        mode = "a"
+        mode = "w"
         if overwrite:
             mode = 'w'
             os.makedirs(os.path.dirname(wiki_file_path), exist_ok=True)
@@ -44,7 +44,7 @@ class WikiFile:
                 # file already exists
                 if self.debug:
                     print(f"File {wiki_file_path} exists \t-> Generated page not saved. To save also existing pages use -f to overwrite them.", )
-                return
+                    return
         with open(wiki_file_path, mode=mode) as f:
             f.write(str(self.wikiText))
         if self.debug:
@@ -109,13 +109,14 @@ class WikiFile:
                 else:
                     pass
             else:
-                template.set_arg(key, value)
+                if value is not None:
+                    template.set_arg(key, value)
 
-    def add_template(self, template_name: str, data: dict, exclude_keys: list, overwrite=False):
+    def add_template(self, template_name: str, data: dict, overwrite=False):
         template = self.get_template(template_name)
         if template is None:
             # create template
-            self.wikiText.insert(0, self.wiki_render.render_template(template_name, data, exclude_keys))
+            self.wikiText.insert(0, self.wiki_render.render_template(template_name, data))
         else:
             WikiFile.update_arguments(template, data, overwrite)
 

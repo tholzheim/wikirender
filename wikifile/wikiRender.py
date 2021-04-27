@@ -43,13 +43,6 @@ class WikiRender(Toolbox):
             self.debug=args.debug
             if args.mode not in modes:
                 raise Exception(f"Please select of of the operation modes: {modes}")
-            data = {}
-            if "data_input" in args:
-                data = json.loads(args.data_input)
-            elif args.stdin:
-                data = json.load(sys.stdin)
-            else:
-                pass
             if args.mode == GENERATE_ENTITY_PAGES:
                 # Check if necessary parameters are set
                 if not args.properties_file or not args.topic_file:
@@ -58,6 +51,7 @@ class WikiRender(Toolbox):
                     # update templateEnv
                     self.template_env = self.getTemplateEnv(additional_loader=args.template_folder)
                 properties_json = ""
+                print(1)
                 with open(args.properties_file) as json_file:
                     properties_json = json_file.read()
                 topic_json = ""
@@ -66,6 +60,16 @@ class WikiRender(Toolbox):
                 topic = Topic.from_wiki_json(topic_json=topic_json, prop_json=properties_json)
                 # Generate and save the entity pages
                 self.generateTopic(topic, args.backupPath, args.overwrite)
+            elif args.mode == UPDATE_TEMPLATES_MODE:
+                data = {}
+                if "data_input" in args:
+                    data = json.loads(args.data_input)
+                elif args.stdin:
+                    data = json.load(sys.stdin)
+                else:
+                    pass
+                template_data = data.get(args.template)
+                self.update_or_create_templates(template_data, name_id="pageTitle" , template_name=args.template, backup_path=args.backupPath ,overwrite=args.overwrite)
 
 
             if args.mode == CREATE_FILE_MODE:
@@ -77,7 +81,7 @@ class WikiRender(Toolbox):
             ### handle keyboard interrupt ###
             return 1
         except Exception as e:
-            print(e)
+            raise e
 
     def getParser(self):
         # Setup argument parser
@@ -95,6 +99,8 @@ class WikiRender(Toolbox):
                                  help="Select a template in which the data is being rendered")
         self.parser.add_argument("--templates", dest="templates_folder",
                                  help="Path to additional templates")
+        self.parser.add_argument("--data", dest="data_input",
+                                 help="Json file that should be used as data input")
 
     @staticmethod
     def getTemplateEnv(template_dir: str='/templates', additional_loader=None):
@@ -170,6 +176,46 @@ class WikiRender(Toolbox):
             page = smwPart.render_page(topic)
             wiki_file = WikiFile(smwPart.get_page_name(topic), path, wiki_render=self, wikiText=page, debug=self.debug)
             wiki_file.save_to_file(overwrite)
+
+    def update_or_create_templates(self,
+                                   data: list,
+                                   name_id: str,
+                                   template_name: str,
+                                   backup_path: str,
+                                   exclude_keys: list = None,
+                                   overwrite=False):
+        """
+        Iterates over the given data and updates or creates the corresponding wikifile. The parameter wiki_id is used
+        as the filename.
+        Args:
+            data: json data containing the information for the templates
+            name_id: Name of the key that contains the page name
+            template_name: Name of the template
+            template_env:
+            backup_path: path to the directory were the wiki files are stored
+            exclude_keys: List of keys that is included in the data but should be excluded
+            overwrite: If True arguments that are already defined in the template are overwritten by the given data. If False only missing data is added
+        Returns:
+
+        """
+        for page in data:
+            # check if page exists
+            if name_id not in page:
+                continue
+            page_name = page[name_id]
+            # Remove excluded keys
+            for exclude in exclude_keys:
+                del page[exclude]
+            wiki_file = WikiFile(page_name, backup_path, wiki_render=self)
+            if wiki_file.wikiText is None:
+                # create page and store it
+                page_content = self.render_template(template_name, page)
+                WikiFile(path=backup_path, name=page_name, wiki_render=self, wikiText=page_content).save_to_file(
+                    overwrite)
+            else:
+                # update existing template or create new one
+                wiki_file.add_template(template_name, page)
+                wiki_file.save_to_file(overwrite=overwrite)
 
 def main_module_call():
     wikirender = WikiRender()
