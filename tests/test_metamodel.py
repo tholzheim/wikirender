@@ -159,9 +159,9 @@ class TestTopic(TestCase):
 
     def test_get_page_link(self):
         topic = Topic({"name": "Topic"})
-        self.assertEqual("[[Concept:Topic]]", topic.get_page_link())
+        self.assertEqual("[[Concept:Topic|Topic]]", topic.get_page_link())
         topic.__dict__.update(pageTitle="Concept:Topic")
-        self.assertEqual("[[Concept:Topic]]", topic.get_page_link())
+        self.assertEqual("[[Concept:Topic|Topic]]", topic.get_page_link())
 
     def test_render_entity(self):
         data = {"name": "Topic",
@@ -327,25 +327,25 @@ class TestProperty(TestCase):
 
     def test_query_entity_properties(self):
         topic = Topic({"name":"Test Title"})
-        expected_query = """{{#ask:[[Concept:Property]][[Used for::Concept:Test Title]]
-|?name=name
-|?label=label
-|?type=type
-|?index=index
-|?sortPos=sortPos
-|?primaryKey=primary key
-|?mandatory=mandatory
-|?namespace=namespace
-|?size=size
-|?uploadable=uploadable
-|?defaultValue=default
-|?inputType=inputType
-|?allowedValues=allowedValues
-|?documentation=documentation
-|?values_from=values from
-|?showInGrid=showInGrid
-|?isLink=isLink
-|?nullable=allow nulls?
+        expected_query = """{{#ask:[[Concept:Property]][[Property topic::Concept:Test Title]]
+|?Property name=name
+|?Property label=label
+|?Property type=type
+|?Property index=index
+|?Property sortPos=sortPos
+|?Property primaryKey=primary key
+|?Property mandatory=mandatory
+|?Property namespace=namespace
+|?Property size=size
+|?Property uploadable=uploadable
+|?Property defaultValue=default
+|?Property inputType=inputType
+|?Property allowedValues=allowedValues
+|?Property documentation=documentation
+|?Property values_from=values from
+|?Property showInGrid=showInGrid
+|?Property isLink=isLink
+|?Property nullable=allow nulls?
 |format=wikitable
 }}"""
         actual_query = topic.query_entity_properties()

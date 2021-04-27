@@ -115,7 +115,7 @@ class TestForm(TestCase):
         self.assertEqual(test_field, Form.field(property))
 
     def test_form_table(self):
-        exp_form_table = """{| class="formtable InfoBox mw-collapsible" style="width:100%" 
+        exp_form_table = """{| class="wikitable mw-collapsible" style="width:100%" 
 |-
 |colspan="2"  |Basic Information
 |-

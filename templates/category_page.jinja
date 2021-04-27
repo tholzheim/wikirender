@@ -24,3 +24,5 @@ __NOTOC__
 {{ SMW.render_as_list(map(Property.get_page_link, Property.get_entity_properties(topic.name, properties))) }}
 </div>
 </div>
+
+{{ SMW.parser_function("set", oneliner=oneliner, **{"Has property description":topic.__dict__.get("documentation")+"@en"}) }}

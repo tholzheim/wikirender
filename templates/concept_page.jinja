@@ -6,9 +6,6 @@ Input:
     properties: all properties of the wiki.
 Output: Generates the page Concept:<topic.name>
 #}
-{#---------------------------------Import-------------------------------------#}
-{% from 'macros/utils.jinja' import render_entity %}
-{% from 'macros/form.jinja' import forminput %}
 {#-------------------------------Template-------------------------------------#}
 __NOCACHE__
 {{ topic.render_entity(oneliner=False) }}
@@ -29,4 +26,4 @@ __NOCACHE__
 {# Add all topics that are related to this topic as list of page links -#}
 {{ SMW.render_as_list(map(Topic.get_page_link, topic.get_related_topics(properties))) }}
 {{ '}}' }}
-{# [[:Category:{{ topic.name }}]] #}
+[[:Category:{{ topic.name }}]]

@@ -161,7 +161,7 @@ class SMW:
         return res
 
     @staticmethod
-    def set_entity_parameter(topic, properties, oneliner=True):
+    def set_entity_parameter(topic, properties, oneliner=True, withDescription=False):
         """
 
         Args:
@@ -173,7 +173,7 @@ class SMW:
         """
         property_dict = {"isA": topic.name}
         for property in properties:
-            property_dict = {**property_dict, property.get_pageName(withNamespace=False): "{{{" + property.name + "|}}}"}
+            property_dict = {**property_dict, property.get_pageTitle(withNamespace=False): "{{{" + property.name + "|}}}"}
         return SMW.parser_function("set", oneliner=oneliner, **property_dict)
 
     @staticmethod
@@ -227,11 +227,15 @@ class Template(SMWPart):
         Returns:
 
         """
-        label = lambda p: Property.get_description_page_link(property) if clickable_links else p.label
         formlink = Form.formlink(form=topic.name, link_text="✎", target="{{FULLPAGENAME}}", tooltip="Start editing this " + topic.name)
-        table_str = "{| class='wikitable'\n! colspan=2 | " + formlink + topic.name + "\n|-\n"
-        for property in properties:
-            table_str += "!style=\"text-align:left\" |" + label(property) + "\n"
+        table_str = "{| class='wikitable'\n! colspan=2 | " + formlink + topic.get_page_link()+ "\n|-\n"
+        sortBySortPos = lambda property: 99999 if "sortPos" not in property.__dict__ or property.__dict__.get(
+            "sortPos") is None else int(property.sortPos)
+        properties_sorted = sorted(properties, key=sortBySortPos)
+        for property in properties_sorted:
+            # ToDo: refactor Table definition
+            label = property.get_description_page_link() if clickable_links else property.label
+            table_str += "!style=\"text-align:left\" |" + label + "\n"
             table_str += "| {{#if:" + Template.template_arg(property.name) + "|" + Template.template_arg(property.name) + "|}}\n"
             table_str += "|-\n"
         return table_str + "|}"
@@ -351,10 +355,12 @@ class Form(SMWPart):
                     "allowedValues": "values"}
         parameters = {}
         for prop in prop_map.keys():
-            if prop == "inputType"and property.__dict__[prop] is None:
+            if prop == "inputType":
+                if property.__dict__[prop] is None:
                     property.__dict__[prop] = "text"
+                elif property.__dict__[prop].lower() == "textarea":
+                    parameters["editor"] = "wikieditor"
             if prop in property.__dict__ and property.__dict__[prop] is not None:
-
                 if prop == "values_from":
                     # values_from contains data like "concept=Country" so we add an auxiliary property "values from concept" with the value "Country"
                     vals = property.__dict__[prop].split("=")
@@ -378,7 +384,7 @@ class Form(SMWPart):
             Returns a table containing form fields based on the given properties
         """
         # Define styling
-        table_style = {"css_class": "formtable InfoBox", "style": "width:100%"}
+        table_style = {"css_class": "wikitable", "style": "width:100%"}
         if is_collapsible:
             table_style["css_class"] += " mw-collapsible"
         field_label_style = {"style": "text-align: left"}
@@ -388,7 +394,9 @@ class Form(SMWPart):
         if label:
             table.add_row().add_cell(content=label, colspan=2)
         # Add form field for each given property
-        for property in properties:
+        sortBySortPos = lambda property: 99999 if "sortPos" not in property.__dict__ or property.__dict__.get("sortPos") is None else int(property.sortPos)
+        properties_sorted = sorted(properties, key=sortBySortPos)
+        for property in properties_sorted:
             property_row = table.add_row()
             # Add field label
             field_label = property.get_description_page_link()
@@ -489,7 +497,7 @@ class Query:
         if isinstance(property, str):
             self.printout_statements.append(self.PrintoutStatement(property, label))
         else:
-            self.printout_statements.append(self.PrintoutStatement(property.get_pageName(withNamespace=False), label))
+            self.printout_statements.append(self.PrintoutStatement(property.get_pageTitle(withNamespace=False), label))
         return self
 
     def select(self, selector):
@@ -513,7 +521,7 @@ class Query:
             The query object itself
         """
         for property in properties:
-            self.printout(property.get_pageName(withNamespace), property.label)
+            self.printout(property.get_pageTitle(withNamespace), property.label)
         return self
 
     def sort_by(self, *properties):

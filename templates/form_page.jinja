@@ -3,12 +3,9 @@
 Generate the form of page for a entity.
 Input:
     topic: topic entity
-    properties: all properties of the wiki.
-    regexps: List of a regular expressions
 Output: Generates the page Category:<entity_name>
 #}
 {#----------------------------Global Variables--------------------------------#}
-{% set topic_properties = Property.get_entity_properties(topic.name, properties) %}
 {#-------------------------------Template-------------------------------------#}
 <noinclude>
 {{ Form.forminput(form=topic.name, button_text='add ' + topic.name) }}
@@ -19,7 +16,7 @@ Output: Generates the page Category:<entity_name>
 {# Form control buttons #}
 {{ Form.standard_input_tag(["save","preview","changes","cancel"]) }}
 {{ Form.page_form_function("for template", **{topic.name:True }) }}
-{{ Form.form_table(topic.name, topic_properties) }}
+{{ Form.form_table(topic.name, topic.properties) }}
 {{ Form.page_form_function("end template") }}
 {# Form control buttons -#}
 {{ Form.standard_input_tag(["save","preview","changes","cancel"]) }}

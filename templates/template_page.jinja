@@ -6,8 +6,6 @@ Input:
     properties: all properties of the wiki.
 Output: Generates the page Template:<topic.name>
 #}
-{#----------------------------Global Variables--------------------------------#}
-{% set topic_properties = Property.get_entity_properties(topic.name, properties) %}
 {#-------------------------------Template-------------------------------------#}
 <noinclude>
 This is the template {{ '{{' }}Link|target=Template:{{ topic.name }}|title={{ '}}' }}.
@@ -17,16 +15,16 @@ This is the template {{ '{{' }}Link|target=Template:{{ topic.name }}|title={{ '}
 
 == Usage ==
 <pre>
-{{ SMW.render_sample_entity_with_properties(topic, topic_properties, oneliner=False) }}
+{{ SMW.render_sample_entity_with_properties(topic, topic.properties, oneliner=False) }}
 </pre>
-{{ SMW.render_sample_entity_with_properties(topic, topic_properties, oneliner=False) }}
+{{ SMW.render_sample_entity_with_properties(topic, topic.properties, oneliner=False) }}
 
 [[Category:Template]]
 </noinclude>
 <includeonly>
-{{ SMW.set_entity_parameter(topic, topic_properties, oneliner=False) }}
+{{ SMW.set_entity_parameter(topic, topic.properties, oneliner=False) }}
 
-{{ Template.table_of_arguments(topic, topic_properties) }}
+{{ Template.table_of_arguments(topic, topic.properties) }}
 
 [[Category:{{ topic.name }}]]{{ SMW.parser_function("default_form",presence_is_true=True, **{topic.name:True}) }}
 </includeonly>

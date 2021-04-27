@@ -112,6 +112,28 @@ class MetaModelElement(object):
                     prop_list.append(key)
         return prop_list
 
+    def get_pageTitle(self, prefix:str, withNamespace=True):
+        """
+        Returns page name of this metamodel element. If pageTitle is not defined, it is assumed that name corresponds to the pageTitle.
+        Args:
+            prefix: MetaModelElement prefix e.g. properties usually have the prefix Property
+            withNamespace: If true also the namespace of this property is returned. Otherwise, without namespace.
+        Returns:
+            Returns page name of this metamodel element.
+        """
+        if self.pageTitle:
+            if withNamespace:
+                return self.pageTitle
+            else:
+                return self.pageTitle.replace(f"{prefix}:", "")
+        elif self.name:
+            if withNamespace:
+                return f"{prefix}:{self.name}"
+            else:
+                return self.name
+        else:
+            return None
+
 
 class Context(MetaModelElement):
     """
@@ -159,6 +181,16 @@ class Topic(MetaModelElement):
         super(Topic, self).__init__(Topic.propList, properties=topic_properties)
         self.properties = properties
 
+    def get_pageTitle(self, withNamespace=True):
+        """
+        Returns page name of this topic. If pageTitle is not defined, it is assumed that name corresponds to the pageTitle.
+        Args:
+            withNamespace: If true also the namespace of this property is returned. Otherwise, without namespace.
+        Returns:
+            Returns page name of this topic.
+        """
+        return super(Topic, self).get_pageTitle("Concept", withNamespace)
+
 
     def get_related_topics(self, properties):
         """
@@ -187,12 +219,15 @@ class Topic(MetaModelElement):
         res += SMW.render_parameters(oneliner, **MetaModelElement.get_parameters(self.__dict__, self.propList))
         return res + "}}"
 
-    def get_page_link(self):
+    def get_page_link(self, withLabel=True, withDescription=False):
         """Returns a link to this page"""
-        if self.pageTitle:
-            return f"[[{self.pageTitle}]]"
+        pageTitle = self.get_pageTitle()
+        if withDescription:
+            pageTitle += "::@@@"
+        if withLabel:
+            return f"[[{pageTitle}|{self.name}]]"
         else:
-            return f"[[Concept:{self.name}]]"
+            return f"[[Concept:{pageTitle}]]"
 
     @classmethod
     def from_wiki_json(cls, topic_json, prop_json=None):
@@ -242,7 +277,7 @@ class Topic(MetaModelElement):
         """Returns a SMW query querying all properties of this entity"""
         query = Query(format=format)
         query.select("Concept:Property")
-        query.select("Used for::Concept:" + self.name)
+        query.select("Property topic::Concept:" + self.name)
         query.printout_list_of_properties(Property.get_property_properties())
         return query.render(oneliner=oneliner)
 
@@ -315,7 +350,7 @@ class Property(MetaModelElement):
                 res.append(self.usedFor)
         return res
 
-    def get_pageName(self, withNamespace=True):
+    def get_pageTitle(self, withNamespace=True):
         """
         Returns page name of this property. If pageTitle is not defined, it is assumed that name corresponds to the pageTitle.
         Args:
@@ -323,19 +358,19 @@ class Property(MetaModelElement):
         Returns:
             Returns page name of this property.
         """
-        if self.pageTitle:
-            return self.pageTitle if withNamespace else self.pageTitle.replace("Property:", "")
-        elif self.name:
-            # ToDo if the properties from meta model are taken they do not have a page title name current assumption is that property.name is then the pageTitle (without namespace)
-            return f"Property:{self.name}" if withNamespace else self.name
-        else:
-            return None
+        return super(Property, self).get_pageTitle(self.__class__.__name__, withNamespace)
+
 
     @staticmethod
     def get_property_properties():
         """Returns the properties that describe properties"""
         properties_json = json.loads(pkgutil.get_data("wikifile", "/resources/metamodel/Property_properties.json"))
-        return [Property(x) for x in properties_json]
+        properties = [Property(x) for x in properties_json]
+        # Add pageTitle
+        for property in properties:
+            property.__dict__["pageTitle"] = f"Property:Property {property.name}"
+        print([p.pageTitle for p in properties])
+        return properties
 
     @staticmethod
     def get_entity_properties(entity_name: str, properties: list):
@@ -401,7 +436,7 @@ class Property(MetaModelElement):
             SMW page link to this property
         """
         if name is None:
-            name = self.get_pageName(withNamespace=True)
+            name = self.get_pageTitle(withNamespace=True)
         if self.label:
             return f"[[{name}|{self.label}]]"
         else:
@@ -415,7 +450,7 @@ class Property(MetaModelElement):
         Returns:
             SMW page link to this property
         """
-        name = f"{self.get_pageName(withNamespace=False)}::@@@"
+        name = f"{self.get_pageTitle(withNamespace=False)}::@@@"
         return self.get_page_link(name)
 
 
