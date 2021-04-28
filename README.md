@@ -1,8 +1,15 @@
 # wikirender
+[![pypi](https://img.shields.io/pypi/pyversions/wikirender)](https://pypi.org/project/wikirender/)
+[![Github Actions Build](https://github.com/tholzheim/wikirender/workflows/Build/badge.svg?branch=master)](https://github.com/tholzheim/wikirender/actions?query=workflow%3ABuild+branch%3Amaster)
+[![GitHub issues](https://img.shields.io/github/issues/tholzheim/wikirender.svg)](https://github.com/tholzheim/wikirender/issues)
+[![GitHub issues](https://img.shields.io/github/issues-closed/tholzheim/wikirender.svg)](https://github.com/tholzheim/wikirender/issues/?q=is%3Aissue+is%3Aclosed)
+[![GitHub](https://img.shields.io/github/license/tholzheim/wikirender.svg)](https://www.apache.org/licenses/LICENSE-2.0)
+[![PyPI Status](https://img.shields.io/pypi/v/wikirender.svg)](https://pypi.python.org/pypi/wikirender/)
+
 Provides jinja templates to create wiki page files form JSON input
 ## Install
 ```json
-pip install .
+pip install wikirender
 ```
 check if it worked with
 ```
