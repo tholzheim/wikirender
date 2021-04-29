@@ -33,7 +33,7 @@ setup(
     package_data={'templates': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'],'templates/macros': ['*.jinja', 'templates/*.jinja','templates/macros/*.jinja'], "wikifile/resources/metamodel":['*.json']},
     author='Tim Holzheim',
     maintainer='Tim Holzheim',
-    url='',
+    url='https://github.com/tholzheim/wikirender',
     license='Apache License',
     description='Convert Json data into wiki files or update existing files. Provides different templates to generate wiki files',
     long_description=long_description,
