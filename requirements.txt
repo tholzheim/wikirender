@@ -4,3 +4,5 @@ wikitextparser
 jinja2
 # https://pypi.org/project/pylodstorage/
 pylodstorage
+# https://pypi.org/project/py-3rdparty-mediawiki/
+py-3rdparty-mediawiki>=0.4.6
