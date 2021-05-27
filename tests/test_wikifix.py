@@ -40,6 +40,7 @@ class TestWikiRender(unittest.TestCase):
         self.assertTrue('3DUI 2017' in events)
 
     def testEditProperty(self):
+        if self.inPublicCI(): return
         sampleDict= {'Acronym':'test'}
         fix = WikiFix('ormk')
         fixedDict=fix.editProperty(sampleDict,'Acronym','testpassed')
