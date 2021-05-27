@@ -63,13 +63,16 @@ class WikiRender(Toolbox):
             elif args.mode == UPDATE_TEMPLATES_MODE:
                 data = {}
                 if "data_input" in args:
-                    data = json.loads(args.data_input)
+                    with open(args.data_input) as json_file:
+                        data_str = json_file.read()
+                        data = json.loads(data_str)
                 elif args.stdin:
                     data = json.load(sys.stdin)
                 else:
                     pass
                 template_data = data.get(args.template)
-                self.update_or_create_templates(template_data, name_id="pageTitle" , template_name=args.template, backup_path=args.backupPath ,overwrite=args.overwrite)
+                exclude_keys = ["pageTitle"]
+                self.update_or_create_templates(template_data, name_id="pageTitle" , template_name=args.template,exclude_keys=exclude_keys, backup_path=args.backupPath ,overwrite=args.overwrite)
 
 
             if args.mode == CREATE_FILE_MODE:
