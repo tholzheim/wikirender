@@ -69,6 +69,14 @@ class WikiFile:
         return None
 
     def get_template(self, template_name: str):
+        """
+        Returns the template
+        Args:
+            template_name:
+
+        Returns:
+
+        """
         if self.wikiText is None or self.wikiText.templates is None:
             # Wikifile has no templates
             return None
@@ -80,26 +88,50 @@ class WikiFile:
 
     @staticmethod
     def get_template_name(template_name: str):
+        """
+        Removes the whitespace around the template name and the line break if present.
+        Example: " Event \n" -> "Event"
+
+        Args:
+            template_name: raw template name that should be normalized
+
+        Returns:
+            normalized template name.
+        """
         name = template_name.replace('\n', '')
         name = name.lstrip()
         name = name.rstrip()
         return name
 
-    def update_template(self, template_name: str, args, force=False):
+    def update_template(self, template_name: str, args:dict, overwrite=False):
+        """
+        Updates the given template the values from the given dict args.
+        If force is set to True existing values will be overwritten.
+        ToDo: Currently unhandled is the behavior if multiple templates with the same name exist
+        Args:
+            template_name(str): name of the template that should be updated
+            args(dict): Dict containing the arguments that should be set. key=argument name, value=argument value
+            overwrite(bool): If True existing values will be overwritten
+
+        Returns:
+            Nothing
+        """
         template = self.get_template(template_name)
-        for key, value in args.items():
-            if template.has_arg(key):
-                # update argument
-                if force:
-                    template.del_arg(key)
-                    template.set_arg(key, value)
-                else:
-                    pass
-            else:
-                template.set_arg(key, value)
+        self.update_arguments(template, args, overwrite)
 
     @staticmethod
-    def update_arguments(template: Template, args, overwrite=False):
+    def update_arguments(template: Template, args:dict, overwrite=False):
+        """
+        Updates the arguments of the given template with the values of the given dict (args)
+
+        Args:
+            template: Template that should be updated
+            args(dict): Dict containing the arguments that should be set. key=argument name, value=argument value
+            overwrite(bool): If True existing values will be overwritten
+
+        Returns:
+            Nothing
+        """
         for key, value in args.items():
             if template.has_arg(key):
                 # update argument
@@ -110,9 +142,22 @@ class WikiFile:
                     pass
             else:
                 if value is not None:
-                    template.set_arg(key, value)
+                    template.set_arg(key, value, preserve_spacing=False)
 
     def add_template(self, template_name: str, data: dict, overwrite=False):
+        """
+        Adds the given data as template with the given name to this wikifile.
+        If the template is already present only the arguments are updated (the values are only overwritten if overwrite
+        is set to True)
+        ToDo: Currently unhandled is the behavior if multiple templates with the same name exist
+        Args:
+            template_name(str): Name of the template the data should be inserted in
+            data(dict): Data that should be saved in form of a template
+            overwrite(bool): If true existing values are overwritten. Otherwise onl missing values are added. Default: False
+
+        Returns:
+            Nothing
+        """
         template = self.get_template(template_name)
         if template is None:
             # create template
@@ -123,6 +168,7 @@ class WikiFile:
     def extract_template(self, name: str):
         """
         Extracts the template data and returns it as dict
+        ToDo: Currently unhandled is the behavior if multiple templates with the same name exist
         Args:
             name: name of the template that should be extracted
 
@@ -134,10 +180,16 @@ class WikiFile:
             return None
         res = {}
         for arg in template.arguments:
-            value = arg.value if not arg.value.endswith("\n") else arg.value[:-1]
+            value = arg.value.strip()
+            if value.endswith("\n"):
+                value=value[:-1]
             res[arg.name] = value
         return res
 
     @staticmethod
     def get_wiki_path(path: str, name: str):
         return f"{path}/{name}.wiki"
+
+    def __str__(self) -> str:
+        return str(self.wikiText)
+
