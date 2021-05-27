@@ -22,9 +22,35 @@ class TestWikiRender(unittest.TestCase):
         '''
         return getpass.getuser() in ["travis", "runner"];
 
+    def testExportCsvContent(self):
+        if self.inPublicCI(): return
+        fix= WikiFix('ormk',debug=True)
+        pageTitles=fix.getEventsinSeries('3DUI','Event in series')
+        header, dicts = fix.getCsv(pageTitles)
+        fix.exportToCsv(header,dicts)
+        LOD= fix.prepareExportCsvContent('dict.csv')
+        self.assertIsNotNone(LOD)
+        failures= fix.exportCsvToWiki(LOD)
+        self.assertEqual(len(failures),0)
+
+    def testEventsinSeries(self):
+        if self.inPublicCI(): return
+        fix = WikiFix('ormk')
+        events=fix.getEventsinSeries('3DUI','Event in series')
+        self.assertTrue('3DUI 2017' in events)
+
+    def testEditProperty(self):
+        sampleDict= {'Acronym':'test'}
+        fix = WikiFix('ormk')
+        fixedDict=fix.editProperty(sampleDict,'Acronym','testpassed')
+        self.assertIsNotNone(fixedDict)
+        self.assertEqual(fixedDict['Acronym'],'testpassed')
+        fixedDict2 = fix.editProperty(sampleDict, 'NewProperty', 'testpassed')
+        self.assertIsNotNone(fixedDict2)
+        self.assertEqual(fixedDict2['NewProperty'], 'testpassed')
+
     def testWikiFix(self):
-        if self.inPublicCI():
-            pass
+        if self.inPublicCI(): return
         fix = WikiFix('ormk')
         header, dicts = fix.getCsv(['3DUI 2020', '3DUI 2017'])
         self.assertIsNotNone(header)
