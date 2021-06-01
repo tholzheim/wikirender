@@ -10,9 +10,10 @@ from wikifile.wikiFix import WikiFix
 class TestWikiFix(unittest.TestCase):
 
     def setUp(self):
-        self.fix = WikiFix('orth')
-        self.pageTitle="Test_WikiFix"
-        self.wikiSonName = "UnitTestPage"
+        if not self.inPublicCI():
+            self.fix = WikiFix('orth')
+            self.pageTitle="Test_WikiFix"
+            self.wikiSonName = "UnitTestPage"
 
     def tearDown(self):
         pass
