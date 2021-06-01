@@ -1,3 +1,4 @@
+import io
 
 from wikifile.wikiFile import WikiFile
 from wikibot.wikipush import WikiPush
@@ -86,7 +87,19 @@ class WikiFix(Toolbox):
         pageDict[propertyName] = propertyValue
         return pageDict
 
-    def getCsv(self,pageTitles):
+    def getCSVofPages(self, pageTitles:str, wikiSonName:str):
+        """
+        Extracts for the given page titles the given WikiSon object and returns it as csv
+        Args:
+            pageTitles:
+            wikiSonName:
+
+        Returns:
+
+        """
+        pass
+
+    def getCsv(self, pageTitles):
         '''
         converts the given pages to csv.
         Args:
@@ -95,17 +108,68 @@ class WikiFix(Toolbox):
             header(list): Header for CSV File
             pageDicts(List of Dics): List of Dicts of pages
         '''
-        pageDicts=[]
+        pageDicts = []
         for page in pageTitles:
             pageItem = self.wikiPush.fromWiki.getPage(page)
-            wikiFile=WikiFile("sampleFile", "tmp", self.wikiRender, pageItem.text())
+            wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, pageItem.text())
             pageDict = wikiFile.extract_template("Event")
             if self.debug:
                 print(pageDict)
-            pageDict['pageTitle']=page
+            pageDict['pageTitle'] = page
             pageDicts.append(pageDict)
-            header=self.get_Properties(pageDicts)
-        return header,pageDicts
+            header = self.get_Properties(pageDicts)
+        return header, pageDicts
+
+    def convertLODToCSV(self, pageTitles: list, wikiSon="Event"):
+        """
+        Converts the given LOD to csv by placing the key inside the values with the given pageTitleKey as column
+        Example:
+            Input:
+        Args:
+            pageTitles:
+            wikiSon:
+
+        Returns:
+            header(list): Header for CSV File
+            pageDicts(List of Dics): List of Dicts of pages
+        """
+        #ToDo: Ensure that the headers and values align when converting the LOD to csv
+        pageDicts = []
+        for pageTitle in pageTitles:
+            wikiFile = self.getWikiFile(pageTitle)
+            pageDict = wikiFile.extract_template(wikiSon)
+            if self.debug:
+                print(pageDict)
+            pageDict['pageTitle'] = pageTitle
+            pageDicts.append(pageDict)
+            header = self.get_Properties(pageDicts)
+        return header, pageDict
+
+    def convertWikiFilesToLOD(self,wikiFiles:list, wikiSonName:str):
+        '''
+        converts the given pagesTitles to csv by extracting the given templateName from the wikiPage corresponding to
+        the given pageTitle.
+
+        Args:
+            wikiFiles(list): PageTitles to fetch and convert to CSV
+            wikiSonName(str): Name of the WikiSon objec that should be extracted
+
+        Returns:
+            header(list): Header for CSV File
+            pageDicts(List of Dics): List of Dicts of pages
+        '''
+        lod={}
+        for wikifile in wikiFiles:
+            if isinstance(wikifile, WikiFile):
+                values=wikifile.extract_template(wikiSonName)
+                if values is None:
+                    values={}
+                pageTitle=wikifile.getPageTitle()
+                if pageTitle is not None:
+                    lod[pageTitle]=values
+        return lod
+
+
 
 
 
@@ -151,6 +215,175 @@ class WikiFix(Toolbox):
                 pairDict[pageTitle] = pageText
                 pageContentList.append(pairDict)
         return pageContentList
+
+    def importCSVFileToWiki(self, csvFileName:str, wikiSonName:str, pageTitle:str="pageTitle"):
+        """
+        Imports the given csv file to the wiki by applying the values of the rows.
+        It is assumed that each row is clearly identified by one column which represents a pageTitle in the wiki
+        Args:
+            csvString: csv content as string
+            wikiSonName(str): Name of the wikiSon object that should be updated/created
+            pageTitle(str): Column name that holds the pageTitle
+
+        Returns:
+            Nothing
+        """
+        csvContent=self.readFile(filename=csvFileName)
+        return self.importCSVContentToWiki(csvContent, wikiSonName=wikiSonName, pageTitle=pageTitle)
+
+
+    def importCSVContentToWiki(self, csvString:str, wikiSonName:str, pageTitle:str="pageTitle"):
+        """
+        Imports the given csv content to the wiki by applying the values of the rows.
+        It is assumed that each row is clearly identified by one column which represents a pageTitle in the wiki
+        Args:
+            csvString: csv content as string
+            wikiSonName(str): Name of the wikiSon object that should be updated/created
+            pageTitle(str): Column name that holds the pageTitle
+
+        Returns:
+            Nothing
+        """
+        lod=self.convertCSVtoLOD(csvString, pageTitle)
+        self.importLODtoWiki(lod,wikiSon=wikiSonName, titleKey=pageTitle)
+
+
+    def readFile(self, filename:str)->str:
+        """
+        Reads the given filename and returns it as string
+        Args:
+            filename: Name of the file that should be returned as string
+
+        Returns:
+            Content of the file as string
+        """
+        content=""
+        with open(filename, 'r') as file:
+            content=file.read()
+        return content
+
+    def convertCSVtoLOD(self, csvString:str, pageTitle:str="pageTitle"):
+        """
+        Converts the given csv string to a list of dicts (LOD).
+        It is assumed that each row is clearly identified by one column which represents a pageTitle in the wiki
+        Args:
+            csvString(str): csv content as string
+            pageTitle(str): Column name that holds the pageTitle
+
+        Returns:
+            List of dicts where each key represents the pageTitle and the value the WIKISon values corresponding to the page
+        """
+        reader=csv.DictReader(io.StringIO(csvString))
+        return list(reader)
+
+    def importLODtoWiki(self, data:list, wikiSon:str, titleKey:str="pageTitle"):
+        """
+        Uses the given data and updates the corresponding pages in the wiki.
+        It is assumed that the page title is part of the dict binding the values of the dict to the corresponding page.
+
+        Args:
+            data(list): List of Dicts that should be used to update tzhe corresponding pages in the wiki
+            wikiSon(str): Name of the wikiSon object that should be updated/created
+            titleKey(str): Name of the key that holds the pageTitle. Default is "pageTitle"
+
+        Returns:
+
+        """
+        pageDict=self.pagesListtoDict(data, titleKey)
+        wiki_files=self.getUpdatedPages(pageDict, wikiSon)
+        self.pushWikiFilesToWiki(wiki_files)
+
+    def pagesListtoDict(self, data:list, titleKey:str="pageTitle")->dict:
+        """
+        Converts the given list of dicts to a dict in which each value is identified by the corresponding pageTitle.
+        It is assumed that each dict has the pageTitle key set and that this key is unique within the list.
+        Example:
+            Input: [{"pageTitle":"Test Page", "label":Test}]
+            Output: {"Test Page":{"label":Test}}
+
+        Args:
+            data(list): List of dicts of WikiSon values
+            titleKey(str): Name of the key that holds the pageTitle. Default is "pageTitle"
+
+        Returns:
+            dict of dicts where each dict is identified by the pageTitle
+        """
+        res={}
+        for record in data:
+            if titleKey in record:
+                pageTitle = record[titleKey]
+                del record[titleKey]
+                res[pageTitle]=record
+        return res
+
+    def pushWikiFilesToWiki(self, wiki_files:list):
+        """
+        Pushes the content of the given wikiFiles to the corresponding wiki pages in the wiki
+        
+        Args:
+            wiki_files: list of WikiFiles that should be pushed to the wiki
+
+        Returns:
+            Nothing
+        """
+        for wiki_file in wiki_files:
+            if isinstance(wiki_file, WikiFile):
+                page_content=str(wiki_file)
+                update_msg=f"modified through csv import by {self.wikiPush.fromWiki.wikiUser.user}"
+                wiki_file.getPage().edit(page_content, update_msg)
+
+    def getUpdatedPages(self, records:dict, wikiSon:str)->list:
+        """
+        Updates the wikiPages with the given values by applying the values to the WikiSon object matching the given wikiSon name.
+        The update is applied by creating a WikiFile object from the page contnent in the wiki.
+        The changes are then applied in the WikiFile object.
+        Note: At this point the changes are not applied to the wiki. Do do so use pushWikiFilesToWiki()
+
+        Args:
+            records(dict): dict of dicts in which the new values for a page are identified by the pageTitle
+            wikiSon(str): Name of the wikiSon object that should be updated/created
+
+        Returns:
+            List of WikiFile objects with the updated content
+        """
+        res=[]
+        for pageTitle, values in records.items():
+                if pageTitle is not None:
+                    wiki_file=self.getUpdatedPage(pageTitle, values, wikiSon)
+                    res.append(wiki_file)
+        return res
+
+
+    def getUpdatedPage(self, pageTitle:str, values:dict, wikiSon:str)->WikiFile:
+        """
+        Updates the given page with the given values
+
+        Args:
+            pageTitle(str): Title of the page that shoud be updated
+            values(dict): values that should be used for the update
+            wikiSon(str): Name of the WikiSon that should be updated
+
+        Returns:
+            WikiFile corresponding to the given pageTitle with the applied updates
+        """
+        wiki_file=self.getWikiFile(pageTitle)
+        wiki_file.add_template(wikiSon, values, overwrite=True)
+        return wiki_file
+
+    def getWikiFile(self, pageTitle:str)->WikiFile:
+        """
+        Queries the given page and converts it to a WikiFile.
+
+        Args:
+            pageTitle: Title of the page that should be retrieved
+
+        Returns:
+            WikiFile corresponding the the given pageTitle
+        """
+        pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
+        wiki_file = WikiFile(pageTitle, "tmp", self.wikiRender, pageItem.text())
+        wiki_file.setPage(pageItem)
+        return wiki_file
 
 
 if __name__ == "__main__":

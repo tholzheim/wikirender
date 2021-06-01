@@ -1,5 +1,6 @@
 import os
 import wikitextparser as wtp
+from mwclient.page import Page
 from wikitextparser import Template
 
 
@@ -183,8 +184,18 @@ class WikiFile:
             value = arg.value.strip()
             if value.endswith("\n"):
                 value=value[:-1]
-            res[arg.name] = value
+            res[arg.name.strip()] = value
         return res
+
+    def setPage(self, page:Page):
+        self.pageRef=page
+
+    def getPage(self)->Page:
+        if 'pageRef' in self.__dict__:
+            return self.__dict__["pageRef"]
+
+    def getPageTitle(self):
+        return self.file_name
 
     @staticmethod
     def get_wiki_path(path: str, name: str):
