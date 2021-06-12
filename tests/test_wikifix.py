@@ -6,6 +6,7 @@ from random import random
 import pkg_resources
 
 from wikifile.wikiFix import WikiFix
+import warnings
 
 class TestWikiFix(unittest.TestCase):
     '''
@@ -17,6 +18,8 @@ class TestWikiFix(unittest.TestCase):
             self.fix = WikiFix('orth')
             self.pageTitle="Test_WikiFix"
             self.wikiSonName = "UnitTestPage"
+        # filter annoying resource warnings
+        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
 
     def tearDown(self):
         pass
