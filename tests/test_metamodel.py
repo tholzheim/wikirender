@@ -11,6 +11,9 @@ from wikifile.metamodel import Context, Topic, Property, UML, MetaModelElement
 
 
 class TestMetaModel(unittest.TestCase):
+    '''
+    test the meta model
+    '''
 
     def setUp(self):
         pass

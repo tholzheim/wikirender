@@ -8,6 +8,9 @@ import pkg_resources
 from wikifile.wikiFix import WikiFix
 
 class TestWikiFix(unittest.TestCase):
+    '''
+    test wiki fixing
+    '''
 
     def setUp(self):
         if not self.inPublicCI():
