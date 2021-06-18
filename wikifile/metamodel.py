@@ -6,6 +6,7 @@ Created on 2021-03-21
 import json
 import re
 import sys
+from datetime import datetime
 
 from lodstorage.jsonable import Types, JSONAble
 from wikifile.smw import SMW, Query
@@ -141,7 +142,10 @@ class Context(MetaModelElement):
     This class provides helper functions and constants to render a Context to corresponding wiki pages
     """
     samples = [{
-        "name": "MetaModel"
+        "name": "ConfIDent",
+        "since": datetime.strptime("2020-04-14","%Y-%m-%d"),
+        "copyright": "ConfIDent Project",
+        "master": "https://rq.bitplan.com"
     }]
     propList = MetaModelElement.get_prop_list_from_samples(samples)
     

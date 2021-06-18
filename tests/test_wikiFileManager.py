@@ -5,13 +5,13 @@ from random import random
 
 import pkg_resources
 
-from wikifile.wikiFix import WikiFix
+from wikifile.wikiFileManager import WikiFileManager
 
-class TestWikiFix(unittest.TestCase):
+class TestWikiFileManager(unittest.TestCase):
 
     def setUp(self):
         if not self.inPublicCI():
-            self.fix = WikiFix('orth')
+            self.fix = WikiFileManager('orth')
             self.pageTitle="Test_WikiFix"
             self.wikiSonName = "UnitTestPage"
 
@@ -23,42 +23,6 @@ class TestWikiFix(unittest.TestCase):
         are we running in a public Continuous Integration Environment?
         '''
         return getpass.getuser() in ["travis", "runner"];
-
-    def testExportCsvContent(self):
-        if self.inPublicCI(): return
-        fix= WikiFix('ormk',debug=True)
-        pageTitles=fix.getEventsinSeries('3DUI','Event in series')
-        header, dicts = fix.getCsv(pageTitles)
-        fix.exportToCsv(header,dicts)
-        LOD= fix.prepareExportCsvContent('dict.csv')
-        self.assertIsNotNone(LOD)
-        failures= fix.exportCsvToWiki(LOD)
-        self.assertEqual(len(failures),0)
-
-    def testEventsinSeries(self):
-        if self.inPublicCI(): return
-        fix = WikiFix('ormk')
-        events=fix.getEventsinSeries('3DUI','Event in series')
-        self.assertTrue('3DUI 2017' in events)
-
-    def testEditProperty(self):
-        if self.inPublicCI(): return
-        sampleDict= {'Acronym':'test'}
-        fix = WikiFix('ormk')
-        fixedDict=fix.editProperty(sampleDict,'Acronym','testpassed')
-        self.assertIsNotNone(fixedDict)
-        self.assertEqual(fixedDict['Acronym'],'testpassed')
-        fixedDict2 = fix.editProperty(sampleDict, 'NewProperty', 'testpassed')
-        self.assertIsNotNone(fixedDict2)
-        self.assertEqual(fixedDict2['NewProperty'], 'testpassed')
-
-    def testWikiFix(self):
-        if self.inPublicCI(): return
-        fix = WikiFix('ormk')
-        header, dicts = fix.getCsv(['3DUI 2020', '3DUI 2017'])
-        self.assertIsNotNone(header)
-        self.assertIsNotNone(dicts)
-        self.assertEqual(len(dicts),2)
 
     def testPagesListtoDict(self):
         if self.inPublicCI(): return
@@ -132,37 +96,6 @@ class TestWikiFix(unittest.TestCase):
         self.assertTrue("randomValue" in wikiSon)
         self.assertEqual(wikiSon["randomValue"], str(random_val))
 
-    def testConvertCSVtoLOD(self):
-        if self.inPublicCI(): return
-        csv_raw="""pageTitle,name,label
-page_1,Test Page 1, 1
-page_2,Test Page 2, 2"""
-        lod=self.fix.convertCSVtoLOD(csv_raw)
-        self.assertTrue(len(lod) == 2)
-        self.assertTrue("name" in lod[0])
-        self.assertTrue(len(lod[0])==3)
-        self.assertEqual("Test Page 1", lod[0]["name"])
-
-
-    def  testGetFile(self):
-        if self.inPublicCI(): return
-        test_csv=pkg_resources.resource_filename('tests','resources/import_test.csv')
-        exp_content="""pageTitle, lastTested
-Test_WikiFix, 2021"""
-        actual_content=self.fix.readFile(test_csv)
-        self.assertEqual(actual_content,exp_content)
-
-    def testImportCSVContentToWiki(self):
-        if self.inPublicCI(): return
-        timestampOfTest = self.getTimestamp()
-        csv_content = """pageTitle,lastTested
-%s,%s""" % (self.pageTitle,timestampOfTest)
-        self.fix.importCSVContentToWiki(csv_content, self.wikiSonName)
-        pushed_wikiFile = self.fix.getWikiFile(pageTitle=self.pageTitle)
-        wikiSon = pushed_wikiFile.extract_template(self.wikiSonName)
-        self.assertTrue("lastTested" in wikiSon)
-        self.assertEqual(wikiSon["lastTested"], timestampOfTest)
-
     def testExportWikiSonToLOD(self):
         if self.inPublicCI(): return
         pageTitleKey="pageTitleTest"
@@ -188,15 +121,10 @@ Test_WikiFix, 2021"""
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
 
-    def testExportWikiSonToCSV(self):
-        if self.inPublicCI(): return
-        csvString = self.fix.exportWikiSonToCSV([self.pageTitle],
-                                                self.wikiSonName,
-                                                pageTitleKey=self.pageTitle,
-                                                properties=[self.pageTitle, "name"],
-                                                limitProperties=True)
-        exp_csv="Test_WikiFix,name\r\nTest_WikiFix,Test page to test WikiFix\r\n"
-        self.assertEqual(csvString, exp_csv)
+
+    def test(self):
+        csvString=self.fix.exportWikiSonToLOD(["3DUI"], "Event series", pageTitleKey="test")
+        print(csvString)
 
     def getTimestamp(self)->str:
         timestampOfTest = datetime.now()
