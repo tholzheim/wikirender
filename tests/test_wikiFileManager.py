@@ -6,14 +6,20 @@ from random import random
 import pkg_resources
 
 from wikifile.wikiFileManager import WikiFileManager
+import warnings
 
 class TestWikiFileManager(unittest.TestCase):
+    '''
+    test WikiFileManager
+    '''
 
     def setUp(self):
         if not self.inPublicCI():
             self.fix = WikiFileManager('orth')
             self.pageTitle="Test_WikiFix"
             self.wikiSonName = "UnitTestPage"
+        # filter annoying resource warnings
+        warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
 
     def tearDown(self):
         pass
@@ -120,11 +126,6 @@ class TestWikiFileManager(unittest.TestCase):
             self.assertEqual(recordKeys[index], prop)
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
-
-
-    def test(self):
-        csvString=self.fix.exportWikiSonToLOD(["3DUI"], "Event series", pageTitleKey="test")
-        print(csvString)
 
     def getTimestamp(self)->str:
         timestampOfTest = datetime.now()

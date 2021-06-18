@@ -5,6 +5,9 @@ from wikifile.smw import Query, Form, SMWPart, SMW, Table
 
 
 class TestSMWPart(TestCase):
+    '''
+    test semantic media wiki
+    '''
 
     def setUp(self):
         pass

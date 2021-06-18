@@ -1,6 +1,4 @@
-import os
 import unittest
-from distutils.sysconfig import get_python_lib
 import getpass
 from wikifile.wikiRender import WikiRender
 

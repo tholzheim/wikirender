@@ -9,7 +9,9 @@ from wikifile.wikiRender import WikiRender
 from wikifile.metamodel import Topic
 
 class TestWikiRender(unittest.TestCase):
-
+    '''
+    test wiki rendering
+    '''
 
     def setUp(self):
         pass
