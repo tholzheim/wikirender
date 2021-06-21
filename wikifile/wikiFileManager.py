@@ -98,15 +98,16 @@ class WikiFileManager(Toolbox):
             header(list): Header for CSV File
             pageDicts(List of Dics): List of Dicts of pages
         '''
-        lod = {}
+        lod = []
         for wikifile in wikiFiles:
             if isinstance(wikifile, WikiFile):
                 values = wikifile.extract_template(wikiSonName)
                 if values is None:
                     values = {}
                 pageTitle = wikifile.getPageTitle()
-                if pageTitle is not None:
-                    lod[pageTitle] = values
+                if pageTitle is not None and len(values)>0:
+                    values['pageTitle']= pageTitle
+                    lod.append(values)
         return lod
 
     def pagesListtoDict(self, data: list, titleKey: str = "pageTitle") -> dict:
@@ -151,7 +152,7 @@ class WikiFileManager(Toolbox):
     def getUpdatedPages(self, records: dict, wikiSon: str) -> list:
         """
         Updates the wikiPages with the given values by applying the values to the WikiSon object matching the given wikiSon name.
-        The update is applied by creating a WikiFile object from the page contnent in the wiki.
+        The update is applied by creating a WikiFile object from the page content in the wiki.
         The changes are then applied in the WikiFile object.
         Note: At this point the changes are not applied to the wiki. Do do so use pushWikiFilesToWiki()
 
