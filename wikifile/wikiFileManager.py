@@ -182,7 +182,7 @@ class WikiFileManager(Toolbox):
             WikiFile corresponding to the given pageTitle with the applied updates
         """
         wiki_file = self.getWikiFile(pageTitle)
-        wiki_file.add_template(wikiSon, values, overwrite=True)
+        wiki_file.add_template(wikiSon, values, overwrite=True, prettify=True)
         return wiki_file
 
     def getWikiFile(self, pageTitle: str) -> WikiFile:

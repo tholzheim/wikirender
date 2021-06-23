@@ -120,6 +120,17 @@ class TestWikiFile(TestCase):
         wikiText=str(wikiFile).strip()
         self.assertEqual(expString, wikiText)
 
+    def test_str_adding_arguments_pretttify(self):
+        '''
+        tests Issue https://github.com/tholzheim/wikirender/issues/7
+        Adding new values to a template in prettify mode should place each value into a new line
+        '''
+        rawString = "{{Event\n|Acronym=3DUI 2020\n}}"
+        expString = "{{Event\n|Acronym=3DUI 2020\n|Title=Test\n}}"
+        wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, rawString)
+        wikiFile.update_template("Event", {"Title": "Test"}, prettify=True)
+        wikiText = str(wikiFile).strip()
+        self.assertEqual(expString, wikiText)
 
 if __name__ == "__main__":
     unittest.main()

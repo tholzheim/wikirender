@@ -104,7 +104,7 @@ class WikiFile:
         name = name.rstrip()
         return name
 
-    def update_template(self, template_name: str, args:dict, overwrite=False):
+    def update_template(self, template_name: str, args:dict, overwrite=False, prettify:bool=False):
         """
         Updates the given template the values from the given dict args.
         If force is set to True existing values will be overwritten.
@@ -113,15 +113,16 @@ class WikiFile:
             template_name(str): name of the template that should be updated
             args(dict): Dict containing the arguments that should be set. key=argument name, value=argument value
             overwrite(bool): If True existing values will be overwritten
+            prettify(bool): If True new values will be added into a new line
 
         Returns:
             Nothing
         """
         template = self.get_template(template_name)
-        self.update_arguments(template, args, overwrite)
+        self.update_arguments(template, args, overwrite, prettify)
 
     @staticmethod
-    def update_arguments(template: Template, args:dict, overwrite=False):
+    def update_arguments(template: Template, args:dict, overwrite=False, prettify:bool=False):
         """
         Updates the arguments of the given template with the values of the given dict (args)
 
@@ -129,6 +130,7 @@ class WikiFile:
             template: Template that should be updated
             args(dict): Dict containing the arguments that should be set. key=argument name, value=argument value
             overwrite(bool): If True existing values will be overwritten
+            prettify(bool): If True new values will be added into a new line
 
         Returns:
             Nothing
@@ -143,9 +145,12 @@ class WikiFile:
                     pass
             else:
                 if value is not None:
-                    template.set_arg(key, value, preserve_spacing=False)
+                    postfix=""
+                    if prettify:
+                        postfix="\n"
+                    template.set_arg(key, value+postfix, preserve_spacing=False)
 
-    def add_template(self, template_name: str, data: dict, overwrite=False):
+    def add_template(self, template_name: str, data: dict, overwrite=False, prettify:bool=False):
         """
         Adds the given data as template with the given name to this wikifile.
         If the template is already present only the arguments are updated (the values are only overwritten if overwrite
@@ -155,6 +160,7 @@ class WikiFile:
             template_name(str): Name of the template the data should be inserted in
             data(dict): Data that should be saved in form of a template
             overwrite(bool): If true existing values are overwritten. Otherwise onl missing values are added. Default: False
+            prettify: If true each newly added value will be placed in a new line. Oterwise values are added in the same line. Default is false.
 
         Returns:
             Nothing
@@ -164,7 +170,7 @@ class WikiFile:
             # create template
             self.wikiText.insert(0, self.wiki_render.render_template(template_name, data))
         else:
-            WikiFile.update_arguments(template, data, overwrite)
+            WikiFile.update_arguments(template, data, overwrite, prettify)
 
     def extract_template(self, name: str):
         """
