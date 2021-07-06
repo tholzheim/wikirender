@@ -44,7 +44,8 @@ error() {
 usage() {
   echo "usage: $0 [-h|--help] -t|--target wiki"
   echo "  -h|--help: show this usage"
-  echo "  -t|--target: target wiki"
+  echo "  -s|--source: source wiki - The wiki the topic context should be queried from"
+  echo "  -t|--target: target wiki - The wiki the generated pages should be pushed to if not set the pages will be generated but not pushed"
   echo "  --topic: name of the topic that should be generated"
 }
 
@@ -97,12 +98,20 @@ do
     --nocache)
        cache=false
        ;;
+    -s|--source)
+      if [ $# -lt 1 ]
+      then
+        usage
+      fi
+      source_wiki="$1"
+      shift
+      ;;
     -t|--target)
       if [ $# -lt 1 ]
       then
         usage
       fi
-      wiki=$1
+      target_wiki=$1
       shift
       ;;
     --topic)
@@ -120,7 +129,7 @@ topicAsk="[[Topic name::$topic]]|mainlabel=pageTitle|?topic name=name|?topic plu
 propAsk="[[Property name::+]][[Property topic::Concept:$topic]]|mainlabel=pageTitle| ?Property name = name | ?Property label = label | ?Property type = type| ?Property index = index | ?Property sortPos = sortPos | ?Property primaryKey = primaryKey| ?Property mandatory = mandatory| ?Property namespace = namespace| ?Property size = size| ?Property uploadable = uploadable | ?Property defaultValue = defaultValue | ?Property inputType = inputType| ?Property allowedValues = allowedValues| ?Property documentation = documentation | ?Property values_from = values_from | ?Property showInGrid = showInGrid | ?Property isLink = isLink | ?Property nullable = nullable | ?Property topic = topic | ?Property regex=regexp"
 
 # target wiki is mandatory
-if [ "$wiki" = "" ]
+if [ "$source_wiki" = "" ]
 then
   usage
   exit
@@ -140,9 +149,16 @@ then
 fi
 
 cd $base
-query $wiki "$topicAsk" topics.json $cache $base
+query $source_wiki "$topicAsk" topics.json $cache $base
 showCount topics.json Topics
-query $wiki "$propAsk" properties.json $cache $base
+query $source_wiki "$propAsk" properties.json $cache $base
 showCount properties.json Properties
 cd $scriptbase
 python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topic $base/topics.json --properties $base/properties.json -f -p $topic --debug
+
+if [ "$target_wiki" != "" ]
+then
+  echo "Pushing generated pages to" $target_wiki
+  cd $base
+  wikirestore --backupPath . -t $target_wiki
+fi
