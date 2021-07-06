@@ -33,7 +33,7 @@ jobs:
         scripts/install
     - name: Start WikiDocker
       run: |
-        bash startDocker -v ${{ matrix.mediawiki-version }}
+        bash scripts/startWikiDocker -v ${{ matrix.mediawiki-version }}
     - name: check running containers
       run: |
         docker ps -a
