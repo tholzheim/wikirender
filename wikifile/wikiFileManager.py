@@ -147,7 +147,12 @@ class WikiFileManager(Toolbox):
             if isinstance(wiki_file, WikiFile):
                 page_content = str(wiki_file)
                 update_msg = f"modified through csv import by {self.wikiPush.fromWiki.wikiUser.user}"
-                wiki_file.getPage().edit(page_content, update_msg)
+                page = wiki_file.getPage()
+                if page is None:
+                    page = self.wikiPush.fromWiki.getPage(wiki_file.getPageTitle())
+                page.edit(page_content, update_msg)
+
+
 
     def getUpdatedPages(self, records: dict, wikiSon: str) -> list:
         """

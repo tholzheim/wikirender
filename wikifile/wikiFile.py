@@ -62,7 +62,7 @@ class WikiFile:
             WikiText object
         """
         fname = WikiFile.get_wiki_path(path, name)
-        if os.path.isfile(fname):
+        if os.path.isfile(r"{}".format(fname)):
             with open(fname, mode='r') as file:
                 page = file.read()
                 parsed_page = wtp.parse(page)
