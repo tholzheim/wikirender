@@ -1,12 +1,11 @@
 import unittest
+import warnings
 import getpass
+from wikifile.wikiFileManager import WikiFileManager
+from tests.testWikiConfig import TestWikiConfig
+from wikibot.wikipush import WikiPush
 from datetime import datetime
 from random import random
-
-import pkg_resources
-
-from wikifile.wikiFileManager import WikiFileManager
-import warnings
 
 class TestWikiFileManager(unittest.TestCase):
     '''
@@ -14,11 +13,18 @@ class TestWikiFileManager(unittest.TestCase):
     '''
 
     def setUp(self):
-        if not self.inPublicCI():
-            self.fix = WikiFileManager('orth')
-            self.pageTitle="Test_WikiFix"
-            self.wikiSonName = "UnitTestPage"
+        self.fix = WikiFileManager(TestWikiConfig.id)
+        self.pageTitle="Test_WikiFileManager"
+        self.wikiSonName = "UnitTestPage"
+        self.wikiPush = WikiPush(fromWikiId=TestWikiConfig.id, login=True)
         # filter annoying resource warnings
+        testPageContent="""{{UnitTestPage
+|name=Test page to test WikiFix
+|randomValue=0.7220216381646549
+|lastTested =2021-07-06 05:29:18.213316
+}}
+test freetext"""
+        self.wikiPush.fromWiki.getPage(self.pageTitle).edit(testPageContent)
         warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
 
     def tearDown(self):
@@ -59,14 +65,14 @@ class TestWikiFileManager(unittest.TestCase):
 
     def testGetWikiFile(self):
         if self.inPublicCI(): return
-        wikiFile=self.fix.getWikiFile("Test_WikiFix")
+        wikiFile=self.fix.getWikiFile(self.pageTitle)
         wikiSon=wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("name" in wikiSon)
 
     def testGetUpdatedPage(self):
         if self.inPublicCI(): return
         new_values={"label":"Test label", "year":"2020"}
-        wikiFile=self.fix.getUpdatedPage("Test_WikiFix", new_values, self.wikiSonName)
+        wikiFile=self.fix.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
         wikiSon = wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("label" in wikiSon)
         self.assertTrue("year" in wikiSon)
@@ -106,7 +112,7 @@ class TestWikiFileManager(unittest.TestCase):
         if self.inPublicCI(): return
         pageTitleKey="pageTitleTest"
         lod=self.fix.exportWikiSonToLOD([self.pageTitle], self.wikiSonName, pageTitleKey)
-        # expected is something like this: [{'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686', 'lastTested': '2021-06-01 22:55:53.787546', 'pageTitleTest': 'Test_WikiFix'}]
+        # expected is something like this: [{'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686', 'lastTested': '2021-06-01 22:55:53.787546', 'pageTitleTest': 'Test_WikiFileManager'}]
         self.assertTrue(len(lod)==1)
         self.assertTrue("name" in lod[0])
         self.assertTrue(pageTitleKey in lod[0])
@@ -118,7 +124,7 @@ class TestWikiFileManager(unittest.TestCase):
                                         self.wikiSonName,
                                         pageTitleKey,
                                         properties=props)
-        # expected is something like this: [{'pageTitleTest': 'Test_WikiFix', 'lastTested': '2021-06-01 22:55:53.787546', 'Not existing property': None, 'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686'}]
+        # expected is something like this: [{'pageTitleTest': 'Test_WikiFileManager', 'lastTested': '2021-06-01 22:55:53.787546', 'Not existing property': None, 'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686'}]
         self.assertTrue(len(lod)==1)
         record=lod[0]
         recordKeys=list(record.keys())
