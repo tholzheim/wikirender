@@ -7,10 +7,22 @@ from wikifile.wikiRender import WikiRender
 
 
 class WikiFileManager(Toolbox):
+    '''
+    access to Wiki markup files for a given wiki
+    '''
 
-    def __init__(self, fromWikiId, debug=False):
+    def __init__(self, sourceWikiId:str, login=True,debug=False):
+        '''
+        constructor
+        
+        Args:
+            fromWikiId(str): the wikiId of the wiki 
+            login(bool): do we need to login to the wiki
+            debug(bool): True if debugging should be switched on 
+        '''
         super(WikiFileManager, self).__init__()
-        self.wikiPush = WikiPush(fromWikiId=fromWikiId, login=True)
+        self.sourceWikiId=sourceWikiId
+        self.wikiPush = WikiPush(fromWikiId=sourceWikiId, login=login)
         self.debug = debug
         self.wikiRender = WikiRender()
 
