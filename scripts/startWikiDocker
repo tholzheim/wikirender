@@ -19,21 +19,29 @@ installAndGetMediaWikiDocker() {
   pip install -U py-3rdparty-mediawiki
 }
 
+#
+# install docker compose CLI plugin (if needed)
+# this is just a temporary workaround until docker integrates the new V2 composer cli-plugin into the standard
+# installation procedure
+#
 installDockerCompose() {
-  echo "Installing Docker Compose CLI"
-  docker --version
-   cliplugindir=$HOME/.docker/cli-plugins
-   mkdir -p $cliplugindir
-   cd $cliplugindir
-   wget https://github.com/docker/compose-cli/releases/download/v2.0.0-beta.3/docker-compose-linux-amd64
-   mv  docker-compose-linux-amd64 docker-compose
+  docker  2>&1 | grep compose
+  if [$? -ne 0 ]
+  then
+    echo "Installing Docker Compose CLI"
+    docker --version
+     cliplugindir=$HOME/.docker/cli-plugins
+     mkdir -p $cliplugindir
+     cd $cliplugindir
+     wget https://github.com/docker/compose-cli/releases/download/v2.0.0-beta.3/docker-compose-linux-amd64
+     mv  docker-compose-linux-amd64 docker-compose
 
-   chmod +x docker-compose
-  # check result
-   ls -l
-   docker
-   docker  2>&1 | grep compose
-
+     chmod +x docker-compose
+    # check result
+     ls -l
+     docker
+     docker  2>&1 | grep compose
+  fi
 }
 
 # commandline option
