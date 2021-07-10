@@ -26,7 +26,7 @@ installAndGetMediaWikiDocker() {
 #
 installDockerCompose() {
   docker  2>&1 | grep compose
-  if [$? -ne 0 ]
+  if [ $? -ne 0 ]
   then
     echo "Installing Docker Compose CLI"
     docker --version
