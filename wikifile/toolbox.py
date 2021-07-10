@@ -1,10 +1,3 @@
-from wikifile.wikiFile import WikiFile
-from wikifile.smw import SMWPart
-from wikifile.metamodel import Property
-import json
-import logging
-import sys
-import jinja2
 from argparse import ArgumentParser
 from argparse import RawDescriptionHelpFormatter
 import re
@@ -49,7 +42,7 @@ class Toolbox(object):
 
     @classmethod
     def wikiSontoLOD(cls, wiki_sample, entity="Event"):
-        regex = '{{ *%s(?:.|\r|\n)*?\}}' % entity
+        regex = r'{{ *%s(?:.|\r|\n)*?\}}' % entity
         re_groups = re.search(regex, wiki_sample)
         if re_groups is not None:
             property_list = re_groups.group().replace('}}', '').split('|')[1:]
