@@ -13,6 +13,7 @@ class TestWikiFile(TestCase):
     """
 
     def setUp(self):
+        self.debug=False
         self.wikiRender=WikiRender()
         self.sampleWikiFile="""
 {{Event
@@ -82,11 +83,16 @@ class TestWikiFile(TestCase):
         pass
 
     def test_get_template(self):
+        '''
+        test the get_template function
+        '''
         wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, self.sampleWikiFile)
         eventTemplate = wikiFile.get_template("Event")
         self.assertTrue(isinstance(eventTemplate,Template))
         self.assertTrue(len(eventTemplate.arguments)==10)
-        # print(eventTemplate)
+        self.debug=True
+        if self.debug:
+            print(eventTemplate)
 
     def test_get_template_name(self):
         expName="Event"

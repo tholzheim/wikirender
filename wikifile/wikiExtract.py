@@ -10,44 +10,18 @@ from wikifile.toolbox import Toolbox
 
 class WikiExtract(Toolbox):
     """
-    Provides methods to extract data from wiki files.
+    Provides methods to extract data from wiki markup files.
     """
-    def __init__(self, debug=False):
+    def __init__(self, debug=False, is_module_call=False):
+        '''
+        constructor
+        
+        Args:
+            debug(bool): if True show debugging information
+        '''
+        self.debug=debug
+        self.is_module_call=is_module_call
         super(WikiExtract, self).__init__()
-
-    def main(self, argv=None):
-        if argv is None:
-            argv = sys.argv
-
-        self.getParser()
-        try:
-            # Process arguments
-            args = self.parser.parse_args(argv)
-            if args.debug:
-                logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
-            else:
-                logging.basicConfig(stream=sys.stdout, level=logging.INFO)
-
-            file_parameters = [args.stdin, args.pages, args.file_list]
-            if len(file_parameters) - (file_parameters.count(None) + file_parameters.count(False)) > 1:
-                logging.error(
-                    "Multiple file selection options were used. Please use only one or none to select all files in the backup folder.")
-                raise Exception("Invalid parameters")
-
-            res_templates = WikiExtract.extract_templates(args.template,
-                                                          stdIn=args.stdin,
-                                                          file_list=args.file_list,
-                                                          page_titles=args.pages,
-                                                          backup_path=args.backupPath,
-                                                          add_file_name=args.file_name_id)
-            print(res_templates)
-
-
-        except KeyboardInterrupt:
-            ### handle keyboard interrupt ###
-            return 1
-        except Exception as e:
-            print(e)
 
     def getParser(self):
         # Setup argument parser
@@ -63,7 +37,7 @@ class WikiExtract(Toolbox):
         self.parser.add_argument("-id", "--file_name_id", dest="file_name_id",
                                  help="Name of the key in which the file name is stored.")
         self.parser.add_argument("--listFile", dest="file_list",
-                                 help="List of pages form which the data should be extracted", required=False)
+                                 help="List of pages from which the data should be extracted", required=False)
 
     @staticmethod
     def extract_templates(template_name: str, stdIn, page_titles, file_list, backup_path, add_file_name):
@@ -115,13 +89,56 @@ class WikiExtract(Toolbox):
                     template[add_file_name] = file
                 res.append(template)
         return json.dumps({"data": res}, default=str, indent=3)
+    
+    def maininstance(self, argv=None):
+        '''
+        command line entry point
+        
+        Args:
+            argv(list): command line arguments
+        '''
+        if argv is None:
+            argv = sys.argv[1:]
+
+        self.getParser()
+        try:
+            # Process arguments
+            args = self.parser.parse_args(argv)
+            if args.debug:
+                logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
+            else:
+                logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+
+            file_parameters = [args.stdin, args.pages, args.file_list]
+            if len(file_parameters) - (file_parameters.count(None) + file_parameters.count(False)) > 1:
+                logging.error(
+                    "Multiple file selection options were used. Please use only one or none to select all files in the backup folder.")
+                raise Exception("Invalid parameters")
+
+            res_templates = WikiExtract.extract_templates(args.template,
+                                                          stdIn=args.stdin,
+                                                          file_list=args.file_list,
+                                                          page_titles=args.pages,
+                                                          backup_path=args.backupPath,
+                                                          add_file_name=args.file_name_id)
+            print(res_templates)
+
+
+        except KeyboardInterrupt:
+            ### handle keyboard interrupt ###
+            return 1
+        except Exception as e:
+            print(e)
 
 def main_module_call():
+    '''
+    main entry point for console script
+    '''
     wikiextract = WikiExtract(is_module_call=True)
-    wikiextract.main(sys.argv[1:])
+    wikiextract.maininstance()
     sys.exit()
 
 if __name__ == '__main__':
     wikiextract = WikiExtract(is_module_call=True)
-    wikiextract.main(sys.argv[1:])
+    wikiextract.maininstance()
     sys.exit()
