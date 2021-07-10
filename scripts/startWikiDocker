@@ -41,6 +41,8 @@ installDockerCompose() {
      ls -l
      docker
      docker  2>&1 | grep compose
+  else
+    echo "Docker compose CLI is already installed"
   fi
 }
 
