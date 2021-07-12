@@ -130,6 +130,15 @@ class TestWikiRender(unittest.TestCase):
         
         pass
 
+    def test_render_metamodel(self):
+        """
+        test the rendering of the metamodel technical pages
+        """
+        #ToDo:
+        # wikiRender = WikiRender(debug=True)
+        # wikiRender.render_metamodel()
+        pass
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

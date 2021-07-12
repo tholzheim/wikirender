@@ -2,7 +2,7 @@ import os
 
 import wikifile
 from wikifile.wikiFile import WikiFile
-from wikifile.metamodel import Context, Topic, UML, Property
+from wikifile.metamodel import Context, Topic, UML, Property, MetaModelElement
 from wikifile.smw import SMWPart, SMW, Form, ListOf, Query
 import json
 import sys
@@ -163,7 +163,7 @@ class WikiRender(Toolbox):
             print(e)
         return None
 
-    def generateTopic(self, topic: Topic, path: str, overwrite: bool):
+    def generateTopic(self, topic: Topic, path: str, overwrite:bool=False):
         """
         Generate all technical pages of the given topic and save them as wiki page at the given path
         Args:
@@ -172,13 +172,19 @@ class WikiRender(Toolbox):
             overwrite: If true the generated pages will overwrite existing pages. Otherwise only missing pages will be stored
         """
         if self.debug:
-            print("generating topic %s" % topic.name)
+            print(f"generating topic {topic.name}")
         for part, smwPart in SMWPart.getAll(self).items():
             if self.debug:
                 print(f"generating {smwPart.get_page_name(topic)}")
             page = smwPart.render_page(topic)
             wiki_file = WikiFile(smwPart.get_page_name(topic), path, wiki_render=self, wikiText=page, debug=self.debug)
             wiki_file.save_to_file(overwrite)
+
+    def generateProperty(self, property:Property, path:str, overwrite:bool=False):
+        if self.debug:
+            print(f"generating property {property.name}")
+        # generate property page
+        #ToDo: Generate property page
 
     def update_or_create_templates(self,
                                    data: list,
@@ -219,6 +225,12 @@ class WikiRender(Toolbox):
                 # update existing template or create new one
                 wiki_file.add_template(template_name, page)
                 wiki_file.save_to_file(overwrite=overwrite)
+
+    def render_metamodel(self):
+        metamodels=MetaModelElement.get_metamodels()
+        for metamodel in metamodels:
+            self.generateTopic(metamodel, '/tmp/wikirender', True)
+
 
 def main_module_call():
     wikirender = WikiRender()

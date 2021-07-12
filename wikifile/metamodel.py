@@ -6,11 +6,12 @@ Created on 2021-03-21
 import json
 import re
 import sys
+import pkgutil
 from datetime import datetime
-
 from lodstorage.jsonable import Types, JSONAble
 from wikifile.smw import SMW, Query
-import pkgutil
+from .resources import metamodel
+
 
 class MetaModelElement(object):
     '''
@@ -75,13 +76,15 @@ class MetaModelElement(object):
     def fromJson(self, listname: str, jsonStr: str, sample: list = None):
         """
         Convert the given string to JSON and convert the values to the corresponding datatype"
+        ToDo: Refactor to JSONAble (this method is redundant)
         Args:
             listname: name of the list the data is stored in
             jsonStr: data as json string that should be converted
             sample: sample data of the actual data. Used to convert the values to the correct type
         Returns:
 
-        """""
+        """
+
         types = Types(listname)
         types.getTypes("data", sample, 1)
         json_parsed = JSONAble()
@@ -134,6 +137,42 @@ class MetaModelElement(object):
                 return self.name
         else:
             return None
+
+    @staticmethod
+    def get_metamodel_definition(file_name:str):
+        '''
+        Returns the metamodel specification of the given filename
+        Args:
+            file_name: name of the file that contains the requested metamodel definitions
+
+        Returns:
+
+        '''
+        template = pkgutil.get_data(__name__, f"resources/metamodel/{file_name}")
+        dict = json.loads(template)
+        return dict
+
+    @staticmethod
+    def get_metamodels():
+        metamodels=[]
+        metamodels.append(Topic.get_metamodel())
+        metamodels.append(Property.get_metamodel())
+        metamodels.append(Context.get_metamodel())
+        return metamodels
+
+    @classmethod
+    def get_metamodel(cls):
+        '''
+
+        Returns:
+            Returns a topic object describing a Topic
+        '''
+        if cls.__name__ == MetaModelElement.__name__:
+            return None
+        topic_metamodel = MetaModelElement.get_metamodel_definition(f'{cls.__name__}.json')
+        topic_properties_metamodel = MetaModelElement.get_metamodel_definition(f'{cls.__name__}_properties.json')
+        topic = Topic.from_dict(topic_metamodel, topic_properties_metamodel)
+        return topic
 
 
 class Context(MetaModelElement):
@@ -251,6 +290,23 @@ class Topic(MetaModelElement):
         if prop_json:
             properties = [Property(x) for x in MetaModelElement.fromJson("data", prop_json, Property.get_samples())]
         return Topic(topic_props[0], properties)
+
+    @classmethod
+    def from_dict(cls, topicRecord:dict, props:dict=None):
+        """
+        Parse given topic_json to attributes of this Topic and convert the values to proper python types.
+        If prop_json is also given it will be converted to a list of Properties of this topic
+        Args:
+            topic_json: json string containing all information about the topic that should be created
+            prop_json: json string containing all properties of this topic
+
+        Returns:
+            Topic object based on the given parameters
+        """
+        properties = None
+        if props:
+            properties = [Property(x) for x in props]
+        return Topic(topicRecord, properties)
 
     def query_topic_overview(self, oneliner=False):
         """Returns a SMW query querying a brief description over this topic"""
