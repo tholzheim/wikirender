@@ -6,7 +6,7 @@ from wikitextparser import Template
 
 class WikiFile:
     '''
-    Provides methods to modify, query, update and save wiki files.
+    Provides methods to modify, query, update and save wiki markup files.
     '''
 
     def __init__(self, name, path, wiki_render, wikiText: str = None, debug=False):
@@ -16,7 +16,7 @@ class WikiFile:
             name: Name of the file
             path: Path to file location
             wiki_render:
-            wikiText: WikiPage contend as string. If defined the file content will loaded and this value will be used instead
+            wikiText: WikiPage content as string. If defined the file content will loaded and this value will be used instead
         """
         self.file_name = name
         self.file_path = path
@@ -30,10 +30,10 @@ class WikiFile:
     def save_to_file(self, overwrite=False):
         """
         Save the given data in a file.
+        
         Args:
-            overwrite: If True existing files will be over written and if the path does not exist the missing folder will be created. Otherwise, only missing files will be saved.
-        Returns:
-
+            overwrite(bool): If True existing files will be over written and if the path does not exist the missing folder will be created. Otherwise, only missing files will be saved.
+  
         """
         wiki_file_path = WikiFile.get_wiki_path(self.file_path, self.file_name)
         mode = "w"
@@ -62,7 +62,7 @@ class WikiFile:
             WikiText object
         """
         fname = WikiFile.get_wiki_path(path, name)
-        if os.path.isfile(fname):
+        if os.path.isfile(r"{}".format(fname)):
             with open(fname, mode='r') as file:
                 page = file.read()
                 parsed_page = wtp.parse(page)
@@ -72,8 +72,9 @@ class WikiFile:
     def get_template(self, template_name: str):
         """
         Returns the template
+        
         Args:
-            template_name:
+            template_name(str): the name of the template to extract
 
         Returns:
 

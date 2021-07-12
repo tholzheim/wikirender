@@ -2,7 +2,6 @@ import unittest
 import warnings
 import getpass
 from wikifile.wikiFileManager import WikiFileManager
-from tests.testWikiConfig import TestWikiConfig
 from wikibot.wikipush import WikiPush
 from datetime import datetime
 from random import random
@@ -13,10 +12,11 @@ class TestWikiFileManager(unittest.TestCase):
     '''
 
     def setUp(self):
-        self.fix = WikiFileManager(TestWikiConfig.id)
+        self.wikiId="wikirenderTest"
+        self.fix = WikiFileManager(self.wikiId)
         self.pageTitle="Test_WikiFileManager"
         self.wikiSonName = "UnitTestPage"
-        self.wikiPush = WikiPush(fromWikiId=TestWikiConfig.id, login=True)
+        self.wikiPush = WikiPush(fromWikiId=self.wikiId, login=True)
         # filter annoying resource warnings
         testPageContent="""{{UnitTestPage
 |name=Test page to test WikiFix
@@ -36,8 +36,11 @@ test freetext"""
         '''
         return getpass.getuser() in ["travis", "runner"];
 
-    def testPagesListtoDict(self):
-        if self.inPublicCI(): return
+    def testPagesListToDict(self):
+        '''
+        test converting a list of pages to a lookup dictionary by pageTitle
+        '''
+        
         lod=[
             {
                 "pageTitle":"Test Page 1",
@@ -58,7 +61,7 @@ test freetext"""
                 "year": "2020"
             }
         }
-        act_res=self.fix.pagesListtoDict(lod)
+        act_res=self.fix.pagesListToDict(lod)
         self.assertTrue("Test Page 1" in act_res)
         self.assertTrue("label" in act_res["Test Page 1"])
         self.assertEqual(act_res, exp_res)
@@ -132,10 +135,6 @@ test freetext"""
             self.assertEqual(recordKeys[index], prop)
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
-
-    def getTimestamp(self)->str:
-        timestampOfTest = datetime.now()
-        return str(timestampOfTest)
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
