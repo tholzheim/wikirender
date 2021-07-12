@@ -28,8 +28,6 @@ class TestWikiRender(unittest.TestCase):
         return getpass.getuser() in [ "travis", "runner" ];
 
     def testWikiRender(self):
-        if self.inPublicCI():
-            return
         topicJson="""{"data": [{"pageName": "Concept:Task", "name": "Task", "pluralName": "Tasks", "documentation": "Problem or issue that needs to be solved", "wikiDocumentation": "Problem or issue that needs to be solved"}]}
         """
         propJson="""{
@@ -128,6 +126,15 @@ class TestWikiRender(unittest.TestCase):
         wikiRender=WikiRender(debug=True)
         wikiRender.generateTopic(topic, path="/tmp/wikirender/unittest", overwrite=True)
         
+        pass
+
+    def test_render_metamodel(self):
+        """
+        test the rendering of the metamodel technical pages
+        """
+        #ToDo:
+        # wikiRender = WikiRender(debug=True)
+        # wikiRender.render_metamodel()
         pass
 
 
