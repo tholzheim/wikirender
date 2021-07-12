@@ -1,10 +1,8 @@
-import io
-
 from wikifile.wikiFile import WikiFile
 from wikibot.wikipush import WikiPush
 from wikifile.toolbox import Toolbox
 from wikifile.wikiRender import WikiRender
-
+from lodstorage.lod import LOD
 
 class WikiFileManager(Toolbox):
     '''
@@ -39,7 +37,7 @@ class WikiFileManager(Toolbox):
         Returns:
 
         """
-        pageDict = self.pagesListtoDict(data, titleKey)
+        pageDict = self.pagesListToDict(data, titleKey)
         wiki_files = self.getUpdatedPages(pageDict, wikiSon)
         self.pushWikiFilesToWiki(wiki_files)
 
@@ -122,7 +120,7 @@ class WikiFileManager(Toolbox):
                     lod.append(values)
         return lod
 
-    def pagesListtoDict(self, data: list, titleKey: str = "pageTitle") -> dict:
+    def pagesListToDict(self, data: list, titleKey: str = "pageTitle", removeKey:bool=True) -> dict:
         """
         Converts the given list of dicts to a dict in which each value is identified by the corresponding pageTitle.
         It is assumed that each dict has the pageTitle key set and that this key is unique within the list.
@@ -133,17 +131,18 @@ class WikiFileManager(Toolbox):
         Args:
             data(list): List of dicts of WikiSon values
             titleKey(str): Name of the key that holds the pageTitle. Default is "pageTitle"
+            removeKey(bool): if True remove the key entry of each dict
 
         Returns:
             dict of dicts where each dict is identified by the pageTitle
         """
-        res = {}
-        for record in data:
-            if titleKey in record:
-                pageTitle = record[titleKey]
-                del record[titleKey]
-                res[pageTitle] = record
-        return res
+        pagesDict,duplicates = LOD.getLookup(data,titleKey,withDuplicates=False)
+        if len(duplicates)>0:
+            raise Exception(f"there are duplicate pageTitles {duplicates}")
+        if removeKey:
+            for record in pagesDict.values():
+                del record[titleKey] 
+        return pagesDict
 
     def pushWikiFilesToWiki(self, wiki_files: list):
         """
@@ -163,8 +162,6 @@ class WikiFileManager(Toolbox):
                 if page is None:
                     page = self.wikiPush.fromWiki.getPage(wiki_file.getPageTitle())
                 page.edit(page_content, update_msg)
-
-
 
     def getUpdatedPages(self, records: dict, wikiSon: str) -> list:
         """
