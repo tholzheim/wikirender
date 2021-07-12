@@ -25,7 +25,7 @@ class WikiRender(CmdLineAble):
             template_env = WikiRender.getTemplateEnv()
         self.template_env = template_env
 
-    def main(self, argv=None):
+    def maininstance(self, argv=None):
         if argv is None:
             argv = sys.argv
         
@@ -85,6 +85,8 @@ class WikiRender(CmdLineAble):
             return 1
         except Exception as e:
             raise e
+        
+        return 0
 
     def getParser(self):
         # Setup argument parser
@@ -234,10 +236,8 @@ class WikiRender(CmdLineAble):
 
 def main_module_call():
     wikirender = WikiRender()
-    wikirender.main(sys.argv[1:])
-    sys.exit()
+    exitCode=wikirender.maininstance(sys.argv[1:])
+    sys.exit(exitCode)
 
 if __name__ == '__main__':
-    wikirender=WikiRender()
-    wikirender.main(sys.argv[1:])
-    sys.exit()
+    main_module_call()

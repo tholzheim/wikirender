@@ -6,7 +6,8 @@ from wikitextparser import Template
 
 class WikiFile:
     '''
-    Provides methods to modify, query, update and save wiki markup files.
+    Provides methods to modify, query, update and save files that contain wiki text markup.
+    see https://en.wikipedia.org/wiki/Help:Wikitext
     '''
 
     def __init__(self, name, path, wiki_render, wikiText: str = None, debug=False):
