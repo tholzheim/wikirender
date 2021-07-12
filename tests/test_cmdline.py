@@ -7,7 +7,9 @@ import unittest
 
 
 class TestCommandLine(unittest.TestCase):
-
+    '''
+    test the command line handling
+    '''
 
     def setUp(self):
         pass

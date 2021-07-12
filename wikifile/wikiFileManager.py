@@ -214,12 +214,3 @@ class WikiFileManager(CmdLineAble):
         wiki_file = WikiFile(pageTitle, "tmp", self.wikiRender, pageItem.text())
         wiki_file.setPage(pageItem)
         return wiki_file
-
-
-if __name__ == "__main__":
-    fix = WikiFileManager('ormk', debug=True)
-    # pageTitles= fix.getEventsinSeries('3DUI', 'Event in series')
-    # header,dicts= fix.getCsv(pageTitles)
-    # fix.exportToCsv(header,dicts)
-    pageContentList = fix.prepareExportCsvContent('dict.csv')
-    fix.exportCsvToWiki(pageContentList)
