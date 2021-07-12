@@ -2,11 +2,9 @@ import unittest
 import warnings
 import getpass
 from wikifile.wikiFileManager import WikiFileManager
-from tests.testWikiConfig import TestWikiConfig
 from wikibot.wikipush import WikiPush
 from datetime import datetime
 from random import random
-from lodstorage.lod import LOD
 
 class TestWikiFileManager(unittest.TestCase):
     '''
@@ -14,10 +12,11 @@ class TestWikiFileManager(unittest.TestCase):
     '''
 
     def setUp(self):
-        self.fix = WikiFileManager(TestWikiConfig.id)
+        self.wikiId="wikirenderTest"
+        self.fix = WikiFileManager(self.wikiId)
         self.pageTitle="Test_WikiFileManager"
         self.wikiSonName = "UnitTestPage"
-        self.wikiPush = WikiPush(fromWikiId=TestWikiConfig.id, login=True)
+        self.wikiPush = WikiPush(fromWikiId=self.wikiId, login=True)
         # filter annoying resource warnings
         testPageContent="""{{UnitTestPage
 |name=Test page to test WikiFix

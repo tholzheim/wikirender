@@ -6,7 +6,7 @@ from lodstorage.jsonable import JSONAble, Types
 
 
 class Toolbox(object):
-    """Bundles methods that are required by the commandline tools that this file provides"""
+    """Bundles methods that are required by the command line tools that this file provides"""
 
     def __init__(self):
         pass
