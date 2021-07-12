@@ -8,10 +8,10 @@ import json
 import sys
 import jinja2
 from distutils.sysconfig import get_python_lib
-from wikifile.toolbox import Toolbox
+from wikifile.cmdline import CmdLineAble
 
 
-class WikiRender(Toolbox):
+class WikiRender(CmdLineAble):
     """
     Provides functions to render json data to wiki files
     """

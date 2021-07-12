@@ -1,10 +1,10 @@
 from wikifile.wikiFile import WikiFile
 from wikibot.wikipush import WikiPush
-from wikifile.toolbox import Toolbox
+from wikifile.cmdline import CmdLineAble
 from wikifile.wikiRender import WikiRender
 from lodstorage.lod import LOD
 
-class WikiFileManager(Toolbox):
+class WikiFileManager(CmdLineAble):
     '''
     access to Wiki markup files for a given wiki
     '''
