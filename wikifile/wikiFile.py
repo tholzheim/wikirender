@@ -177,6 +177,7 @@ class WikiFile:
         """
         Extracts the template data and returns it as dict
         ToDo: Currently unhandled is the behavior if multiple templates with the same name exist
+        
         Args:
             name: name of the template that should be extracted
 

@@ -55,7 +55,6 @@ class WikiExtract(Toolbox):
 
         """
         if stdIn:
-            l = []
             backup_path = os.path.dirname(page_titles[0].strip())
             pageTitlesfix = []
             for i in page_titles:
@@ -70,7 +69,6 @@ class WikiExtract(Toolbox):
         else:
             if backup_path is None:
                 logging.warning("No backup path is defined. Please provide a path to the location were the wiki-files are stored.")
-            imageBackupPath = "%s/images" % backup_path
             if page_titles is None:
                 page_titles = []
                 for path, subdirs, files in os.walk(backup_path):
@@ -136,9 +134,7 @@ def main_module_call():
     '''
     wikiextract = WikiExtract(is_module_call=True)
     wikiextract.maininstance()
-    sys.exit()
+    sys.exit
 
 if __name__ == '__main__':
-    wikiextract = WikiExtract(is_module_call=True)
-    wikiextract.maininstance()
-    sys.exit()
+    main_module_call()
