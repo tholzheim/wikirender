@@ -28,8 +28,6 @@ class TestWikiRender(unittest.TestCase):
         return getpass.getuser() in [ "travis", "runner" ];
 
     def testWikiRender(self):
-        if self.inPublicCI():
-            return
         topicJson="""{"data": [{"pageName": "Concept:Task", "name": "Task", "pluralName": "Tasks", "documentation": "Problem or issue that needs to be solved", "wikiDocumentation": "Problem or issue that needs to be solved"}]}
         """
         propJson="""{
