@@ -20,6 +20,9 @@ class TestCommandLine(unittest.TestCase):
 
 
     def testCommandLineHandling(self):
+        '''
+        test looping over the command line arguments
+        '''
         pass
 
 

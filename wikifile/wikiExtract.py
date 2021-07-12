@@ -5,10 +5,10 @@ import logging
 import os
 import sys
 
-from wikifile.toolbox import Toolbox
+from wikifile.cmdline import CmdLineAble
 
 
-class WikiExtract(Toolbox):
+class WikiExtract(CmdLineAble):
     """
     Provides methods to extract data from wiki markup files.
     """
