@@ -10,7 +10,7 @@ class WikiFile:
     see https://en.wikipedia.org/wiki/Help:Wikitext
     '''
 
-    def __init__(self, name, path, wiki_render, wikiText: str = None, debug=False):
+    def __init__(self, name, path, wiki_render=None, wikiText: str = None, debug=False):
         """
 
         Args:

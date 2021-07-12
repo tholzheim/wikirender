@@ -112,6 +112,21 @@ class TestWikiFile(TestCase):
         self.assertTrue('Homepage' in eventRecord)
         self.assertEqual(eventRecord['Homepage'], "http://ieeevr.org/2020/")
 
+    def testNameValue(self):
+        '''
+        test getting content from wikiText
+        '''
+        wikiText="""{{SomeEntity
+|a=1
+|b=a=c
+|b
+|a='
+}}"""
+        wikiFile=WikiFile("somePage.wiki","/tmp",wikiText=wikiText)
+        someEntityDict=wikiFile.extract_template("SomeEntity")
+        print(someEntityDict)
+       
+        
     def test_str(self):
         wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, self.sampleWikiFile)
         wikiText=str(wikiFile)

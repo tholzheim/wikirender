@@ -3,6 +3,9 @@ from wikibot.wikipush import WikiPush
 from wikifile.cmdline import CmdLineAble
 from wikifile.wikiRender import WikiRender
 from lodstorage.lod import LOD
+import os
+import re
+import sys
 
 class WikiFileManager(CmdLineAble):
     '''
@@ -24,6 +27,13 @@ class WikiFileManager(CmdLineAble):
         self.debug = debug
         self.wikiRender = WikiRender()
 
+    def getWikiClient(self):
+        '''
+        get my WikiClient
+        '''
+        wikiClient=self.wikiPush.fromWiki
+        return wikiClient
+    
     def importLODtoWiki(self, data: list, wikiSon: str, titleKey: str = "pageTitle"):
         """
         Uses the given data and updates the corresponding pages in the wiki.
@@ -214,3 +224,37 @@ class WikiFileManager(CmdLineAble):
         wiki_file = WikiFile(pageTitle, "tmp", self.wikiRender, pageItem.text())
         wiki_file.setPage(pageItem)
         return wiki_file
+    
+    def generateLink(self,page):
+        search=r".*%s/(.*)\.wiki" % self.wikiId
+        replace=r"%s\1" % self.baseUrl
+        alink=re.sub(search,replace,page)
+        alink=alink.replace(" ","_")
+        return alink
+
+    def getAllPages(self, folderName:str=None):
+        '''
+        get all wiki pages
+        '''
+        home = os.path.expanduser("~")
+        allPages = []
+        backupPath='%s/wikibackup/%s/' % (home,self.wikiId)
+        if folderName is not None:
+            backupPath='%s/wikibackup/%s/' % (home,folderName)
+        for root, dirnames, filenames in os.walk(backupPath):
+            for filename in filter(filenames, '*.wiki'):
+                allPages.append(os.path.join(root, filename))
+        return allPages
+
+    def getAllPagesFromFile(self,file=sys.stdin):
+        '''
+        Args:
+            file(obj): IO object to read file paths from
+        Returns:
+            listOfFiles(list): list of all file paths
+        '''
+        listOfFiles = file.readlines()
+        return listOfFiles
+    
+    
+    

@@ -5,6 +5,7 @@ from wikifile.wikiFileManager import WikiFileManager
 from wikibot.wikipush import WikiPush
 from datetime import datetime
 from random import random
+import io
 
 class TestWikiFileManager(unittest.TestCase):
     '''
@@ -35,6 +36,14 @@ test freetext"""
         are we running in a public Continuous Integration Environment?
         '''
         return getpass.getuser() in ["travis", "runner"];
+    
+    def testGetWikiClient(self):
+        '''
+        test getting my wikiclient
+        '''
+        wikiClient=self.fix.getWikiClient()
+        self.assertEqual(self.wikiId,wikiClient.wikiUser.wikiId)
+        pass
 
     def testPagesListToDict(self):
         '''
@@ -147,6 +156,21 @@ test freetext"""
             self.assertEqual(recordKeys[index], prop)
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
+        
+    def testGetAllPagesFromFile(self):
+        '''
+        test utility function to get pageTitles from a file e.g. stdin
+        '''
+        # we'd love to test form a string
+        # see https://stackoverflow.com/a/141451/1497139
+        pageTitles="""Concept:Topic
+Help:Topic"""
+        fstdin = io.StringIO(pageTitles)
+        pageTitleList=self.fix.getAllPagesFromFile(fstdin)
+        debug=False
+        if debug:
+            print(pageTitleList)
+        self.assertEqual(2,len(pageTitleList))
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
