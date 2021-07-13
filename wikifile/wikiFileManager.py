@@ -254,6 +254,22 @@ class WikiFileManager(CmdLineAble):
         wiki_file.add_template(wikiSon, values, overwrite=True, prettify=True)
         return wiki_file
 
+    def getAllWikiFilesForArgs(self,args):
+        """
+        Get WikiFiles of the given arguments
+        Args:
+            args(ArgumentParser): Command line arguments
+        Returns:
+            wikiFiles(list): list of WikiFiles
+
+        """
+        wikiFiles= []
+        pageTitles= self.getPageTitlesForArgs(args)
+        for pageTitle in pageTitles:
+            wikiFile = self.getWikiFile(pageTitle)
+            wikiFiles.append(wikiFile)
+        return wikiFiles
+
     def getWikiFile(self, pageTitle: str) -> WikiFile:
         """
         Get the WikiFile object for the given pageTitle form the source path and if it is not located

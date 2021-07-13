@@ -30,9 +30,6 @@ class TestCommandLine(unittest.TestCase):
         # "--template","Event series"
         cmdLine=CmdLineAble()
         cmdLine.getParser()
-        cmdLine.parser.add_argument("--listFile", dest="file_list",
-                                 help="List of pages from which the data should be extracted", required=False)
-
         args = cmdLine.parser.parse_args(args)
         cmdLine.initLogging(args)
         pageTitles=cmdLine.getPageTitlesForArgs(args)
