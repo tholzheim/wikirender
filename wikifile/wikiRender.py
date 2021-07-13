@@ -96,6 +96,8 @@ class WikiRender(CmdLineAble):
         self.parser.add_argument("-m", "--mode", dest="mode",
                                  help="Select a mode.\n\tupdate_templates: updates the wikifiles at the provided location with the provided data\n\tcreate: creates a wikifile with the given data.",
                                  required=True)
+        self.parser.add_argument('-ex', '--exclude', dest="exclude_keys",
+                            help="List of keys that should be excluded")
         self.parser.add_argument('--properties', dest="properties_file", help="Json file containing properties")
         self.parser.add_argument('--topic', dest="topic_file", help="Json file containing topics")
         self.parser.add_argument('-f', dest="overwrite", action='store_true', default=False,

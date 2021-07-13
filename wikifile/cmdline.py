@@ -13,17 +13,28 @@ class CmdLineAble(object):
         pass
         
     def getParser(self):
+        '''
+        setup my argument parser
+        
+        sets self.parser as a side effect
+        
+        Returns:
+            ArgumentParser: the argument parser
+        '''
         # Setup argument parser
-        self.parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
-        self.parser.add_argument('-p', '--pages', dest="pages",  nargs='+',
+        parser = ArgumentParser(formatter_class=RawDescriptionHelpFormatter)
+        parser.add_argument("-l", "--login", dest="login", action='store_true', help="login to source wiki for access permission")
+        parser.add_argument("-s", "--source", dest="source", help="source wiki id", required=True)
+   
+        parser.add_argument('-p', '--pages', dest="pages",  nargs='+',
                             help="Names of the pages the action should be applied to")
-        self.parser.add_argument('--wikiTextPath', dest="backupPath", help="Path to store/update the wiki entries",
+        parser.add_argument('--wikiTextPath', dest="backupPath", help="Path to store/update the wiki entries",
                             required=True)
-        self.parser.add_argument('-stdin', dest="stdin", action='store_true',
+        parser.add_argument('-stdin', dest="stdin", action='store_true',
                             help='Use the input from STD IN using pipes')
-        self.parser.add_argument('-ex', '--exclude', dest="exclude_keys",
-                            help="List of keys that should be excluded")
-        self.parser.add_argument('--debug', dest="debug", action='store_true', default=False, help="Enable debug mode")
+        parser.add_argument('--debug', dest="debug", action='store_true', default=False, help="Enable debug mode")
+        self.parser=parser
+        return parser
 
         
     def initLogging(self,args):
