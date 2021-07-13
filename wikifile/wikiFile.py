@@ -18,19 +18,41 @@ class WikiFile:
         """
 
         Args:
-            name: Name of the file
-            path: Path to file location
-            wiki_render:
-            wikiText: WikiPage content as string. If defined the file content will loaded and this value will be used instead
+            name: page title of the wikiText file
+            wikiFileManager: WikiFileManager providing context information for this WikiFile
+            wikiText: WikiPage content as string
         """
         self.wikiFileManager=wikiFileManager
         self.pageTitle = self.sanitizePageTitle(name)
         self.wiki_render = wikiFileManager.wikiRender
         self.debug = debug
-        if wikiText is None:
-            self.wikiText = self.get_wikiText(self.pageTitle, self.wikiFileManager.wikiTextPath)
-        else:
-            self.wikiText = wtp.parse(wikiText)
+        self._wikiText=wikiText
+        self._parsedWikiText=None
+
+    @property
+    def wikiText(self):
+        if self._parsedWikiText is not None:
+            self._wikiText = str(self._parsedWikiText)
+        return self._wikiText
+
+    @wikiText.setter
+    def wikiText(self, wikiText:str):
+        self._wikiText=wikiText
+        if self._parsedWikiText is not None:
+            # update parsed wikiText
+            self._parsedWikiText=wtp.parse(wikiText)
+
+    @property
+    def parsedWikiText(self):
+        if self._parsedWikiText is None:
+            self._parsedWikiText=wtp.parse(self.wikiText)
+        return self._parsedWikiText
+
+    @parsedWikiText.setter
+    def parsedWikiText(self, parsedWikiText: wtp.WikiText):
+        self._parsedWikiText=parsedWikiText
+        # update the plain wikiText
+        self._wikiText=str(parsedWikiText)
 
     def sanitizePageTitle(self, name:str):
         """
@@ -122,10 +144,10 @@ class WikiFile:
         Returns:
 
         """
-        if self.wikiText is None or self.wikiText.templates is None:
+        if self.parsedWikiText is None or self.parsedWikiText.templates is None:
             # Wikifile has no templates
             return None
-        for template in self.wikiText.templates:
+        for template in self.parsedWikiText.templates:
             name = WikiFile.get_template_name(template.name)
             if name == WikiFile.get_template_name(template_name):
                 return template
@@ -212,7 +234,7 @@ class WikiFile:
         template = self.get_template(template_name)
         if template is None:
             # create template
-            self.wikiText.insert(0, self.wiki_render.render_template(template_name, data))
+            self.parsedWikiText.insert(0, self.wiki_render.render_template(template_name, data))
         else:
             WikiFile.update_arguments(template, data, overwrite, prettify)
 
@@ -268,6 +290,10 @@ class WikiFile:
     def file_name(self):
         return self.get_wiki_path(self.wikiFileManager.targetPath, self.pageTitle)
 
+    @property
+    def file_path(self):
+        return self.wikiFileManager.wikiTextPath
+
     def __str__(self) -> str:
-        return str(self.wikiText)
+        return self.wikiText
 
