@@ -27,7 +27,7 @@ class WikiFileManager(CmdLineAble):
         super(WikiFileManager, self).__init__()
         self.sourceWikiId=sourceWikiId
         if targetWikiTextPath is None:
-            targetPath=wikiTextPath
+            targetWikiTextPath=wikiTextPath
         self.targetPath=targetWikiTextPath
         self.wikiPush = WikiPush(fromWikiId=sourceWikiId, login=login)
         self.debug = debug

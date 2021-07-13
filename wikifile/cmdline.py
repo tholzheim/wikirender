@@ -30,6 +30,9 @@ class CmdLineAble(object):
                             help="Names of the pages the action should be applied to")
         parser.add_argument('--wikiTextPath', dest="backupPath", help="Path to store/update the wiki entries",
                             required=False)
+        parser.add_argument("--listFile", dest="file_list",
+                                 help="List of pages from which the data should be extracted", required=False)
+
         parser.add_argument('-stdin', dest="stdin", action='store_true',
                             help='Use the input from STD IN using pipes')
         parser.add_argument('--debug', dest="debug", action='store_true', default=False, help="Enable debug mode")
