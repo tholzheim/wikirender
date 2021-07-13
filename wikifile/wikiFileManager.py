@@ -8,8 +8,6 @@ from wikifile.cmdline import CmdLineAble
 from wikifile.wikiRender import WikiRender
 
 
-
-
 class WikiFileManager(CmdLineAble):
     '''
     access to Wiki markup files for a given wiki
