@@ -261,15 +261,15 @@ class WikiFileManager(CmdLineAble):
                     allWikiFiles[wikiFile.getPageTitle()]=wikiFile
         return allWikiFiles
 
-    def getAllPagesFromFile(self,file=sys.stdin):
+    def getAllPageTitlesFromFile(self,file=sys.stdin):
         '''
         Args:
             file(obj): IO object to read file paths from
         Returns:
-            listOfFiles(list): list of all file paths
+            listOfPageTitles(list): list of all pageTitles
         '''
-        listOfFiles = file.readlines()
-        return listOfFiles
+        listOfPageTitles = file.readlines()
+        return listOfPageTitles
     
     def getAllPageTitles4Topic(self,topicName="Event"):
         '''

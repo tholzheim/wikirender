@@ -159,7 +159,7 @@ test freetext"""
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
         
-    def testGetAllPagesFromFile(self):
+    def testGetAllPageTitlesFromFile(self):
         '''
         test utility function to get pageTitles from a file e.g. stdin
         '''
@@ -179,9 +179,9 @@ Help:Topic"""
         test getting all pages for the given backups 
         '''
         for wikiId in ["or","orclone"]:
-            home = os.path.expanduser("~")
             wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
             self.assertEqual(wikiId,wikiUser.wikiId)
+            home = os.path.expanduser("~")
             wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
             wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath,login=False)
             wikiFiles=wikiFileManager.getAllWikiFiles()
