@@ -17,9 +17,9 @@ class TestWikiFileManager(unittest.TestCase):
     '''
 
     def setUp(self):
-        self.sourcePath=f"{Path.home()}/wikibackup/or"
+        self.sourcePath=f"{Path.home()}/.or/wikibackup/or"
         self.wikiId="wikirenderTest"
-        self.fix = WikiFileManager(self.wikiId)
+        self.wikiFileManager = WikiFileManager(self.wikiId)
         self.pageTitle="Test_WikiFileManager"
         self.wikiSonName = "UnitTestPage"
         self.wikiPush = WikiPush(fromWikiId=self.wikiId, login=True)
@@ -46,7 +46,7 @@ test freetext"""
         '''
         test getting my wikiclient
         '''
-        wikiClient=self.fix.getWikiClient()
+        wikiClient=self.wikiFileManager.getWikiClient()
         self.assertEqual(self.wikiId,wikiClient.wikiUser.wikiId)
         pass
 
@@ -75,7 +75,7 @@ test freetext"""
                 "year": "2020"
             }
         }
-        act_res=self.fix.pagesListToDict(lod)
+        act_res=self.wikiFileManager.pagesListToDict(lod)
         self.assertTrue("Test Page 1" in act_res)
         self.assertTrue("label" in act_res["Test Page 1"])
         self.assertEqual(act_res, exp_res)
@@ -84,7 +84,7 @@ test freetext"""
         '''
         get the wiki file for the pageTitle
         '''
-        wikiFile=self.fix.getWikiFile(self.pageTitle)
+        wikiFile=self.wikiFileManager.getWikiFile(self.pageTitle)
         wikiSon=wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("name" in wikiSon)
 
@@ -93,7 +93,7 @@ test freetext"""
         test updating a page
         '''
         new_values={"label":"Test label", "year":"2020"}
-        wikiFile=self.fix.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
+        wikiFile=self.wikiFileManager.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
         wikiSon = wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("label" in wikiSon)
         self.assertTrue("year" in wikiSon)
@@ -103,7 +103,7 @@ test freetext"""
         test updating multiple pages
         '''
         records={self.pageTitle:{"label":"Test label", "year":"2020"}}
-        wikiFiles=self.fix.getUpdatedPages(records, self.wikiSonName)
+        wikiFiles=self.wikiFileManager.getUpdatedPages(records, self.wikiSonName)
         self.assertTrue(len(wikiFiles)==1)
         wikiSon = wikiFiles[0].extract_template(self.wikiSonName)
         self.assertTrue("name" in wikiSon)
@@ -115,9 +115,9 @@ test freetext"""
         '''
         timestampOfTest=datetime.now()
         new_values={"lastTested":str(timestampOfTest)}
-        wikiFile=self.fix.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
-        self.fix.pushWikiFilesToWiki([wikiFile])
-        pushed_wikiFile=self.fix.getWikiFile(self.pageTitle)
+        wikiFile=self.wikiFileManager.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
+        self.wikiFileManager.pushWikiFilesToWiki([wikiFile])
+        pushed_wikiFile=self.wikiFileManager.getWikiFile(self.pageTitle)
         wikiSon=pushed_wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("lastTested" in wikiSon)
         self.assertEqual(wikiSon["lastTested"], str(timestampOfTest))
@@ -128,9 +128,9 @@ test freetext"""
         '''
         random_val=random()
         data=[{"pageTitle":self.pageTitle,"randomValue": str(random_val)}]
-        self.fix.importLODtoWiki(data, self.wikiSonName)
+        self.wikiFileManager.importLODtoWiki(data, self.wikiSonName)
         # Test if import was executed correctly
-        pushed_wikiFile = self.fix.getWikiFile(self.pageTitle)
+        pushed_wikiFile = self.wikiFileManager.getWikiFile(self.pageTitle)
         wikiSon = pushed_wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("randomValue" in wikiSon)
         self.assertEqual(wikiSon["randomValue"], str(random_val))
@@ -140,7 +140,7 @@ test freetext"""
         test exporting the Markup in WikiSon to a list of dicts
         '''
         pageTitleKey="pageTitleTest"
-        lod=self.fix.exportWikiSonToLOD([self.pageTitle], self.wikiSonName, pageTitleKey)
+        lod=self.wikiFileManager.exportWikiSonToLOD([self.pageTitle], self.wikiSonName, pageTitleKey)
         # expected is something like this: [{'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686', 'lastTested': '2021-06-01 22:55:53.787546', 'pageTitleTest': 'Test_WikiFileManager'}]
         self.assertTrue(len(lod)==1)
         self.assertTrue("name" in lod[0])
@@ -149,10 +149,10 @@ test freetext"""
         # Extended Test
         propWithNoneValue="Not existing property"
         props=[pageTitleKey, "lastTested", propWithNoneValue]
-        lod=self.fix.exportWikiSonToLOD([self.pageTitle],
-                                        self.wikiSonName,
-                                        pageTitleKey,
-                                        properties=props)
+        lod=self.wikiFileManager.exportWikiSonToLOD([self.pageTitle],
+                                                    self.wikiSonName,
+                                                    pageTitleKey,
+                                                    properties=props)
         # expected is something like this: [{'pageTitleTest': 'Test_WikiFileManager', 'lastTested': '2021-06-01 22:55:53.787546', 'Not existing property': None, 'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686'}]
         self.assertTrue(len(lod)==1)
         record=lod[0]
@@ -171,7 +171,7 @@ test freetext"""
         pageTitles="""Concept:Topic
 Help:Topic"""
         fstdin = io.StringIO(pageTitles)
-        pageTitleList=self.fix.getPageTitlesForArgs(fstdin)
+        pageTitleList=self.wikiFileManager.getAllPageTitlesFromFile(fstdin)
         debug=True
         if debug:
             print(pageTitleList)
@@ -197,7 +197,7 @@ Help:Topic"""
         '''
         test if the pageTitles of all wikiText files located in a directory are recognized as pages
         '''
-        pageTitles=self.fix.getPageTitlesLocatedAt(self.sourcePath)
+        pageTitles=self.wikiFileManager.getPageTitlesLocatedAt(self.sourcePath)
         self.assertTrue(len(pageTitles)>1000)
 
 
