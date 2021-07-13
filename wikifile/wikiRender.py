@@ -8,10 +8,10 @@ import json
 import sys
 import jinja2
 from distutils.sysconfig import get_python_lib
-from wikifile.toolbox import Toolbox
+from wikifile.cmdline import CmdLineAble
 
 
-class WikiRender(Toolbox):
+class WikiRender(CmdLineAble):
     """
     Provides functions to render json data to wiki files
     """
@@ -25,7 +25,7 @@ class WikiRender(Toolbox):
             template_env = WikiRender.getTemplateEnv()
         self.template_env = template_env
 
-    def main(self, argv=None):
+    def maininstance(self, argv=None):
         if argv is None:
             argv = sys.argv
         
@@ -85,6 +85,8 @@ class WikiRender(Toolbox):
             return 1
         except Exception as e:
             raise e
+        
+        return 0
 
     def getParser(self):
         # Setup argument parser
@@ -94,6 +96,8 @@ class WikiRender(Toolbox):
         self.parser.add_argument("-m", "--mode", dest="mode",
                                  help="Select a mode.\n\tupdate_templates: updates the wikifiles at the provided location with the provided data\n\tcreate: creates a wikifile with the given data.",
                                  required=True)
+        self.parser.add_argument('-ex', '--exclude', dest="exclude_keys",
+                            help="List of keys that should be excluded")
         self.parser.add_argument('--properties', dest="properties_file", help="Json file containing properties")
         self.parser.add_argument('--topic', dest="topic_file", help="Json file containing topics")
         self.parser.add_argument('-f', dest="overwrite", action='store_true', default=False,
@@ -234,10 +238,8 @@ class WikiRender(Toolbox):
 
 def main_module_call():
     wikirender = WikiRender()
-    wikirender.main(sys.argv[1:])
-    sys.exit()
+    exitCode=wikirender.maininstance(sys.argv[1:])
+    sys.exit(exitCode)
 
 if __name__ == '__main__':
-    wikirender=WikiRender()
-    wikirender.main(sys.argv[1:])
-    sys.exit()
+    main_module_call()

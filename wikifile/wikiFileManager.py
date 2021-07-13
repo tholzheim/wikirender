@@ -1,35 +1,48 @@
 import os
 from wikifile.wikiFile import WikiFile
 from wikibot.wikipush import WikiPush
-from wikifile.toolbox import Toolbox
+from wikifile.cmdline import CmdLineAble
 from wikifile.wikiRender import WikiRender
 from lodstorage.lod import LOD
+import os
+import re
+import sys
 
-class WikiFileManager(Toolbox):
+class WikiFileManager(CmdLineAble):
     '''
     access to Wiki markup files for a given wiki
     '''
 
-    def __init__(self, sourceWikiId:str, sourcePath:str=None, targetPath:str=None, login=True,debug=False):
+    def __init__(self, sourceWikiId:str, wikiTextPath:str=None,targetWikiTextPath:str=None,login=True,debug=False):
         '''
         constructor
         
         Args:
-            fromWikiId(str): the wikiId of the wiki
-            sourcePath: location were the wikiText files are located
-            targetPath: target location that is assigned to the generated wikiFiles. If none the sourcePath is used as targetPath.
+            sourceWikiId(str): the wikiId of the wiki
+            wikiTextPath(str): the wikiTextPath to use - if None use the wikibackup path of the given wikiId
+            targetWikiTextPath(str): the targetWikiTextPath to use - used to specify the target location of the wikiFiles (if saved)
             login(bool): do we need to login to the wiki
             debug(bool): True if debugging should be switched on 
         '''
         super(WikiFileManager, self).__init__()
         self.sourceWikiId=sourceWikiId
-        if targetPath is None:
-            targetPath=sourcePath
-        self.targetPath=targetPath
-        self.sourcePath=sourcePath   # Location of the wikiText files
+        if targetWikiTextPath is None:
+            targetPath=wikiTextPath
+        self.targetPath=targetWikiTextPath
         self.wikiPush = WikiPush(fromWikiId=sourceWikiId, login=login)
         self.debug = debug
+        if wikiTextPath is None:
+            home = os.path.expanduser("~")
+            wikiTextPath=f"{home}/wikibackup/{sourceWikiId}"
+        self.wikiTextPath=wikiTextPath
         self.wikiRender = WikiRender()
+
+    def getWikiClient(self):
+        '''
+        get my WikiClient
+        '''
+        wikiClient=self.wikiPush.fromWiki
+        return wikiClient
 
     @staticmethod
     def getPageTitlesLocatedAt(path:str)->list:
@@ -57,7 +70,7 @@ class WikiFileManager(Toolbox):
         Returns:
             Returns a list of WikiFiles loaded from the given directory
         '''
-        pageTitles=self.getPageTitlesLocatedAt(self.sourcePath)
+        pageTitles=self.getPageTitlesLocatedAt(self.wikiTextPath)
         wikiFiles = []
         for pageTitle in pageTitles:
             wikiFile=self.getWikiFile(pageTitle)
@@ -254,7 +267,7 @@ class WikiFileManager(Toolbox):
         """
         wikiText=None
         if self.fileExists(pageTitle):
-            wikiFilePath=WikiFile.get_wiki_path(self.sourcePath, pageTitle)
+            wikiFilePath=WikiFile.get_wiki_path(self.wikiTextPath, pageTitle)
             with open(wikiFilePath, mode='r') as file:
                 wikiText = file.read()
         else:
@@ -267,6 +280,13 @@ class WikiFileManager(Toolbox):
                                 debug=self.debug)
         return wiki_file
 
+    def generateLink(self,page):
+        search=r".*%s/(.*)\.wiki" % self.wikiId
+        replace=r"%s\1" % self.baseUrl
+        alink=re.sub(search,replace,page)
+        alink=alink.replace(" ","_")
+        return alink
+
     def fileExists(self, pageTitle:str) -> bool:
         '''
         Checks if a wikiText file corresponding to the given pageTitle exists at the sourcePath of this WikiFileManager
@@ -277,14 +297,55 @@ class WikiFileManager(Toolbox):
         Returns:
             True if the file exists otherwise False
         '''
-        filePath=WikiFile.get_wiki_path(self.sourcePath, pageTitle)
+        filePath=WikiFile.get_wiki_path(self.wikiTextPath, pageTitle)
         return os.path.isfile(filePath)
 
 
-if __name__ == "__main__":
-    fix = WikiFileManager('ormk', debug=True)
-    # pageTitles= fix.getEventsinSeries('3DUI', 'Event in series')
-    # header,dicts= fix.getCsv(pageTitles)
-    # fix.exportToCsv(header,dicts)
-    pageContentList = fix.prepareExportCsvContent('dict.csv')
-    fix.exportCsvToWiki(pageContentList)
+    def getAllWikiFiles(self,wikiTextPath:str=None):
+        '''
+        get all wiki Files for the given wikiTextPath
+
+        Args:
+            wikiTextPath(str): the root of the wikiText directory (e.g. a wikiBackup target or staging area for generating or fixing/restoring wikiMarkup)
+
+        Returns:
+            dict: a lookup for WikiFiles by pageTitle
+        '''
+        allWikiFiles = {}
+        if wikiTextPath is None:
+            wikiTextPath=self.wikiTextPath
+        for root, _dirnames, filenames in os.walk(wikiTextPath):
+            for filename in filenames:
+                if filename.endswith('.wiki'):
+                    wikiFile=WikiFile(filename, wikiFileManager=self)
+                    allWikiFiles[wikiFile.getPageTitle()]=wikiFile
+        return allWikiFiles
+
+    def getAllPageTitlesFromFile(self,file=sys.stdin):
+        '''
+        Args:
+            file(obj): IO object to read file paths from
+        Returns:
+            listOfPageTitles(list): list of all pageTitles
+        '''
+        listOfPageTitles = file.readlines()
+        return listOfPageTitles
+
+    def getAllPageTitles4Topic(self,topicName="Event"):
+        '''
+        get all pages for the given topicName
+
+        Args:
+            topicName(str): the topic to "query" for
+
+        Returns:
+            list: the list of pageTitles
+        '''
+        for page in self.getAllPages():
+            with open(page,'r') as f:
+                event =f.read()
+                wikison="{{%s" % topicName
+                if wikison in event:
+                    yield page,event
+
+

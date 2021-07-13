@@ -8,10 +8,10 @@ from mwclient.page import Page
 from wikitextparser import Template
 
 
-
 class WikiFile:
     '''
-    Provides methods to modify, query, update and save wiki markup files.
+    Provides methods to modify, query, update and save files that contain wiki text markup.
+    see https://en.wikipedia.org/wiki/Help:Wikitext
     '''
 
     def __init__(self, name, wikiFileManager:WikiFileManager, wikiText: str = None, debug=False):
@@ -23,14 +23,35 @@ class WikiFile:
             wiki_render:
             wikiText: WikiPage content as string. If defined the file content will loaded and this value will be used instead
         """
-        self.pageTitle = name
-        self.file_path = wikiFileManager.sourcePath
+        self.wikiFileManager=wikiFileManager
+        self.pageTitle = self.sanitizePageTitle(name)
         self.wiki_render = wikiFileManager.wikiRender
         self.debug = debug
         if wikiText is None:
-            self.wikiText = self.get_wikiText(self.pageTitle, self.file_path)
+            self.wikiText = self.get_wikiText(self.pageTitle, self.wikiFileManager.wikiTextPath)
         else:
             self.wikiText = wtp.parse(wikiText)
+
+    def sanitizePageTitle(self, name:str):
+        """
+        Cleans the given name to a normalized page title by removing the file suffix and removing the location path
+        Args:
+            name: Name identifying the
+
+        Returns:
+
+        """
+        if self.wikiFileManager is not None:
+            suffix='.wiki'
+            # if completely migrated to python 3.9 exchange with removesuffix()
+            if name.endswith(suffix):
+                name=name[:-len(suffix)]
+            # if completely migrated to python 3.9 exchange with removeprefix()
+            prefix=f"{self.wikiFileManager.wikiTextPath}/"
+            if name.startswith(prefix):
+                name=name[len(prefix):]
+        return name
+
 
 
     def save_to_file(self, overwrite=False):
@@ -183,6 +204,7 @@ class WikiFile:
         """
         Extracts the template data and returns it as dict
         ToDo: Currently unhandled is the behavior if multiple templates with the same name exist
+
         Args:
             name: name of the template that should be extracted
 
@@ -228,7 +250,7 @@ class WikiFile:
 
     @property
     def file_name(self):
-        return self.get_wiki_path(self.file_path, self.pageTitle)
+        return self.get_wiki_path(self.wikiFileManager.targetPath, self.pageTitle)
 
     def __str__(self) -> str:
         return str(self.wikiText)

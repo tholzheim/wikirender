@@ -1,9 +1,11 @@
 import unittest
+from pathlib import Path
 from unittest import TestCase
 
 from wikitextparser import Template
 
 from wikifile.wikiFile import WikiFile
+from wikifile.wikiFileManager import WikiFileManager
 from wikifile.wikiRender import WikiRender
 
 
@@ -14,6 +16,9 @@ class TestWikiFile(TestCase):
 
     def setUp(self):
         self.debug=False
+        self.sourcePath = f"{Path.home()}/wikibackup/or"
+        self.wikiId = "wikirenderTest"
+        self.wikiFileManager = WikiFileManager(self.wikiId, wikiTextPath=self.sourcePath)
         self.wikiRender=WikiRender()
         self.sampleWikiFile="""
 {{Event
@@ -28,39 +33,6 @@ class TestWikiFile(TestCase):
 |City=Atlanta
 |Country=USA
 }}
-<!-- PLEASE ADAPT OR DELETE THIS PART COMPLETELY - You can just paste in the call for papers and remove this and the last line
-
-==Topics==
-==Submissions==
-==Important Dates==
-
-==Committees==
-* Co-Organizers
-* General Co-Chairs
-** [[has general chair::some person]], some affiliation, country
-
-* PC Co-Chairs
-** [[has program chair::some person]], some affiliation, country
-
-* Workshop Chair
-** [[has workshop chair::some person]], some affiliation, country
-
-* Panel Chair
-** [[has OC member::some person]], some affiliation, country
-
-* Seminars Chair
-** [[has tutorial chair::some person]], some affiliation, country
-
-* Demonstration Co-Chairs
-** [[has demo chair::some person]], some affiliation, country
-** [[has demo chair::some person]], some affiliation, country
-
-* Local Organizing Co-Chairs
-** [[has local chair::some person]], some affiliation, country
-
-* Program Committee Members
-** [[has PC member::some person]], some affiliation, country
--->
         """
         self.sampleWikiFile_duplicateTemplate="""
 {{Event
@@ -86,7 +58,7 @@ class TestWikiFile(TestCase):
         '''
         test the get_template function
         '''
-        wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, self.sampleWikiFile)
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, self.sampleWikiFile)
         eventTemplate = wikiFile.get_template("Event")
         self.assertTrue(isinstance(eventTemplate,Template))
         self.assertTrue(len(eventTemplate.arguments)==10)
@@ -101,7 +73,7 @@ class TestWikiFile(TestCase):
         self.assertEqual(name, expName)
 
     def test_extract_template(self):
-        wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender,self.sampleWikiFile)
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager,self.sampleWikiFile)
         eventRecord=wikiFile.extract_template("Event")
         self.assertTrue('Acronym' in eventRecord)
         self.assertEqual(eventRecord['Acronym'], "3DUI 2020")
@@ -112,8 +84,23 @@ class TestWikiFile(TestCase):
         self.assertTrue('Homepage' in eventRecord)
         self.assertEqual(eventRecord['Homepage'], "http://ieeevr.org/2020/")
 
+    def testNameValue(self):
+        '''
+        test getting content from wikiText
+        '''
+        wikiText="""{{SomeEntity
+|a=1
+|b=a=c
+|b
+|a='
+}}"""
+        wikiFile=WikiFile("somePage.wiki",self.wikiFileManager,wikiText=wikiText)
+        someEntityDict=wikiFile.extract_template("SomeEntity")
+        print(someEntityDict)
+       
+        
     def test_str(self):
-        wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, self.sampleWikiFile)
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, self.sampleWikiFile)
         wikiText=str(wikiFile)
         self.assertEqual(self.sampleWikiFile, wikiText)
 
@@ -121,22 +108,46 @@ class TestWikiFile(TestCase):
         '''Test with adding template arguments'''
         rawString="{{Event|Acronym=3DUI 2020}}"
         expString="{{Event|Acronym=3DUI 2020|Title=Test}}"
-        wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, rawString)
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, rawString)
         wikiFile.update_template("Event",{"Title":"Test"})
         wikiText=str(wikiFile).strip()
         self.assertEqual(expString, wikiText)
 
-    def test_str_adding_arguments_pretttify(self):
+    def test_str_adding_arguments_prettify(self):
         '''
         tests Issue https://github.com/tholzheim/wikirender/issues/7
         Adding new values to a template in prettify mode should place each value into a new line
         '''
         rawString = "{{Event\n|Acronym=3DUI 2020\n}}"
         expString = "{{Event\n|Acronym=3DUI 2020\n|Title=Test\n}}"
-        wikiFile = WikiFile("sampleFile", "tmp", self.wikiRender, rawString)
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, rawString)
         wikiFile.update_template("Event", {"Title": "Test"}, prettify=True)
         wikiText = str(wikiFile).strip()
         self.assertEqual(expString, wikiText)
+
+    def test_sanitizePageTitle(self):
+        '''
+        tests sanitization of page titles
+        '''
+        testLoD=[
+            {
+                "raw":"3DUI 2020",
+                "expected":"3DUI 2020"
+            },
+            {
+                "raw": "3DUI 2020.wiki",
+                "expected": "3DUI 2020"
+            },
+            {
+                "raw": f"{self.sourcePath}/3DUI 2020.wiki",
+                "expected":"3DUI 2020"
+        }
+        ]
+        for testRecord in testLoD:
+            name=testRecord.get('raw')
+            wikiFile=WikiFile(name, self.wikiFileManager)
+            actual=wikiFile.getPageTitle()
+            self.assertEqual(testRecord.get('expected'),actual)
 
 if __name__ == "__main__":
     unittest.main()

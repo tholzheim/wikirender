@@ -7,6 +7,9 @@ from wikifile.wikiFileManager import WikiFileManager
 from wikibot.wikipush import WikiPush
 from datetime import datetime
 from random import random
+import io
+import os
+from tests.default_wikiuser import DefaultWikiUser
 
 class TestWikiFileManager(unittest.TestCase):
     '''
@@ -38,6 +41,14 @@ test freetext"""
         are we running in a public Continuous Integration Environment?
         '''
         return getpass.getuser() in ["travis", "runner"];
+
+    def testGetWikiClient(self):
+        '''
+        test getting my wikiclient
+        '''
+        wikiClient=self.fix.getWikiClient()
+        self.assertEqual(self.wikiId,wikiClient.wikiUser.wikiId)
+        pass
 
     def testPagesListToDict(self):
         '''
@@ -71,7 +82,7 @@ test freetext"""
 
     def testGetWikiFile(self):
         '''
-        tests if a WikiFile object is correctly instanciated from backup and the wiki if not in the backup
+        get the wiki file for the pageTitle
         '''
         wikiFile=self.fix.getWikiFile(self.pageTitle)
         wikiSon=wikiFile.extract_template(self.wikiSonName)
@@ -79,7 +90,7 @@ test freetext"""
 
     def testGetUpdatedPage(self):
         '''
-        tests if updates to wikiSon entites are correctly applied and saved to a wikiText file
+        test updating a page
         '''
         new_values={"label":"Test label", "year":"2020"}
         wikiFile=self.fix.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
@@ -89,7 +100,7 @@ test freetext"""
 
     def testGetUpdatedPages(self):
         '''
-        tests for multiple pages if updates to wikiSon entites are correctly applied and saved to a wikiText file
+        test updating multiple pages
         '''
         records={self.pageTitle:{"label":"Test label", "year":"2020"}}
         wikiFiles=self.fix.getUpdatedPages(records, self.wikiSonName)
@@ -100,7 +111,7 @@ test freetext"""
 
     def testPushWikiFilesToWiki(self):
         '''
-        tests id the content of a WikiFile is correctly upload to the assigend page in the wiki
+        test pushing files to the wiki
         '''
         timestampOfTest=datetime.now()
         new_values={"lastTested":str(timestampOfTest)}
@@ -113,7 +124,7 @@ test freetext"""
 
     def testImportLODtoWiki(self):
         '''
-        tests if a LoD is correctly imported to the corresponding WikiSon entity
+        test importing a list of dicts to the wiki
         '''
         random_val=random()
         data=[{"pageTitle":self.pageTitle,"randomValue": str(random_val)}]
@@ -126,7 +137,7 @@ test freetext"""
 
     def testExportWikiSonToLOD(self):
         '''
-        tests if a WikiSon entity is correctly extracted to LoD
+        test exporting the Markup in WikiSon to a list of dicts
         '''
         pageTitleKey="pageTitleTest"
         lod=self.fix.exportWikiSonToLOD([self.pageTitle], self.wikiSonName, pageTitleKey)
@@ -151,12 +162,36 @@ test freetext"""
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
 
-    def test_getPageTitlesLocatedAt(self):
+    def testGetAllPageTitlesFromFile(self):
         '''
-        test if the pageTitles of all wikiText files located in a directory are recognized as pages
+        test utility function to get pageTitles from a file e.g. stdin
         '''
-        pageTitles=self.fix.getPageTitlesLocatedAt(self.sourcePath)
-        self.assertTrue(len(pageTitles)>1000)
+        # we'd love to test form a string
+        # see https://stackoverflow.com/a/141451/1497139
+        pageTitles="""Concept:Topic
+Help:Topic"""
+        fstdin = io.StringIO(pageTitles)
+        pageTitleList=self.fix.getPageTitlesForArgs(fstdin)
+        debug=True
+        if debug:
+            print(pageTitleList)
+        self.assertEqual(2,len(pageTitleList))
+
+    def testGetAllWikiFiles(self):
+        '''
+        test getting all pages for the given backups
+        '''
+        for wikiId in ["or","orclone"]:
+            wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
+            self.assertEqual(wikiId,wikiUser.wikiId)
+            home = os.path.expanduser("~")
+            wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
+            wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath,login=False)
+            wikiFiles=wikiFileManager.getAllWikiFiles()
+            if self.debug:
+                print(f"There are {len(wikiFiles)} wikiFiles for {wikiId}")
+            self.assertTrue(len(wikiFiles)>18500)
+
 
     def test_getPageTitlesLocatedAt(self):
         '''
