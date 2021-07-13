@@ -47,6 +47,7 @@ class CmdLineAble(object):
             logging.basicConfig(stream=sys.stdout, level=logging.INFO)
                         
 
+
     def getPageTitlesForArgs(self,args):
         '''
         see also wikirestore in wikipush of py-3rdparty-mediawiki
@@ -67,17 +68,17 @@ class CmdLineAble(object):
                     "Multiple file selection options were used. Please use only one or none to select all files in the backup folder.")
                 raise Exception("Invalid parameters")
         if stdIn:
-            backup_path = os.path.dirname(page_titles[0].strip())
+            page_titles = sys.stdin.readlines()
             pageTitlesfix = []
-            for i in page_titles:
-                pageTitlesfix.append(os.path.basename(i.strip().replace('.wiki', '')))
+            for page in page_titles:
+                pageTitlesfix.append(page)
             page_titles = pageTitlesfix
         elif file_list is not None:
             f = open(file_list, 'r')
             allx = f.readlines()
             page_titles = []
-            for i in allx:
-                page_titles.append(os.path.basename(i.strip()).replace('.wiki', ''))
+            for page in allx:
+                page_titles.append(page)
         else:
             if backup_path is None:
                 logging.warning("No backup path is defined. Please provide a path to the location were the wiki-files are stored.")
