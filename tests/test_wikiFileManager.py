@@ -6,6 +6,7 @@ from wikibot.wikipush import WikiPush
 from datetime import datetime
 from random import random
 import io
+import os
 
 class TestWikiFileManager(unittest.TestCase):
     '''
@@ -171,6 +172,20 @@ Help:Topic"""
         if debug:
             print(pageTitleList)
         self.assertEqual(2,len(pageTitleList))
+        
+    def testGetAllWikiFiles(self):
+        '''
+        test getting all pages for the given backups 
+        '''
+        for wikiId in ["or","orclone"]:
+            home = os.path.expanduser("~")
+            wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
+            wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath)
+            wikiFiles=wikiFileManager.getAllWikiFiles()
+            if self.debug:
+                print(f"There are {len(wikiFiles)} wikiFiles for {wikiId}")
+            self.assertTrue(len(wikiFiles)>18500)    
+            
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

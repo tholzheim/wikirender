@@ -204,6 +204,11 @@ class WikiFile:
             return self.__dict__["pageRef"]
 
     def getPageTitle(self):
+        '''
+        get my pageTitle
+        
+        '''
+        # FIXME is this really true?
         return self.file_name
 
     @staticmethod

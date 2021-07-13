@@ -12,12 +12,13 @@ class WikiFileManager(CmdLineAble):
     access to Wiki markup files for a given wiki
     '''
 
-    def __init__(self, sourceWikiId:str, login=True,debug=False):
+    def __init__(self, sourceWikiId:str, wikiTextPath:str=None,login=True,debug=False):
         '''
         constructor
         
         Args:
             fromWikiId(str): the wikiId of the wiki 
+            wikiTextPath(str): the wikiTextPath to use - if None use the wikibackup path of the given wikiId
             login(bool): do we need to login to the wiki
             debug(bool): True if debugging should be switched on 
         '''
@@ -25,6 +26,10 @@ class WikiFileManager(CmdLineAble):
         self.sourceWikiId=sourceWikiId
         self.wikiPush = WikiPush(fromWikiId=sourceWikiId, login=login)
         self.debug = debug
+        if wikiTextPath is None:
+            home = os.path.expanduser("~")
+            wikiTextPath=f"{home}/wikibackup/{sourceWikiId}"
+        self.wikiTextPath=wikiTextPath
         self.wikiRender = WikiRender()
 
     def getWikiClient(self):
@@ -221,6 +226,9 @@ class WikiFileManager(CmdLineAble):
             WikiFile corresponding the the given pageTitle
         """
         pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
+        # FIXME - change WikiFile constructor parameters to use "self" instead
+        # of excessive parameter list - the path is my knowledge tmp is not a good
+        # choice for the staging area or should be configurable at least
         wiki_file = WikiFile(pageTitle, "tmp", self.wikiRender, pageItem.text())
         wiki_file.setPage(pageItem)
         return wiki_file
@@ -232,19 +240,26 @@ class WikiFileManager(CmdLineAble):
         alink=alink.replace(" ","_")
         return alink
 
-    def getAllPages(self, folderName:str=None):
+    def getAllWikiFiles(self,wikiTextPath:str=None):
         '''
-        get all wiki pages
+        get all wiki Files for the given wikiTextPath
+        
+        Args:
+            wikiTextPath(str): the root of the wikiText directory (e.g. a wikiBackup target or staging area for generating or fixing/restoring wikiMarkup)
+            
+        Returns:
+            dict: a lookup for WikiFiles by pageTitle
         '''
-        home = os.path.expanduser("~")
-        allPages = []
-        backupPath='%s/wikibackup/%s/' % (home,self.wikiId)
-        if folderName is not None:
-            backupPath='%s/wikibackup/%s/' % (home,folderName)
-        for root, dirnames, filenames in os.walk(backupPath):
-            for filename in filter(filenames, '*.wiki'):
-                allPages.append(os.path.join(root, filename))
-        return allPages
+        allWikiFiles = {}
+        if wikiTextPath is None:
+            wikiTextPath=self.wikiTextPath
+        for root, _dirnames, filenames in os.walk(wikiTextPath):
+            for filename in filenames:
+                if filename.endswith('.wiki'):
+                    # FIXME - change constructor signature
+                    wikiFile=WikiFile(filename,root,self.wikiRender)
+                    allWikiFiles[wikiFile.getPageTitle()]=wikiFile
+        return allWikiFiles
 
     def getAllPagesFromFile(self,file=sys.stdin):
         '''
