@@ -149,23 +149,22 @@ class WikiFileManager(CmdLineAble):
             lod[pos] = dict(sorted(record.items(), key=lambda x: propertyMap[x[0]]))
         return lod
 
-    def convertWikiFilesToLOD(self, wikiFiles: list, wikiSonName: str):
+    def convertWikiFilesToLOD(self, wikiFiles: list, templateName: str):
         '''
         converts the given pagesTitles to csv by extracting the given templateName from the wikiPage corresponding to
         the given pageTitle.
 
         Args:
             wikiFiles(list): PageTitles to fetch and convert to CSV
-            wikiSonName(str): Name of the WikiSon object that should be extracted
+            templateName(str): Name of the template/entity/WikiSon object that should be extracted
 
         Returns:
-            header(list): Header for CSV File
-            pageDicts(List of Dics): List of Dicts of pages
+            list: a list of dicts with the content
         '''
         lod = []
         for wikifile in wikiFiles:
             if isinstance(wikifile, WikiFile):
-                values = wikifile.extract_template(wikiSonName)
+                values = wikifile.extract_template(templateName)
                 if values is None:
                     values = {}
                 pageTitle = wikifile.getPageTitle()
@@ -263,17 +262,45 @@ class WikiFileManager(CmdLineAble):
             wikiFilesToWorkon(dict): dict of WikiFiles
 
         """
-        wikiFilesToWorkon= {}
         pageTitles= self.getPageTitlesForArgs(args)
+        if args.template:
+            condition=lambda wikiFile:wikiFile.extract_template(args.template) is not None
+        else:
+            condition=lambda wikiFile:wikiFile is not None
+        wikiFiles=self.getWikiFilesForPageTitles(pageTitles,condition)
+        return wikiFiles
+        
+        
+    def getWikiFilesForPageTitles(self,pageTitles:list,condition=None):
+        '''
+        get the wikiFiles for the given pageTitles 
+        
+        Args:
+            pageTitles(list): a list of PageTitles
+            condition(lambda): a condition to be applied to each wikiFile
+        '''
+        wikiFilesToWorkon= {}
         for pageTitle in pageTitles:
             wikiFile = self.getWikiFile(pageTitle)
-            doAdd=True
-            if args.template:
-                checkedTemplate=wikiFile.extract_template(args.template)
-                doAdd=checkedTemplate is not None
-            if doAdd:
+            if condition is None or condition(wikiFile):
                 wikiFilesToWorkon[pageTitle]=wikiFile
         return wikiFilesToWorkon
+    
+    def getWikiFilesForTemplate(self,templateName:str)->dict:
+        '''
+        get all WikiFiles for the given templateName
+        
+        Args:
+            templateName(str): the name of the template
+        
+        Returns:
+            dict: a map of wikiFiles by pageTitle
+        '''
+        pageTitles=CmdLineAble.getPageTitlesForWikiTextPath(self.wikiTextPath)
+        condition=lambda wikiFile:wikiFile.extract_template(templateName) is not None
+        wikiFiles=self.getWikiFilesForPageTitles(pageTitles, condition)
+        return wikiFiles
+    
 
     def getWikiFile(self, pageTitle: str) -> WikiFile:
         """

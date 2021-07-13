@@ -51,8 +51,6 @@ class CmdLineAble(object):
         else:
             logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
-
-
     def getPageTitlesForArgs(self,args):
         '''
         see also wikirestore in wikipush of py-3rdparty-mediawiki
@@ -66,7 +64,6 @@ class CmdLineAble(object):
         page_titles=args.pages
         stdIn=args.stdin
         file_list=args.file_list
-        backup_path=args.backupPath
         file_parameters = [args.stdin, args.pages, args.file_list]
         if len(file_parameters) - (file_parameters.count(None) + file_parameters.count(False)) > 1:
                 logging.error(
@@ -86,13 +83,27 @@ class CmdLineAble(object):
                 page_titles.append(page)
         else:
             if page_titles is None:
-                page_titles = []
-                if backup_path:
-                    for path, subdirs, files in os.walk(backup_path):
-                        for name in files:
-                            filename = os.path.join(path, name)[len(backup_path) + 1:]
-                            if filename.endswith(".wiki"):
-                                page_titles.append(filename[:-len(".wiki")])
+                page_titles=CmdLineAble.getPageTitlesForWikiTextPath(args.backupPath)
         total = len(page_titles)
         logging.debug(f"extracting templates from {total} wikifiles.")
         return page_titles
+    
+    @staticmethod
+    def getPageTitlesForWikiTextPath(backup_path:str)->list:
+        '''
+        get the page titles for the given backupPath
+        
+        Args: 
+            backup_path(str): the path to the WikiText Files (e.g. created by wikibackup)
+            
+        Returns:
+            list: a list of PageTitles
+        '''       
+        page_titles = []
+        if backup_path:
+            for path, _subdirs, files in os.walk(backup_path):
+                for name in files:
+                    filename = os.path.join(path, name)[len(backup_path) + 1:]
+                    if filename.endswith(".wiki"):
+                        page_titles.append(filename[:-len(".wiki")])
+        return page_titles;

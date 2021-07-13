@@ -9,6 +9,7 @@ from datetime import datetime
 from random import random
 import io
 import os
+import time
 from tests.default_wikiuser import DefaultWikiUser
 
 class TestWikiFileManager(unittest.TestCase):
@@ -219,7 +220,28 @@ Help:Topic"""
         '''
         pageTitles=self.wikiFileManager.getPageTitlesLocatedAt(self.sourcePath)
         self.assertTrue(len(pageTitles)>1000)
-
+        
+    def testConvertWikiFilesToLOD(self):
+        '''
+        test the conversion to List of Dicts
+        
+        takes some 18 secs in total on 2,3 GHz 8-Core Intel Core i9
+        '''
+        profile=True
+        for wikiId in ["or","orclone"]:
+            wikiFileManager=TestWikiFileManager.wikiFileManagers[wikiId]
+            templateName="Event"
+            startTime=time.time()
+            eventWikiFiles=wikiFileManager.getWikiFilesForTemplate(templateName)
+            elapsed=time.time()-startTime
+            if profile:
+                print(f"getting  {len(eventWikiFiles)} wikiFiles for {wikiId} took {elapsed:5.1f} s")
+            startTime=time.time()
+            lod=wikiFileManager.convertWikiFilesToLOD(eventWikiFiles.values(),templateName)
+            elapsed=time.time()-startTime
+            if profile:
+                print(f"converting {len(eventWikiFiles)} to List of Dicts for {wikiId} took {elapsed:5.1f} s")
+            self.assertEqual(len(lod),len(eventWikiFiles))
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
