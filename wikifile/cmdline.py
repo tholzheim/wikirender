@@ -32,6 +32,8 @@ class CmdLineAble(object):
                             required=False)
         parser.add_argument("--listFile", dest="file_list",
                                  help="List of pages from which the data should be extracted", required=False)
+        parser.add_argument("-t", "--template", dest="template",
+                                 help="Select a template (entity) to user for rendering/filtering")
 
         parser.add_argument('-stdin', dest="stdin", action='store_true',
                             help='Use the input from STD IN using pipes')
@@ -83,15 +85,14 @@ class CmdLineAble(object):
             for page in allx:
                 page_titles.append(page)
         else:
-            if backup_path is None:
-                logging.warning("No backup path is defined. Please provide a path to the location were the wiki-files are stored.")
             if page_titles is None:
                 page_titles = []
-                for path, subdirs, files in os.walk(backup_path):
-                    for name in files:
-                        filename = os.path.join(path, name)[len(backup_path) + 1:]
-                        if filename.endswith(".wiki"):
-                            page_titles.append(filename[:-len(".wiki")])
+                if backup_path:
+                    for path, subdirs, files in os.walk(backup_path):
+                        for name in files:
+                            filename = os.path.join(path, name)[len(backup_path) + 1:]
+                            if filename.endswith(".wiki"):
+                                page_titles.append(filename[:-len(".wiki")])
         total = len(page_titles)
         logging.debug(f"extracting templates from {total} wikifiles.")
         return page_titles

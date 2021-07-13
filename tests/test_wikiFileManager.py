@@ -16,6 +16,18 @@ class TestWikiFileManager(unittest.TestCase):
     test WikiFileManager
     '''
 
+    @classmethod
+    def setUpClass(cls):
+        super(TestWikiFileManager, cls).setUpClass()
+        cls.wikiFileManagers={}
+        cls.wikiFileManagers["wikirenderTest"]=WikiFileManager("wikirenderTest")
+        for wikiId in ["or","orclone"]:
+            _wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
+            home = os.path.expanduser("~")
+            wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
+            wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath,login=False)
+            cls.wikiFileManagers[wikiId]=wikiFileManager
+        
     def setUp(self):
         self.sourcePath=f"{Path.home()}/.or/wikibackup/or"
         self.wikiId="wikirenderTest"
@@ -33,6 +45,7 @@ test freetext"""
         self.wikiPush.fromWiki.getPage(self.pageTitle).edit(testPageContent)
         warnings.filterwarnings(action="ignore", message="unclosed", category=ResourceWarning)
 
+    
     def tearDown(self):
         pass
 
@@ -43,11 +56,15 @@ test freetext"""
         return getpass.getuser() in ["travis", "runner"];
 
 
-    def testGetWikiFiles(self):
-        args = ["--pages", "3DUI 2020","3DUI 2016", "--source", "orclone"]
-        self.wikiFileManager.getParser()
-        args= self.wikiFileManager.parser.parse_args(args)
-        wikiFiles = self.wikiFileManager.getAllWikiFilesForArgs(args)
+    def testGetWikiAllWikiFilesForArgs(self):
+        '''
+        test getting wiki files for the args
+        '''
+        args = ["--pages", "3DUI", "3DUI 2020","3DUI 2016", "--source", "orclone","--template","Event"]
+        wikiFileManager=TestWikiFileManager.wikiFileManagers["orclone"]
+        wikiFileManager.getParser()
+        args= wikiFileManager.parser.parse_args(args)
+        wikiFiles = wikiFileManager.getAllWikiFilesForArgs(args)
         self.assertEqual(2,len(wikiFiles))
 
     def testGetWikiClient(self):
@@ -184,22 +201,17 @@ Help:Topic"""
         if debug:
             print(pageTitleList)
         self.assertEqual(2,len(pageTitleList))
-
+        
     def testGetAllWikiFiles(self):
         '''
         test getting all pages for the given backups
         '''
         for wikiId in ["or","orclone"]:
-            wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
-            self.assertEqual(wikiId,wikiUser.wikiId)
-            home = os.path.expanduser("~")
-            wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
-            wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath,login=False)
+            wikiFileManager=TestWikiFileManager.wikiFileManagers[wikiId]
             wikiFiles=wikiFileManager.getAllWikiFiles()
             if self.debug:
                 print(f"There are {len(wikiFiles)} wikiFiles for {wikiId}")
             self.assertTrue(len(wikiFiles)>18500)
-
 
     def test_getPageTitlesLocatedAt(self):
         '''

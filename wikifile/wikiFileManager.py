@@ -267,7 +267,12 @@ class WikiFileManager(CmdLineAble):
         pageTitles= self.getPageTitlesForArgs(args)
         for pageTitle in pageTitles:
             wikiFile = self.getWikiFile(pageTitle)
-            wikiFilesToWorkon[pageTitle]=wikiFile
+            doAdd=True
+            if args.template:
+                checkedTemplate=wikiFile.extract_template(args.template)
+                doAdd=checkedTemplate is not None
+            if doAdd:
+                wikiFilesToWorkon[pageTitle]=wikiFile
         return wikiFilesToWorkon
 
     def getWikiFile(self, pageTitle: str) -> WikiFile:
@@ -346,22 +351,5 @@ class WikiFileManager(CmdLineAble):
         '''
         listOfPageTitles = file.readlines()
         return listOfPageTitles
-
-    def getAllPageTitles4Topic(self,topicName="Event"):
-        '''
-        get all pages for the given topicName
-
-        Args:
-            topicName(str): the topic to "query" for
-
-        Returns:
-            list: the list of pageTitles
-        '''
-        for page in self.getAllPages():
-            with open(page,'r') as f:
-                event =f.read()
-                wikison="{{%s" % topicName
-                if wikison in event:
-                    yield page,event
 
 
