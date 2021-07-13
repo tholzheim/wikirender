@@ -256,5 +256,22 @@ class WikiFileManager(CmdLineAble):
         listOfFiles = file.readlines()
         return listOfFiles
     
+    def getAllPageTitles4Topic(self,topicName="Event"):
+        '''
+        get all pages for the given topicName
+        
+        Args:
+            topicName(str): the topic to "query" for
+            
+        Returns:
+            list: the list of pageTitles
+        '''
+        for page in self.getAllPages():
+            with open(page,'r') as f:
+                event =f.read()
+                wikison="{{%s" % topicName
+                if wikison in event:
+                    yield page,event
+
     
     

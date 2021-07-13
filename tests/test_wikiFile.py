@@ -28,39 +28,6 @@ class TestWikiFile(TestCase):
 |City=Atlanta
 |Country=USA
 }}
-<!-- PLEASE ADAPT OR DELETE THIS PART COMPLETELY - You can just paste in the call for papers and remove this and the last line
-
-==Topics==
-==Submissions==
-==Important Dates==
-
-==Committees==
-* Co-Organizers
-* General Co-Chairs
-** [[has general chair::some person]], some affiliation, country
-
-* PC Co-Chairs
-** [[has program chair::some person]], some affiliation, country
-
-* Workshop Chair
-** [[has workshop chair::some person]], some affiliation, country
-
-* Panel Chair
-** [[has OC member::some person]], some affiliation, country
-
-* Seminars Chair
-** [[has tutorial chair::some person]], some affiliation, country
-
-* Demonstration Co-Chairs
-** [[has demo chair::some person]], some affiliation, country
-** [[has demo chair::some person]], some affiliation, country
-
-* Local Organizing Co-Chairs
-** [[has local chair::some person]], some affiliation, country
-
-* Program Committee Members
-** [[has PC member::some person]], some affiliation, country
--->
         """
         self.sampleWikiFile_duplicateTemplate="""
 {{Event

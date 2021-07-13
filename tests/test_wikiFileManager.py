@@ -167,7 +167,7 @@ test freetext"""
 Help:Topic"""
         fstdin = io.StringIO(pageTitles)
         pageTitleList=self.fix.getAllPagesFromFile(fstdin)
-        debug=False
+        debug=True
         if debug:
             print(pageTitleList)
         self.assertEqual(2,len(pageTitleList))

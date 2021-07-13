@@ -4,9 +4,6 @@ import os
 import sys
 import logging
 
-from lodstorage.jsonable import JSONAble, Types
-
-
 class CmdLineAble(object):
     """
     Bundles methods that are required by the command line tools that this file provides
@@ -30,6 +27,9 @@ class CmdLineAble(object):
 
         
     def initLogging(self,args):
+        '''
+        initialize the logging
+        '''
         if args.debug:
             logging.basicConfig(level=logging.DEBUG, stream=sys.stdout)
         else:
@@ -80,19 +80,3 @@ class CmdLineAble(object):
         total = len(page_titles)
         logging.debug(f"extracting templates from {total} wikifiles.")
         return page_titles
-
-    def fromJson(self, listname: str, jsonStr: str, sample: list = None):
-        """
-        Convert the given string to JSON and convert the values to the corresponding datatype"
-        Args:
-            listname: name of the list the data is stored in
-            jsonStr: data as json string that should be converted
-            sample: sample data of the actual data. Used to convert the values to the correct type
-        Returns:
-            
-        """""
-        types = Types(listname)
-        types.getTypes("data", sample, 1)
-        json_parsed = JSONAble()
-        json_parsed.fromJson(jsonStr, types)
-        return json_parsed.__dict__[listname]
