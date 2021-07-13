@@ -42,6 +42,14 @@ test freetext"""
         '''
         return getpass.getuser() in ["travis", "runner"];
 
+
+    def testGetWikiFiles(self):
+        args = ["--pages", "3DUI 2020","3DUI 2016", "--source", "orclone"]
+        self.wikiFileManager.getParser()
+        args= self.wikiFileManager.parser.parse_args(args)
+        wikiFiles = self.wikiFileManager.getAllWikiFilesForArgs(args)
+        self.assertEqual(2,len(wikiFiles))
+
     def testGetWikiClient(self):
         '''
         test getting my wikiclient
