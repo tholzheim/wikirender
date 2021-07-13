@@ -260,15 +260,15 @@ class WikiFileManager(CmdLineAble):
         Args:
             args(ArgumentParser): Command line arguments
         Returns:
-            wikiFiles(list): list of WikiFiles
+            wikiFilesToWorkon(dict): dict of WikiFiles
 
         """
-        wikiFiles= []
+        wikiFilesToWorkon= {}
         pageTitles= self.getPageTitlesForArgs(args)
         for pageTitle in pageTitles:
             wikiFile = self.getWikiFile(pageTitle)
-            wikiFiles.append(wikiFile)
-        return wikiFiles
+            wikiFilesToWorkon[pageTitle]=wikiFile
+        return wikiFilesToWorkon
 
     def getWikiFile(self, pageTitle: str) -> WikiFile:
         """
