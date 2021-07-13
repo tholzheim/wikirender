@@ -1,12 +1,14 @@
 import os
-from wikifile.wikiFile import WikiFile
-from wikibot.wikipush import WikiPush
-from wikifile.cmdline import CmdLineAble
-from wikifile.wikiRender import WikiRender
-from lodstorage.lod import LOD
-import os
 import re
 import sys
+from lodstorage.lod import LOD
+from wikibot.wikipush import WikiPush
+from wikifile.wikiFile import WikiFile
+from wikifile.cmdline import CmdLineAble
+from wikifile.wikiRender import WikiRender
+
+
+
 
 class WikiFileManager(CmdLineAble):
     '''

@@ -181,8 +181,7 @@ class WikiRender(CmdLineAble):
             if self.debug:
                 print(f"generating {smwPart.get_page_name(topic)}")
             page = smwPart.render_page(topic)
-            wiki_file = WikiFile(smwPart.get_page_name(topic), path, wiki_render=self, wikiText=page, debug=self.debug)
-            wiki_file.save_to_file(overwrite)
+            WikiFile.write_to_file(path, smwPart.get_page_name(topic),page, overwrite=overwrite)
 
     def generateProperty(self, property:Property, path:str, overwrite:bool=False):
         if self.debug:

@@ -62,7 +62,22 @@ class WikiFile:
             overwrite(bool): If True existing files will be over written and if the path does not exist the missing folder will be created. Otherwise, only missing files will be saved.
   
         """
-        wiki_file_path = WikiFile.get_wiki_path(self.file_path, self.pageTitle)
+        WikiFile.write_to_file(self.file_path, self.pageTitle, str(self), overwrite=overwrite)
+
+    @staticmethod
+    def write_to_file(path:str, pageTitle,content:str,overwrite:bool=False, debug:bool=False):
+        """
+
+        Args:
+            path:
+            content:
+            overwrite:
+            debug:
+
+        Returns:
+
+        """
+        wiki_file_path = WikiFile.get_wiki_path(path, pageTitle)
         mode = "w"
         if overwrite:
             mode = 'w'
@@ -70,13 +85,14 @@ class WikiFile:
         else:
             if os.path.isfile(wiki_file_path):
                 # file already exists
-                if self.debug:
-                    print(f"File {wiki_file_path} exists \t-> Generated page not saved. To save also existing pages use -f to overwrite them.", )
+                if debug:
+                    print(
+                        f"File {wiki_file_path} exists \t-> Generated page not saved. To save also existing pages use -f to overwrite them.", )
                     return
         with open(wiki_file_path, mode=mode) as f:
-            f.write(str(self.wikiText))
-        if self.debug:
-            print(f"{self.pageTitle} saved to {wiki_file_path}")
+            f.write(str(content))
+        if debug:
+            print(f"{pageTitle} saved to {path}")
 
     def get_wikiText(self, name, path):
         """
