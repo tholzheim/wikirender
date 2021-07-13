@@ -1,3 +1,4 @@
+import os
 from wikifile.wikiFile import WikiFile
 from wikibot.wikipush import WikiPush
 from wikifile.toolbox import Toolbox
@@ -9,20 +10,60 @@ class WikiFileManager(Toolbox):
     access to Wiki markup files for a given wiki
     '''
 
-    def __init__(self, sourceWikiId:str, login=True,debug=False):
+    def __init__(self, sourceWikiId:str, sourcePath:str=None, targetPath:str=None, login=True,debug=False):
         '''
         constructor
         
         Args:
-            fromWikiId(str): the wikiId of the wiki 
+            fromWikiId(str): the wikiId of the wiki
+            sourcePath: location were the wikiText files are located
+            targetPath: target location that is assigned to the generated wikiFiles. If none the sourcePath is used as targetPath.
             login(bool): do we need to login to the wiki
             debug(bool): True if debugging should be switched on 
         '''
         super(WikiFileManager, self).__init__()
         self.sourceWikiId=sourceWikiId
+        if targetPath is None:
+            targetPath=sourcePath
+        self.targetPath=targetPath
+        self.sourcePath=sourcePath   # Location of the wikiText files
         self.wikiPush = WikiPush(fromWikiId=sourceWikiId, login=login)
         self.debug = debug
         self.wikiRender = WikiRender()
+
+    @staticmethod
+    def getPageTitlesLocatedAt(path:str)->list:
+        '''
+        Get all pageTitles located at given path
+        Args:
+            path: location of the files that contain the wiki markup
+
+        Returns:
+            pageTitles of all pages located ath the given backup path
+        '''
+        pageTitles = []
+        for path, subdirs, files in os.walk(path):
+            for name in files:
+                filename = os.path.join(path, name)[len(path) + 1:]
+                if filename.endswith(".wiki"):
+                    pageTitles.append(filename[:-len(".wiki")])
+        return pageTitles
+
+    def getWikiFilesLocatedAtSourcePath(self) -> list:
+        '''
+        Get the WikiFiles for all wikiText files located at the source path of this object
+        Args:
+
+        Returns:
+            Returns a list of WikiFiles loaded from the given directory
+        '''
+        pageTitles=self.getPageTitlesLocatedAt(self.sourcePath)
+        wikiFiles = []
+        for pageTitle in pageTitles:
+            wikiFile=self.getWikiFile(pageTitle)
+            wikiFiles.append(wikiFile)
+        return wikiFiles
+
 
     def importLODtoWiki(self, data: list, wikiSon: str, titleKey: str = "pageTitle"):
         """
@@ -189,7 +230,7 @@ class WikiFileManager(Toolbox):
         Updates the page corresponding to the given pageTitle with the given values
 
         Args:
-            pageTitle(str): Title of the page that shoud be updated
+            pageTitle(str): Title of the page that should be updated
             values(dict): values that should be used for the update
             wikiSon(str): Name of the WikiSon that should be updated
 
@@ -202,7 +243,8 @@ class WikiFileManager(Toolbox):
 
     def getWikiFile(self, pageTitle: str) -> WikiFile:
         """
-        Queries the given page and converts it to a WikiFile.
+        Get the WikiFile object for the given pageTitle form the source path and if it is not located
+        there try to get the page from the source wiki (source wikiid)
 
         Args:
             pageTitle: Title of the page that should be retrieved
@@ -210,10 +252,33 @@ class WikiFileManager(Toolbox):
         Returns:
             WikiFile corresponding the the given pageTitle
         """
-        pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
-        wiki_file = WikiFile(pageTitle, "tmp", self.wikiRender, pageItem.text())
-        wiki_file.setPage(pageItem)
+        wikiText=None
+        if self.fileExists(pageTitle):
+            wikiFilePath=WikiFile.get_wiki_path(self.sourcePath, pageTitle)
+            with open(wikiFilePath, mode='r') as file:
+                wikiText = file.read()
+        else:
+            # query wiki for the page
+            pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
+            wikiText=pageItem.text()
+        wiki_file = WikiFile(name=pageTitle,
+                                wikiText=wikiText,
+                                wikiFileManager=self,
+                                debug=self.debug)
         return wiki_file
+
+    def fileExists(self, pageTitle:str) -> bool:
+        '''
+        Checks if a wikiText file corresponding to the given pageTitle exists at the sourcePath of this WikiFileManager
+        object
+        Args:
+            pageTitle: name of the wikiText file
+
+        Returns:
+            True if the file exists otherwise False
+        '''
+        filePath=WikiFile.get_wiki_path(self.sourcePath, pageTitle)
+        return os.path.isfile(filePath)
 
 
 if __name__ == "__main__":

@@ -1,6 +1,8 @@
 import unittest
 import warnings
 import getpass
+from pathlib import Path
+
 from wikifile.wikiFileManager import WikiFileManager
 from wikibot.wikipush import WikiPush
 from datetime import datetime
@@ -12,6 +14,7 @@ class TestWikiFileManager(unittest.TestCase):
     '''
 
     def setUp(self):
+        self.sourcePath=f"{Path.home()}/wikibackup/or"
         self.wikiId="wikirenderTest"
         self.fix = WikiFileManager(self.wikiId)
         self.pageTitle="Test_WikiFileManager"
@@ -67,12 +70,17 @@ test freetext"""
         self.assertEqual(act_res, exp_res)
 
     def testGetWikiFile(self):
-        if self.inPublicCI(): return
+        '''
+        tests if a WikiFile object is correctly instanciated from backup and the wiki if not in the backup
+        '''
         wikiFile=self.fix.getWikiFile(self.pageTitle)
         wikiSon=wikiFile.extract_template(self.wikiSonName)
         self.assertTrue("name" in wikiSon)
 
     def testGetUpdatedPage(self):
+        '''
+        tests if updates to wikiSon entites are correctly applied and saved to a wikiText file
+        '''
         new_values={"label":"Test label", "year":"2020"}
         wikiFile=self.fix.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
         wikiSon = wikiFile.extract_template(self.wikiSonName)
@@ -80,6 +88,9 @@ test freetext"""
         self.assertTrue("year" in wikiSon)
 
     def testGetUpdatedPages(self):
+        '''
+        tests for multiple pages if updates to wikiSon entites are correctly applied and saved to a wikiText file
+        '''
         records={self.pageTitle:{"label":"Test label", "year":"2020"}}
         wikiFiles=self.fix.getUpdatedPages(records, self.wikiSonName)
         self.assertTrue(len(wikiFiles)==1)
@@ -88,6 +99,9 @@ test freetext"""
         self.assertTrue("label" in wikiSon)
 
     def testPushWikiFilesToWiki(self):
+        '''
+        tests id the content of a WikiFile is correctly upload to the assigend page in the wiki
+        '''
         timestampOfTest=datetime.now()
         new_values={"lastTested":str(timestampOfTest)}
         wikiFile=self.fix.getUpdatedPage(self.pageTitle, new_values, self.wikiSonName)
@@ -98,6 +112,9 @@ test freetext"""
         self.assertEqual(wikiSon["lastTested"], str(timestampOfTest))
 
     def testImportLODtoWiki(self):
+        '''
+        tests if a LoD is correctly imported to the corresponding WikiSon entity
+        '''
         random_val=random()
         data=[{"pageTitle":self.pageTitle,"randomValue": str(random_val)}]
         self.fix.importLODtoWiki(data, self.wikiSonName)
@@ -108,6 +125,9 @@ test freetext"""
         self.assertEqual(wikiSon["randomValue"], str(random_val))
 
     def testExportWikiSonToLOD(self):
+        '''
+        tests if a WikiSon entity is correctly extracted to LoD
+        '''
         pageTitleKey="pageTitleTest"
         lod=self.fix.exportWikiSonToLOD([self.pageTitle], self.wikiSonName, pageTitleKey)
         # expected is something like this: [{'name': 'Test page to test WikiFix', 'randomValue': '0.10670651978101686', 'lastTested': '2021-06-01 22:55:53.787546', 'pageTitleTest': 'Test_WikiFileManager'}]
@@ -130,6 +150,21 @@ test freetext"""
             self.assertEqual(recordKeys[index], prop)
         self.assertTrue("name" in record)
         self.assertIsNone(record[propWithNoneValue])
+
+    def test_getPageTitlesLocatedAt(self):
+        '''
+        test if the pageTitles of all wikiText files located in a directory are recognized as pages
+        '''
+        pageTitles=self.fix.getPageTitlesLocatedAt(self.sourcePath)
+        self.assertTrue(len(pageTitles)>1000)
+
+    def test_getPageTitlesLocatedAt(self):
+        '''
+        test if the pageTitles of all wikiText files located in a directory are recognized as pages
+        '''
+        pageTitles=self.fix.getPageTitlesLocatedAt(self.sourcePath)
+        self.assertTrue(len(pageTitles)>1000)
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']

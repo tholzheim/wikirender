@@ -1,7 +1,12 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from wikifile.wikiFileManager import WikiFileManager
 import os
 import wikitextparser as wtp
 from mwclient.page import Page
 from wikitextparser import Template
+
 
 
 class WikiFile:
@@ -9,7 +14,7 @@ class WikiFile:
     Provides methods to modify, query, update and save wiki markup files.
     '''
 
-    def __init__(self, name, path, wiki_render, wikiText: str = None, debug=False):
+    def __init__(self, name, wikiFileManager:WikiFileManager, wikiText: str = None, debug=False):
         """
 
         Args:
@@ -18,14 +23,15 @@ class WikiFile:
             wiki_render:
             wikiText: WikiPage content as string. If defined the file content will loaded and this value will be used instead
         """
-        self.file_name = name
-        self.file_path = path
+        self.pageTitle = name
+        self.file_path = wikiFileManager.sourcePath
+        self.wiki_render = wikiFileManager.wikiRender
         self.debug = debug
         if wikiText is None:
-            self.wikiText = self.get_wikiText(self.file_name, self.file_path)
+            self.wikiText = self.get_wikiText(self.pageTitle, self.file_path)
         else:
             self.wikiText = wtp.parse(wikiText)
-        self.wiki_render = wiki_render
+
 
     def save_to_file(self, overwrite=False):
         """
@@ -35,7 +41,7 @@ class WikiFile:
             overwrite(bool): If True existing files will be over written and if the path does not exist the missing folder will be created. Otherwise, only missing files will be saved.
   
         """
-        wiki_file_path = WikiFile.get_wiki_path(self.file_path, self.file_name)
+        wiki_file_path = WikiFile.get_wiki_path(self.file_path, self.pageTitle)
         mode = "w"
         if overwrite:
             mode = 'w'
@@ -49,7 +55,7 @@ class WikiFile:
         with open(wiki_file_path, mode=mode) as f:
             f.write(str(self.wikiText))
         if self.debug:
-            print(f"{self.file_name} saved to {wiki_file_path}")
+            print(f"{self.pageTitle} saved to {wiki_file_path}")
 
     def get_wikiText(self, name, path):
         """
@@ -202,11 +208,27 @@ class WikiFile:
             return self.__dict__["pageRef"]
 
     def getPageTitle(self):
-        return self.file_name
+        return self.pageTitle
 
     @staticmethod
     def get_wiki_path(path: str, name: str):
-        return f"{path}/{name}.wiki"
+        """
+
+        Args:
+            path: path the file is located
+            name: name of the page also known as page title
+
+        Returns:
+            path to the wikitext file based on given path and name
+        """
+        wikiPath=f"{name}.wiki"
+        if path is not None:
+            wikiPath=f"{path}/{wikiPath}"
+        return wikiPath
+
+    @property
+    def file_name(self):
+        return self.get_wiki_path(self.file_path, self.pageTitle)
 
     def __str__(self) -> str:
         return str(self.wikiText)
