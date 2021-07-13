@@ -7,6 +7,7 @@ from datetime import datetime
 from random import random
 import io
 import os
+from tests.default_wikiuser import DefaultWikiUser
 
 class TestWikiFileManager(unittest.TestCase):
     '''
@@ -179,6 +180,8 @@ Help:Topic"""
         '''
         for wikiId in ["or","orclone"]:
             home = os.path.expanduser("~")
+            wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
+            self.assertEqual(wikiId,wikiUser.wikiId)
             wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
             wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath,login=False)
             wikiFiles=wikiFileManager.getAllWikiFiles()

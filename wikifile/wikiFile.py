@@ -19,6 +19,7 @@ class WikiFile:
             wiki_render:
             wikiText: WikiPage content as string. If defined the file content will loaded and this value will be used instead
         """
+        # FIXME change signature of constructor 
         self.file_name = name
         self.file_path = path
         self.debug = debug
