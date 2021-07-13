@@ -180,7 +180,7 @@ Help:Topic"""
         for wikiId in ["or","orclone"]:
             home = os.path.expanduser("~")
             wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"
-            wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath)
+            wikiFileManager=WikiFileManager(sourceWikiId=wikiId,wikiTextPath=wikiTextPath,login=False)
             wikiFiles=wikiFileManager.getAllWikiFiles()
             if self.debug:
                 print(f"There are {len(wikiFiles)} wikiFiles for {wikiId}")
