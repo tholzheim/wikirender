@@ -26,8 +26,8 @@ class TestCommandLine(unittest.TestCase):
         
 
         '''
-        args=["--pages","3DUI","--wikiTextPath=." ]
-        # "--template","Event series", "--source","orclone"]
+        args=["--pages","3DUI","--source","orclone" ]
+        # "--template","Event series"
         cmdLine=CmdLineAble()
         cmdLine.getParser()
         cmdLine.parser.add_argument("--listFile", dest="file_list",
