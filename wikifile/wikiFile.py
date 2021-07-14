@@ -292,7 +292,7 @@ class WikiFile:
 
     @property
     def file_path(self):
-        return self.wikiFileManager.wikiTextPath
+        return self.wikiFileManager.targetPath
 
     def __str__(self) -> str:
         return self.wikiText
