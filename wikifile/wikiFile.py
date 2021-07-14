@@ -20,20 +20,23 @@ class WikiFile:
         Args:
             name: page title of the wikiText file
             wikiFileManager: WikiFileManager providing context information for this WikiFile
-            wikiText: WikiPage content as string
+            wikiText: WikiPage content as string. If None try to init the wikiText from source location
         """
         self.wikiFileManager=wikiFileManager
         self.pageTitle = self.sanitizePageTitle(name)
         self.wiki_render = wikiFileManager.wikiRender
         self.debug = debug
         self._wikiText=wikiText
+        if wikiText is None:
+            self._wikiText=self.get_wikiText_from_source()
         self._parsedWikiText=None
 
     @property
     def wikiText(self):
-        if self._parsedWikiText is not None:
-            self._wikiText = str(self._parsedWikiText)
-        return self._wikiText
+        if self._parsedWikiText is None:
+            return self._wikiText
+        else:
+            return str(self.parsedWikiText)
 
     @wikiText.setter
     def wikiText(self, wikiText:str):
@@ -44,15 +47,13 @@ class WikiFile:
 
     @property
     def parsedWikiText(self):
-        if self._parsedWikiText is None:
-            self._parsedWikiText=wtp.parse(self.wikiText)
+        if self._parsedWikiText is None and self._wikiText is not None:
+            self._parsedWikiText=wtp.parse(self._wikiText)
         return self._parsedWikiText
 
     @parsedWikiText.setter
     def parsedWikiText(self, parsedWikiText: wtp.WikiText):
         self._parsedWikiText=parsedWikiText
-        # update the plain wikiText
-        self._wikiText=str(parsedWikiText)
 
     def sanitizePageTitle(self, name:str):
         """
@@ -116,7 +117,7 @@ class WikiFile:
         if debug:
             print(f"{pageTitle} saved to {path}")
 
-    def get_wikiText(self, name, path):
+    def get_wikiText_from_source(self):
         """
         find the wiki file by name and return it as parsed object.
         Args:
@@ -126,12 +127,11 @@ class WikiFile:
         Returns:
             WikiText object
         """
-        fname = WikiFile.get_wiki_path(path, name)
-        if os.path.isfile(r"{}".format(fname)):
+        fname = WikiFile.get_wiki_path(self.wikiFileManager.wikiTextPath, self.pageTitle)
+        if os.path.isfile(fname):
             with open(fname, mode='r') as file:
                 page = file.read()
-                parsed_page = wtp.parse(page)
-                return parsed_page
+                return page
         return None
 
     def get_template(self, template_name: str):
