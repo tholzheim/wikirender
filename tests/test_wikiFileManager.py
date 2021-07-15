@@ -229,6 +229,8 @@ Help:Topic"""
         '''
         profile=True
         for wikiId in ["or","orclone"]:
+            if profile:
+                print(f"Starting conversion form WikiFile to LoD for {wikiId} ...")
             wikiFileManager=TestWikiFileManager.wikiFileManagers[wikiId]
             templateName="Event"
             startTime=time.time()
