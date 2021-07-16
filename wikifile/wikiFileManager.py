@@ -149,13 +149,15 @@ class WikiFileManager(CmdLineAble):
             lod[pos] = dict(sorted(record.items(), key=lambda x: propertyMap[x[0]]))
         return lod
 
-    def convertWikiFilesToLOD(self, wikiFiles: list, templateName: str):
+    @classmethod
+    def convertWikiFilesToLOD(cls, wikiFiles: list, templateName: str):
         '''
-        converts the given pagesTitles to csv by extracting the given templateName from the wikiPage corresponding to
+        converts the given pagesTitles to list of dicts 
+        by extracting the given templateName from the wikiPage corresponding to
         the given pageTitle.
 
         Args:
-            wikiFiles(list): PageTitles to fetch and convert to CSV
+            wikiFiles(list): pageTitles to convert to list of dict
             templateName(str): Name of the template/entity/WikiSon object that should be extracted
 
         Returns:
