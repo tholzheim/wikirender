@@ -10,7 +10,7 @@ with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='wikirender',
-    version='0.0.20',
+    version='0.0.19',
     packages=['wikifile','templates','templates/macros', 'wikifile/resources/metamodel'],
     classifiers=[
             'Programming Language :: Python',
