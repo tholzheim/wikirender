@@ -331,6 +331,9 @@ class WikiFileManager(CmdLineAble):
         return wiki_file
 
     def generateLink(self,page):
+        '''
+        generate a link to the given page
+        '''
         search=r".*%s/(.*)\.wiki" % self.wikiId
         replace=r"%s\1" % self.baseUrl
         alink=re.sub(search,replace,page)
