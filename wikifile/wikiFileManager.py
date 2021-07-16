@@ -152,7 +152,7 @@ class WikiFileManager(CmdLineAble):
     @classmethod
     def convertWikiFilesToLOD(cls, wikiFiles: list, templateName: str):
         '''
-        converts the given pagesTitles to list of dicts 
+        converts the given wikiFiles to list of dicts 
         by extracting the given templateName from the wikiPage corresponding to
         the given pageTitle.
 
@@ -170,9 +170,9 @@ class WikiFileManager(CmdLineAble):
                 if values is None:
                     values = {}
                 pageTitle = wikifile.getPageTitle()
-                if pageTitle is not None and len(values)>0:
+                if pageTitle is not None:
                     values['pageTitle']= pageTitle
-                    lod.append(values)
+                lod.append(values)
         return lod
 
     def pagesListToDict(self, data: list, titleKey: str = "pageTitle", removeKey:bool=True) -> dict:
