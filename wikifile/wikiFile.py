@@ -14,7 +14,7 @@ class WikiFile:
     see https://en.wikipedia.org/wiki/Help:Wikitext
     '''
 
-    def __init__(self, name, wikiFileManager:WikiFileManager, wikiText: str = None, debug=False):
+    def __init__(self, name, wikiFileManager:WikiFileManager=None, wikiText: str = None, debug=False):
         """
 
         Args:
@@ -24,7 +24,8 @@ class WikiFile:
         """
         self.wikiFileManager=wikiFileManager
         self.pageTitle = self.sanitizePageTitle(name)
-        self.wiki_render = wikiFileManager.wikiRender
+        if wikiFileManager:
+            self.wiki_render = wikiFileManager.wikiRender
         self.debug = debug
         self._wikiText=wikiText
         if wikiText is None:

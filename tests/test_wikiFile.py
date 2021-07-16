@@ -148,6 +148,14 @@ class TestWikiFile(TestCase):
             wikiFile=WikiFile(name, self.wikiFileManager)
             actual=wikiFile.getPageTitle()
             self.assertEqual(testRecord.get('expected'),actual)
+            
+    def testIssue13(self):
+        '''
+        test https://github.com/tholzheim/wikirender/issues/13
+        '''
+        wikiFile=WikiFile(name="Hello",wikiText="Hello world!")
+        self.assertTrue(wikiFile is not None)
+        self.assertTrue(wikiFile.wikiFileManager is None)
 
 if __name__ == "__main__":
     unittest.main()
