@@ -245,6 +245,18 @@ Help:Topic"""
                 print(f"converting {len(eventWikiFiles)} to List of Dicts for {wikiId} took {elapsed:5.1f} s")
             self.assertEqual(len(lod),len(eventWikiFiles))
 
+    def testConvertWikiFilesToLODTemplateMissing(self):
+        '''
+        tests the convertWikiFilesToLOD behavior if a wikifile does not contain the requested template
+        see https://github.com/tholzheim/wikirender/issues/16
+        '''
+        for wikiId in ["or", "orclone"]:
+            wikiFileManager = TestWikiFileManager.wikiFileManagers[wikiId]
+            templateName = "Event"
+            wikiFiles=[wikiFileManager.getWikiFile("3DUI")]
+            lod = wikiFileManager.convertWikiFilesToLOD(wikiFiles, templateName)
+            self.assertTrue(lod==[])
+
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

@@ -167,12 +167,11 @@ class WikiFileManager(CmdLineAble):
         for wikifile in wikiFiles:
             if isinstance(wikifile, WikiFile):
                 values = wikifile.extract_template(templateName)
-                if values is None:
-                    values = {}
-                pageTitle = wikifile.getPageTitle()
-                if pageTitle is not None:
-                    values['pageTitle']= pageTitle
-                lod.append(values)
+                if values is not None:
+                    pageTitle = wikifile.getPageTitle()
+                    if pageTitle is not None:
+                        values['pageTitle']= pageTitle
+                    lod.append(values)
         return lod
 
     def pagesListToDict(self, data: list, titleKey: str = "pageTitle", removeKey:bool=True) -> dict:
