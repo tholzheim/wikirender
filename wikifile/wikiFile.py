@@ -226,8 +226,8 @@ class WikiFile:
         Args:
             template_name(str): Name of the template the data should be inserted in
             data(dict): Data that should be saved in form of a template
-            overwrite(bool): If true existing values are overwritten. Otherwise onl missing values are added. Default: False
-            prettify: If true each newly added value will be placed in a new line. Oterwise values are added in the same line. Default is false.
+            overwrite(bool): If true existing values are overwritten. Otherwise only missing values are added. Default: False
+            prettify: If true each newly added value will be placed in a new line. Otherwise values are added in the same line. Default is false.
 
         Returns:
             Nothing
