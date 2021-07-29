@@ -10,7 +10,6 @@ import pkgutil
 from datetime import datetime
 from lodstorage.jsonable import Types, JSONAble
 from wikifile.smw import SMW, Query
-from .resources import metamodel
 
 
 class MetaModelElement(object):
@@ -71,25 +70,6 @@ class MetaModelElement(object):
         # ToDo: Check if this method is still needed after migrating to camelCase property names
         return re.sub(r'(?<!^)(?=[A-Z])', '_', name).lower()
 
-
-    @classmethod
-    def fromJson(self, listname: str, jsonStr: str, sample: list = None):
-        """
-        Convert the given string to JSON and convert the values to the corresponding datatype"
-        ToDo: Refactor to JSONAble (this method is redundant)
-        Args:
-            listname: name of the list the data is stored in
-            jsonStr: data as json string that should be converted
-            sample: sample data of the actual data. Used to convert the values to the correct type
-        Returns:
-
-        """
-
-        types = Types(listname)
-        types.getTypes("data", sample, 1)
-        json_parsed = JSONAble()
-        json_parsed.fromJson(jsonStr, types)
-        return json_parsed.__dict__[listname]
 
     @staticmethod
     def get_parameters(attr: dict, prop_list: list):
