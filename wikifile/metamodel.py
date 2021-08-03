@@ -265,14 +265,11 @@ class Topic(MetaModelElement):
             Topic object based on the given parameters
         """
         key = "data"
-
         t=TopicList(listname=key)
         t.fromJson(topic_json, t.getTypes())
         topic=t.getList()[0]
-        #topic_props = MetaModelElement.fromJson(key, topic_json, Topic.get_samples())
         properties = None
         if prop_json:
-            #properties = [Property(x) for x in MetaModelElement.fromJson("data", prop_json, Property.get_samples())]
             p=PropertyList(listname=key)
             p.fromJson(prop_json, p.getTypes(key))
             properties=p.getList()
@@ -557,8 +554,10 @@ class Property(MetaModelElement):
             Property object
         """
         key = "data"
-        prop_props = MetaModelElement.fromJson(key, prop_json, Property.get_samples())
-        return Property(prop_props[0])
+        pl= PropertyList(listname=key)
+        pl.fromJson(prop_json, pl.getTypes())
+        prop = pl.getList()[0]
+        return prop
 
 
 

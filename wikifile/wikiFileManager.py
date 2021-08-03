@@ -37,12 +37,26 @@ class WikiFileManager(CmdLineAble):
         self.wikiTextPath=wikiTextPath
         self.wikiRender = WikiRender()
 
+
     def getWikiClient(self):
         '''
         get my WikiClient
         '''
         wikiClient=self.wikiPush.fromWiki
         return wikiClient
+
+    @property
+    def wikiUser(self):
+        '''
+
+        Returns:
+            WikiUser of the source wiki
+        '''
+        wikiUser=None
+        wikiClient=self.wikiPush.fromWiki
+        if wikiClient is not None:
+            wikiUser=wikiClient.wikiUser
+        return wikiUser
 
     @staticmethod
     def getPageTitlesLocatedAt(path:str)->list:

@@ -3,6 +3,8 @@ import warnings
 import getpass
 from pathlib import Path
 
+from wikibot.wikiuser import WikiUser
+
 from wikifile.wikiFileManager import WikiFileManager
 from wikibot.wikipush import WikiPush
 from datetime import datetime
@@ -256,6 +258,11 @@ Help:Topic"""
             wikiFiles=[wikiFileManager.getWikiFile("3DUI")]
             lod = wikiFileManager.convertWikiFilesToLOD(wikiFiles, templateName)
             self.assertTrue(lod==[])
+
+    def testWikiUser(self):
+        wikiUser=self.wikiFileManager.wikiUser
+        self.assertTrue(isinstance(wikiUser, WikiUser))
+
 
 if __name__ == "__main__":
     # import sys;sys.argv = ['', 'Test.testName']
