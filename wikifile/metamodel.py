@@ -8,11 +8,11 @@ import re
 import sys
 import pkgutil
 from datetime import datetime
-from lodstorage.jsonable import Types, JSONAble
+from lodstorage.jsonable import Types, JSONAble, JSONAbleList
 from wikifile.smw import SMW, Query
 
 
-class MetaModelElement(object):
+class MetaModelElement(JSONAble):
     '''
     a generic MetaModelElement
     
@@ -82,7 +82,7 @@ class MetaModelElement(object):
             Returns list of dict containing the property names from the given prop_list with the corresponding value from attr
         """
         para_map = {}
-        for para_item in [{prop: attr[prop]} for prop in prop_list]:
+        for para_item in [{prop: attr[prop]} for prop in prop_list if prop in attr]:
             para_map.update(para_item)
         return para_map
 
@@ -194,7 +194,7 @@ class Topic(MetaModelElement):
     def get_samples(cls):
         return Topic.samples
 
-    def __init__(self, topic_properties: dict, properties: list=None):
+    def __init__(self, topic_properties: dict={}, properties: list=None):
         """
         Initialize topic with the given parameters
         Args:
@@ -265,11 +265,19 @@ class Topic(MetaModelElement):
             Topic object based on the given parameters
         """
         key = "data"
-        topic_props = MetaModelElement.fromJson(key, topic_json, Topic.get_samples())
+
+        t=TopicList(listname=key)
+        t.fromJson(topic_json, t.getTypes())
+        topic=t.getList()[0]
+        #topic_props = MetaModelElement.fromJson(key, topic_json, Topic.get_samples())
         properties = None
         if prop_json:
-            properties = [Property(x) for x in MetaModelElement.fromJson("data", prop_json, Property.get_samples())]
-        return Topic(topic_props[0], properties)
+            #properties = [Property(x) for x in MetaModelElement.fromJson("data", prop_json, Property.get_samples())]
+            p=PropertyList(listname=key)
+            p.fromJson(prop_json, p.getTypes(key))
+            properties=p.getList()
+        topic.properties=properties
+        return topic
 
     @classmethod
     def from_dict(cls, topicRecord:dict, props:dict=None):
@@ -332,6 +340,34 @@ class Topic(MetaModelElement):
         query.printout("Topic wikiDocumentation", " ")
         return query.render()
 
+class TopicList(JSONAbleList):
+    '''
+    List of properties
+    '''
+
+    def __init__(self, listname='topics'):
+        super().__init__(listName=listname, clazz=Topic, tableName='topics')
+
+    @classmethod
+    def getTypes(cls, key: str = 'data'):
+        types = Types(key)
+        types.getTypes(key, Topic.get_samples(), 1)
+        return types
+
+class PropertyList(JSONAbleList):
+    '''
+    List of properties
+    '''
+
+    def __init__(self, listname='properties'):
+        super().__init__(listName=listname, clazz=Property, tableName='properties')
+
+    @classmethod
+    def getTypes(cls, key:str='data'):
+        types = Types(key)
+        types.getTypes(key, Property.get_samples(), 1)
+        return types
+
 
 class Property(MetaModelElement):
     """
@@ -378,12 +414,12 @@ class Property(MetaModelElement):
     def is_used_for(self):
         """Returns the topics this property is used for/by"""
         res = []
-        if self.topic:
+        if hasattr(self, 'topic') and self.topic:
             if isinstance(self.topic, list):
                 res.extend(self.topic)
             else:
                 res.append(self.topic)
-        if self.usedFor:
+        elif hasattr(self, 'usedFor') and self.usedFor:
             if isinstance(self.usedFor, list):
                 res.extend(self.usedFor)
             else:

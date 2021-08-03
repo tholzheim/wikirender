@@ -28,11 +28,11 @@ class TestWikiRender(unittest.TestCase):
         return getpass.getuser() in [ "travis", "runner" ];
 
     def testWikiRender(self):
-        topicJson="""{"data": [{"pageName": "Concept:Task", "name": "Task", "pluralName": "Tasks", "documentation": "Problem or issue that needs to be solved", "wikiDocumentation": "Problem or issue that needs to be solved"}]}
+        topicJson="""{"data": [{"pageTitle": "Concept:Task", "name": "Task", "pluralName": "Tasks", "documentation": "Problem or issue that needs to be solved", "wikiDocumentation": "Problem or issue that needs to be solved"}]}
         """
         propJson="""{
   "data": [{
-    "pageName": "Property:Task goals",
+    "pageTitle": "Property:Task goals",
     "name": "Task goals",
     "label": "Goals",
     "type": null,
@@ -54,7 +54,7 @@ class TestWikiRender(unittest.TestCase):
     "topic": "Concept:Task",
     "regexp": null
   }, {
-    "pageName": "Property:Task procedure",
+    "pageTitle": "Property:Task procedure",
     "name": "Task procedure",
     "label": "Procedure",
     "type": null,
@@ -76,7 +76,7 @@ class TestWikiRender(unittest.TestCase):
     "topic": "Concept:Task",
     "regexp": null
   }, {
-    "pageName": "Property:Task task",
+    "pageTitle": "Property:Task task",
     "name": "Task task",
     "label": "Task",
     "type": null,
@@ -98,7 +98,7 @@ class TestWikiRender(unittest.TestCase):
     "topic": "Concept:Task",
     "regexp": null
   }, {
-    "pageName": "Property:Task workpackage",
+    "pageTitle": "Property:Task workpackage",
     "name": "Task workpackage",
     "label": "assigned to",
     "type": "Special:Types/Page",
