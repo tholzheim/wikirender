@@ -40,7 +40,8 @@ class MetaModelElement(JSONAble):
         if propList is None:
             propList = MetaModelElement.get_prop_list_from_samples(MetaModelElement.get_samples())
         self.propList=propList
-        self.fromProperties(properties)
+        if properties:
+            self.fromProperties(properties)
 
     def fromProperties(self, properties: dict):
         '''
@@ -404,9 +405,9 @@ class Property(MetaModelElement):
     # propList contains all attributes that belong to the Property domain / Needed to distinguish them from technical attributes
     propList = MetaModelElement.get_prop_list_from_samples(samples)
 
-    def __init__(self, properties: dict=None):
+    def __init__(self, properties:dict=None):
         """Initialize property with the given properties as attributes"""
-        super(Property, self).__init__(Property.propList, properties)
+        super(Property, self).__init__(Property.propList, properties, template="property_page.jinja")
 
     def is_used_for(self):
         """Returns the topics this property is used for/by"""

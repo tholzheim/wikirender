@@ -165,7 +165,7 @@ class WikiRender(CmdLineAble):
             print(e)
         return None
 
-    def generateTopic(self, topic: Topic, path: str, overwrite:bool=False):
+    def generateTopic(self, topic: Topic, path: str, overwrite:bool=False, withProperties:bool=True):
         """
         Generate all technical pages of the given topic and save them as wiki page at the given path
         Args:
@@ -180,12 +180,17 @@ class WikiRender(CmdLineAble):
                 print(f"generating {smwPart.get_page_name(topic)}")
             page = smwPart.render_page(topic)
             WikiFile.write_to_file(path, smwPart.get_page_name(topic),page, overwrite=overwrite)
+        if withProperties:
+            for prop in topic.properties:
+                self.generateProperty(prop, path=path, overwrite=overwrite)
 
     def generateProperty(self, property:Property, path:str, overwrite:bool=False):
         if self.debug:
             print(f"generating property {property.name}")
         # generate property page
-        #ToDo: Generate property page
+        template_template = self.template_env.get_template(property.template)
+        page = template_template.render(property=property)
+        WikiFile.write_to_file(path, property.get_pageTitle(withNamespace=True), page, overwrite=overwrite)
 
     def update_or_create_templates(self,
                                    data: list,
