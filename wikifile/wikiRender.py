@@ -102,8 +102,6 @@ class WikiRender(CmdLineAble):
         self.parser.add_argument('--topic', dest="topic_file", help="Json file containing topics")
         self.parser.add_argument('-f', dest="overwrite", action='store_true', default=False,
                                  help='If true template arguments will be overwritten with the given data if present')
-        self.parser.add_argument("-t", "--template", dest="template",
-                                 help="Select a template in which the data is being rendered")
         self.parser.add_argument("--templates", dest="templates_folder",
                                  help="Path to additional templates")
         self.parser.add_argument("--data", dest="data_input",

@@ -154,7 +154,7 @@ showCount topics.json Topics
 query $source_wiki "$propAsk" properties.json $cache $base
 showCount properties.json Properties
 cd $scriptbase
-python -m wikifile.wikiRender -m "generate_entity_pages" --BackupPath $base --topic $base/topics.json --properties $base/properties.json -f -p $topic --debug
+python -m wikifile.wikiRender -m "generate_entity_pages" -s $source_wiki --wikiTextPath $base --topic $base/topics.json --properties $base/properties.json -f -p $topic --debug
 
 if [ "$target_wiki" != "" ]
 then
