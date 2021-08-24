@@ -443,7 +443,6 @@ class Property(MetaModelElement):
         # Add pageTitle
         for property in properties:
             property.__dict__["pageTitle"] = f"Property:Property {property.name}"
-        print([p.pageTitle for p in properties])
         return properties
 
     @staticmethod
