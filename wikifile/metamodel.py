@@ -566,7 +566,7 @@ class Property(MetaModelElement):
             String with the smw specification setting the type of the property
         '''
         typeDefStr=""
-        if hasattr(self, 'type'):
+        if hasattr(self, 'type') and getattr(self, 'type'):
             typeDefStr+=f"[[Has type::{self.type.replace('Special:Types/', '')}]]"
         if hasattr(self, 'externalFormatterUri') and 'external identifier' in self.type.lower():
             typeDefStr+=f" [[External formatter uri::{self.externalFormatterUri}]]"
