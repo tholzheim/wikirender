@@ -5,6 +5,9 @@ Created on 2021-03-07
 '''
 from __future__ import annotations
 from typing import TYPE_CHECKING
+
+from tabulate import tabulate
+
 if TYPE_CHECKING:
     from wikifile.wikiRender import WikiRender
     from wikifile.metamodel import Topic, Property, UML, Context
@@ -217,28 +220,35 @@ class Template(SMWPart):
         return "{{{" + arg + "|}}}"
 
     @staticmethod
-    def table_of_arguments(topic: Topic, properties: list, clickable_links=True):
+    def table_of_arguments(topic:Topic, properties:list=None, clickable_links:bool=True, setProperties:bool=False):
         """
-        ToDo
+        Generate a media wiki table for each property of the topic and display their values
         Args:
-            topic:
-            properties:
+            topic(Topic): Topic for which the table should be generated
+            properties(list): List of properties to display in the table. If None all properties of the given topic are used
+            clickable_links(bool): If True the property names will link to the Property page
+            setProperties(bool): IF True the properties will be set for the entity.
 
         Returns:
-
+            string of an mediawiki table displaying the properties of the given topic
         """
         formlink = Form.formlink(form=topic.name, link_text="✎", target="{{FULLPAGENAME}}", tooltip="Start editing this " + topic.name)
-        table_str = "{| class='wikitable'\n! colspan=2 | " + formlink + topic.get_page_link()+ "\n|-\n"
-        sortBySortPos = lambda property: 99999 if "sortPos" not in property.__dict__ or property.__dict__.get(
-            "sortPos") is None else int(property.sortPos)
+        sortBySortPos = lambda property: 99999 if "sortPos" not in property.__dict__ or property.__dict__.get("sortPos") is None else int(property.sortPos)
         properties_sorted = sorted(properties, key=sortBySortPos)
+
+        table=Table(css_class="wikitable")
+        tableHeader=f"{formlink} {topic.get_page_link()}"
+        table.add_row().add_cell(colspan=2,is_header=True, content=tableHeader)
         for property in properties_sorted:
-            # ToDo: refactor Table definition
+            row=table.add_row()
             label = property.get_description_page_link() if clickable_links else property.label
-            table_str += "!style=\"text-align:left\" |" + label + "\n"
-            table_str += "| {{#if:" + Template.template_arg(property.name) + "|" + Template.template_arg(property.name) + "|}}\n"
-            table_str += "|-\n"
-        return table_str + "|}"
+            row.add_cell(is_header=True, style="text-align:left", content=label)
+            if setProperties:   # set the property for the entity
+                value=f"[[{property.get_pageTitle(withNamespace=False)}::{'{{{'} {property.name}|{'}}}'}]]"
+            else:   # just display the raw value
+                value=Template.template_arg(property.name)
+            row.add_cell(content=f"{'{{'}#if:{Template.template_arg(property.name)}|{value}|{'}}'}")
+        return table.render()
 
 
 class ListOf(SMWPart):
@@ -566,7 +576,7 @@ class Table:
     For more information see https://www.mediawiki.org/wiki/Help:Tables
     """
 
-    def __init__(self, css_class: str=None, style: str=None ):
+    def __init__(self, css_class:str=None, style: str=None ):
         """
         Initialize the table with the given style/ style class
         Args:

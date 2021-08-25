@@ -8,6 +8,4 @@ Output: Generates the page Property:<property.name>
 {#-------------------------------Template-------------------------------------#}
 {{ property.render_entity(oneliner=False) }}
 {# Set type of the proeprty #}
-{%- if property.type %}
-[[Has type::{{ property.type.replace("Special:Types/", "") }}]]
-{%- endif -%}
+{{ property.setPropertyType() }}

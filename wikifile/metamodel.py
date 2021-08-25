@@ -559,6 +559,18 @@ class Property(MetaModelElement):
         prop = pl.getList()[0]
         return prop
 
+    def setPropertyType(self):
+        '''
+        Sets the type of the property. If the property has the type External Identifier the formater uri is also set
+        Returns:
+            String with the smw specification setting the type of the property
+        '''
+        typeDefStr=""
+        if hasattr(self, 'type'):
+            typeDefStr+=f"[[Has type::{self.type.replace('Special:Types/', '')}]]"
+        if hasattr(self, 'externalFormatterUri') and 'external identifier' in self.type.lower():
+            typeDefStr+=f" [[External formatter uri::{self.externalFormatterUri}]]"
+        return typeDefStr
 
 
 class UML:
