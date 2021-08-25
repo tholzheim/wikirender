@@ -16,13 +16,13 @@ class WikiRender(CmdLineAble):
     Provides functions to render json data to wiki files
     """
 
-    def __init__(self, template_env=None, debug=False):
+    def __init__(self, template_env=None, additional_template_env:str=None, debug=False):
         ''' constructor
         '''
         self.debug=debug  # debug state before args.debug is available
         super(WikiRender, self).__init__()
         if template_env is None:
-            template_env = WikiRender.getTemplateEnv()
+            template_env = WikiRender.getTemplateEnv(additional_loader=additional_template_env)
         self.template_env = template_env
 
     def maininstance(self, argv=None):
