@@ -207,7 +207,7 @@ class WikiFile:
                 # update argument
                 if overwrite:
                     template.del_arg(key)
-                    template.set_arg(key, value)
+                    template.set_arg(key, str(value))
                 else:
                     pass
             else:

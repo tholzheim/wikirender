@@ -157,5 +157,14 @@ class TestWikiFile(TestCase):
         self.assertTrue(wikiFile is not None)
         self.assertTrue(wikiFile.wikiFileManager is None)
 
+    def testUpdatingTemplateParamWithInteger(self):
+        '''Test updating template arguments with integer values'''
+        rawString="{{Event|Year=2020}}"
+        expString="{{Event|Year=2021}}"
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, rawString)
+        wikiFile.update_template("Event",{"Year":2021}, overwrite=True)
+        wikiText=str(wikiFile).strip()
+        self.assertEqual(expString, wikiText)
+
 if __name__ == "__main__":
     unittest.main()
