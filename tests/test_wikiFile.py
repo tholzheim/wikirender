@@ -166,5 +166,76 @@ class TestWikiFile(TestCase):
         wikiText=str(wikiFile).strip()
         self.assertEqual(expString, wikiText)
 
+    def testMultipleTemplateOccurences(self):
+        '''
+        test the get_template function
+        '''
+        wikiFile = WikiFile("sampleFileMultipleTemplateOccurences", self.wikiFileManager, self.sampleWikiFile_duplicateTemplate)
+        eventTemplate = wikiFile.get_template("Event")
+        self.assertTrue(isinstance(eventTemplate, Template))
+        self.assertTrue(len(eventTemplate.arguments) == 10)
+        self.debug = True
+        if self.debug:
+            print(eventTemplate)
+
+    def testGetTemplatesByName(self):
+        '''
+        tests getTemplatesByName
+        '''
+        wikiMarkup="{{Event|ordinal=1}}{{Event\n|ordinal=2\n}}{{Event|ordinal=3}}{{Event|ordinal=4|year=2021\n|name=Test}}"
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, wikiMarkup)
+        allTemplates=wikiFile.getTemplatesByName("Event")
+        self.assertEqual(4,len(allTemplates))
+        eventsIn2020=wikiFile.getTemplatesByName("Event",{"year":"2021"})
+        self.assertEqual(1,len(eventsIn2020))
+
+    def testExtractTemplateByName(self):
+        """
+        tests extractTemplateByName
+        """
+        wikiMarkup = "{{Event|ordinal =1}}{{Event|ordinal=2\n}}{{Event|ordinal=3}}{{Event|ordinal=4|year=2021\n}}"
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, wikiMarkup)
+        allTemplates = wikiFile.extractTemplatesByName("Event")
+        self.assertEqual(4, len(allTemplates))
+        avaliableOrdinals=['1','2','3','4']
+        for template in allTemplates:
+            self.assertTrue('ordinal' in template)
+            self.assertTrue(template.get("ordinal") in avaliableOrdinals)
+            avaliableOrdinals.remove(template.get("ordinal"))
+        eventsIn2020 = wikiFile.extractTemplatesByName("Event", {"year":"2021"})
+        self.assertEqual(1, len(eventsIn2020))
+        self.assertEqual("2021", eventsIn2020[0].get("year"))
+
+    def testAddTemplate(self):
+        """
+        test the insertion of new template objects
+        """
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, "")
+        name="Test"
+        yearRecord={"year":"2021"}
+        labelRecord={"label":"test"}
+        wikiFile.addTemplate(name, yearRecord)
+        templates=wikiFile.getTemplatesByName(name)
+        self.assertEqual(1, len(templates))
+        wikiFile.addTemplate(name,yearRecord)
+        templates=wikiFile.extractTemplatesByName(name)
+        self.assertEqual(2, len(templates))
+        self.assertEqual(yearRecord.get("year"), templates[0].get("year"))
+
+    def testUpdateTemplate(self):
+        wikiFile = WikiFile("sampleFile", self.wikiFileManager, "{{Event\n|ordinal=1}}{{Event\n|ordinal=2}}")
+        name = "Event"
+        yearRecord = {"year": "2021"}
+        labelRecord = {"label": "test"}
+        wikiFile.updateTemplate(name, yearRecord, updateAll=True)
+        templates = wikiFile.extractTemplatesByName(name)
+        self.assertEqual(2, len(templates))
+        for template in templates:
+            self.assertTrue("ordinal" in template)
+        wikiFile.updateTemplate(name,labelRecord, match={"ordinal":"2"})
+        templatesWithLabel = wikiFile.extractTemplatesByName(name, match=labelRecord)
+        self.assertEqual(1, len(templatesWithLabel))
+
+
 if __name__ == "__main__":
     unittest.main()

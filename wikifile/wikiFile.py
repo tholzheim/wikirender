@@ -3,10 +3,10 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from wikifile.wikiFileManager import WikiFileManager
 import os
+import warnings
 import wikitextparser as wtp
 from mwclient.page import Page
 from wikitextparser import Template
-
 
 class WikiFile:
     '''
@@ -138,21 +138,113 @@ class WikiFile:
     def get_template(self, template_name: str):
         """
         Returns the template
-        
+        ToDo: Extend functionality to support multiple template occurences
         Args:
             template_name(str): the name of the template to extract
 
         Returns:
 
         """
+        warnings.warn("get_template is deprecated as it only supports the first template occurrence. Please switch to getTemplatesByName",
+                      DeprecationWarning)
         if self.parsedWikiText is None or self.parsedWikiText.templates is None:
             # Wikifile has no templates
             return None
+        targetTemplateName=WikiFile.get_template_name(template_name)
         for template in self.parsedWikiText.templates:
             name = WikiFile.get_template_name(template.name)
-            if name == WikiFile.get_template_name(template_name):
+            if name == targetTemplateName:
                 return template
         return None
+
+    def getTemplatesByName(self, _templateName:str, match:dict={}) -> list:
+        """
+        Returns the templates matching the given name and if additional matches are defined the values of the template
+        also have to match these
+        Args:
+            _templateName: name of the template
+            match(dict): Additional matching criteria
+
+        Returns:
+            list of templates with the given name matching the given criteria
+        """
+        if self.parsedWikiText is None or self.parsedWikiText.templates is None:
+            # Wikifile has no templates
+            return []
+        targetTemplateName=WikiFile.get_template_name(_templateName)
+        matchingTemplates=[]
+        for template in self.parsedWikiText.templates:
+            name = WikiFile.get_template_name(template.name)
+            if name == targetTemplateName:
+                matches=True
+                for key, value in match.items():
+                    if not template.has_arg(key, value):
+                        matches=False
+                if matches:
+                    matchingTemplates.append(template)
+        return matchingTemplates
+
+    def extractTemplatesByName(self, _templateName: str, match:dict={}) -> list:
+        """
+        Extracts and returns the template values
+        Args:
+            _templateName: name of the template
+            match(dict): Additional matching criteria
+
+        Returns:
+            list of dicts containing the parameter and their values of the corresponding template
+        """
+        templates=self.getTemplatesByName(_templateName, match)
+        res=[]
+        if templates:
+            for template in templates:
+                if not isinstance(template, Template):
+                    continue
+                templateValues={arg.name.rstrip().lstrip():arg.value.rstrip().lstrip() for arg in template.arguments}
+                res.append(templateValues)
+        return res
+
+    def addTemplate(self, template_name: str, data: dict, prettify:bool=False):
+        """
+        Adds the given data as template with the given name to this wikifile.
+        The data is added as new template object to the wikifile.
+        Args:
+            template_name(str): Name of the template the data should be inserted in
+            data(dict): Data that should be saved in form of a template
+            prettify: If true each newly added value will be placed in a new line. Otherwise values are added in the same line. Default is false.
+
+        Returns:
+            Nothing
+        """
+        templateMarkup=self.wiki_render.render_template(template_name, data)
+        template=Template(templateMarkup)
+        self.wikiText=f"{self.wikiText}\n{template}"
+
+    def updateTemplate(self, template_name: str, args:dict, overwrite=False, updateAll:bool=False, prettify:bool=False, match:dict={}):
+        """
+        Updates the given template the values from the given dict args.
+        If force is set to True existing values will be overwritten.
+        Args:
+            template_name(str): name of the template that should be updated
+            args(dict): Dict containing the arguments that should be set. key=argument name, value=argument value
+            overwrite(bool): If True existing values will be overwritten
+            prettify(bool): If True new values will be added into a new line
+            updateAll(bool): If True all matching attributes are updated. Otherwise only one template is updated if matched multiple an error is raised.
+            match(dict): matching criteria for the template
+
+        Returns:
+            Nothing
+        """
+        matchingTemplates=self.getTemplatesByName(template_name, match=match)
+        if matchingTemplates:
+            if len(matchingTemplates)>1 and not updateAll:
+                warnings.warn("More than one template were matched. Either improve the matching criteria or enable updateAll", UserWarning)
+                pass
+            else:
+                for template in matchingTemplates:
+                    WikiFile.update_arguments(template, args, overwrite, prettify)
+        else:
+            self.addTemplate(template_name, args)
 
     @staticmethod
     def get_template_name(template_name: str):
@@ -166,10 +258,10 @@ class WikiFile:
         Returns:
             normalized template name.
         """
-        name = template_name.replace('\n', '')
-        name = name.lstrip()
-        name = name.rstrip()
-        return name
+        if isinstance(template_name, str):
+            return template_name.rstrip().lstrip()
+        else:
+            return template_name
 
     def update_template(self, template_name: str, args:dict, overwrite=False, prettify:bool=False):
         """
@@ -185,6 +277,7 @@ class WikiFile:
         Returns:
             Nothing
         """
+        warnings.warn("update_template is deprecated as it only supports the first template occurrence", DeprecationWarning)
         template = self.get_template(template_name)
         self.update_arguments(template, args, overwrite, prettify)
 
@@ -232,6 +325,7 @@ class WikiFile:
         Returns:
             Nothing
         """
+        warnings.warn("add_template is deprecated as it only supports the first template occurrence", DeprecationWarning)
         template = self.get_template(template_name)
         if template is None:
             # create template
