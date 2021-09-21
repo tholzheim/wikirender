@@ -317,13 +317,14 @@ class WikiFileManager(CmdLineAble):
         return wikiFiles
     
 
-    def getWikiFile(self, pageTitle: str) -> WikiFile:
+    def getWikiFile(self, pageTitle: str, checkWiki:bool=True) -> WikiFile:
         """
-        Get the WikiFile object for the given pageTitle form the source path and if it is not located
-        there an empty WikiFile object is returned
+        Get the WikiFile object for the given pageTitle form the source path (or source wiki if checkWiki is true)
+        and if it is not located there an empty WikiFile object is returned
 
         Args:
             pageTitle: Title of the page that should be retrieved
+            checkWiki(bool): If True and given page is not found in the backup the source wiki will be queried for the page
 
         Returns:
             WikiFile corresponding the the given pageTitle
@@ -333,6 +334,9 @@ class WikiFileManager(CmdLineAble):
             wikiFilePath=WikiFile.get_wiki_path(self.wikiTextPath, pageTitle)
             with open(wikiFilePath, mode='r') as file:
                 wikiText = file.read()
+        elif checkWiki:
+            pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
+            wikiText = pageItem.text()
         else:
             wikiText=""
         wiki_file = WikiFile(name=pageTitle,

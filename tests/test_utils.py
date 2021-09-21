@@ -155,8 +155,18 @@ class TestUtils(unittest.TestCase):
                 "label": "email me"
             }
         ]
+        expectedMarkup="""{| class="wikitable" style="text-align: left;"
+|+ <!-- caption -->
+|-
+| [https://mediawiki.org mediawiki]
+|-
+| [//en.wikipedia.org wikipedia]
+|-
+| [mailto:info@example.org email me]
+|}"""
         records=[{"link":Link(record['url'], record['label'])} for record in lod]
-        print(tabulate(records, tablefmt="mediawiki"))
+        actualMarkup=tabulate(records, tablefmt="mediawiki")
+        self.assertEqual(expectedMarkup, actualMarkup)
 
     def testSubObject(self):
         """
@@ -167,7 +177,8 @@ class TestUtils(unittest.TestCase):
 |street name=Parks Road
 |postcode=OX1 3QD
 |city=Oxford
-|country=UK}}"""
+|country=UK
+}}"""
         properties={"street number":10,
                     "street name":"Parks Road",
                     "postcode":"OX1 3QD",
@@ -186,7 +197,8 @@ class TestUtils(unittest.TestCase):
 |street name=Parks Road
 |postcode=OX1 3QD
 |city=Oxford
-|country=UK}}"""
+|country=UK
+}}"""
         properties = {"street number": 10,
                       "street name": "Parks Road",
                       "postcode": "OX1 3QD",
