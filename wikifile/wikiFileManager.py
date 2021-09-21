@@ -320,7 +320,7 @@ class WikiFileManager(CmdLineAble):
     def getWikiFile(self, pageTitle: str) -> WikiFile:
         """
         Get the WikiFile object for the given pageTitle form the source path and if it is not located
-        there try to get the page from the source wiki (source wikiid)
+        there an empty WikiFile object is returned
 
         Args:
             pageTitle: Title of the page that should be retrieved
@@ -334,13 +334,28 @@ class WikiFileManager(CmdLineAble):
             with open(wikiFilePath, mode='r') as file:
                 wikiText = file.read()
         else:
-            # query wiki for the page
-            pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
-            wikiText=pageItem.text()
+            wikiText=""
         wiki_file = WikiFile(name=pageTitle,
                                 wikiText=wikiText,
                                 wikiFileManager=self,
                                 debug=self.debug)
+        return wiki_file
+
+    def getWikiFileFromWiki(self, pageTitle:str) ->WikiFile:
+        """
+        Retrieves the wikiFile from the source wiki
+        Args:
+            pageTitle: Title of the page that should be retrieved
+
+        Returns:
+            WikiFile corresponding the the given pageTitle
+        """
+        pageItem = self.wikiPush.fromWiki.getPage(pageTitle)
+        wikiText = pageItem.text()
+        wiki_file = WikiFile(name=pageTitle,
+                             wikiText=wikiText,
+                             wikiFileManager=self,
+                             debug=self.debug)
         return wiki_file
 
     def generateLink(self,page):
