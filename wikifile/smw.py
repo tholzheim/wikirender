@@ -8,6 +8,9 @@ from typing import TYPE_CHECKING
 
 from tabulate import tabulate
 
+from wikifile.utils import Widget, Itemize, PageLink, WikiSon, SubObject, TemplateParam, SetProperties, SwitchFunction, \
+    MagicWord
+
 if TYPE_CHECKING:
     from wikifile.wikiRender import WikiRender
     from wikifile.metamodel import Topic, Property, UML, Context
@@ -200,6 +203,52 @@ class SMW:
                 res += f"{symbol}{d}\n"
         return res
 
+class TemplatePage(Widget):
+    """
+    Renders the Template page of a given Topic
+    """
+
+    def __init__(self, topic:Topic):
+        self.topic=topic
+        self.template="<noinclude>\n{templatePage}\n</noinclude><includeonly>\n{templateRender}\n</includeonly>"
+
+    def render(self):
+        topicProperties={prop.get_pageTitle(withNamespace=False):TemplateParam(prop.name) for prop in self.topic.properties}
+        topicPropertySamples={prop.get_pageTitle(withNamespace=False):"some value" for prop in self.topic.properties}
+
+        storemodes={
+            "subobject": SubObject("-",  **topicProperties, isA=self.topic.name),
+            "property":  None,  # fallthrough
+            "#default":  SetProperties(**topicProperties)  # default
+        }
+        viewmodes={
+            "queryTable":   Query(mainlabel="-").select(f"-Has subobject::{MagicWord('PAGENAME')}").printout_list_of_properties(self.topic.properties).render(),
+            "hidden":       "",
+            "masterdetail": None,  # fallthrough
+            "#default":     Template.table_of_arguments(self.topic, self.topic.properties, escape=True)
+        }
+
+        template=f"""<noinclude>
+This is the template {PageLink(Template.get_page_name(self.topic))}.
+        
+== See also ==
+{ Itemize([PageLink(smwPart.get_page_name(self.topic)) for smwPart in SMWPart.getAll(None).values()]) }
+
+== Usage ==
+<pre>
+{ WikiSon(self.topic.name, topicPropertySamples) }
+</pre>
+{ WikiSon(self.topic.name, topicPropertySamples) }
+
+[[Category:Template]]
+</noinclude><includeonly>
+{ SwitchFunction(TemplateParam('storemode', defaultValue='property'), **storemodes)}
+{ SwitchFunction(TemplateParam('viewmode'), **viewmodes)}
+</includeonly>
+"""
+        return template
+
+
 
 class Template(SMWPart):
     """
@@ -220,7 +269,7 @@ class Template(SMWPart):
         return "{{{" + arg + "|}}}"
 
     @staticmethod
-    def table_of_arguments(topic:Topic, properties:list=None, clickable_links:bool=True, setProperties:bool=False):
+    def table_of_arguments(topic:Topic, properties:list=None, clickable_links:bool=True, setProperties:bool=False, escape:bool=False):
         """
         Generate a media wiki table for each property of the topic and display their values
         Args:
@@ -228,6 +277,7 @@ class Template(SMWPart):
             properties(list): List of properties to display in the table. If None all properties of the given topic are used
             clickable_links(bool): If True the property names will link to the Property page
             setProperties(bool): IF True the properties will be set for the entity.
+            escape(bool): If True the returned table will have an escaped pipe char
 
         Returns:
             string of an mediawiki table displaying the properties of the given topic
@@ -236,7 +286,7 @@ class Template(SMWPart):
         sortBySortPos = lambda property: 99999 if "sortPos" not in property.__dict__ or property.__dict__.get("sortPos") is None else int(property.sortPos)
         properties_sorted = sorted(properties, key=sortBySortPos)
 
-        table=Table(css_class="wikitable")
+        table=Table(css_class="wikitable", escape=escape)
         tableHeader=f"{formlink} {topic.get_page_link()}"
         table.add_row().add_cell(colspan=2,is_header=True, content=tableHeader)
         for property in properties_sorted:
@@ -575,24 +625,32 @@ class Table:
     Provides methods to generate a MediaWiki table
     For more information see https://www.mediawiki.org/wiki/Help:Tables
     """
+    escapePipeChar=lambda s: s.replace("|", "{{!}}")
 
-    def __init__(self, css_class:str=None, style: str=None ):
+    def __init__(self, css_class:str=None, style: str=None, escape:bool=False):
         """
         Initialize the table with the given style/ style class
         Args:
             css_class: css class the table should have
             style: individual css styles that should be applied to the class such as "width:100%"
+            escape(bool): If True the resulting table markup will have escaped pipe chars
         """
         self.rows = []
         self.css_class = css_class
         self.style = style
+        self.escape=escape
 
     def render(self):
         """Renders this table as wiki table"""
-        res =  "{| " + Table.render_parameter(self.css_class, self.style) +"\n"
+        beginTags="{| "
+        endTags="|}"
+        if self.escape:
+            beginTags=Table.escapePipeChar(beginTags)
+            endTags=Table.escapePipeChar(endTags)
+        res =  beginTags + Table.render_parameter(self.css_class, self.style) +"\n"
         for row in self.rows:
-            res += row.render()
-        return res + "|}"
+            res += row.render(self.escape)
+        return res + endTags
 
     def add_row(self, css_class: str=None, style: str=None, **kwargs):
         """
@@ -635,11 +693,14 @@ class Table:
             self.css_class = css_class
             self.style = style
 
-        def render(self):
+        def render(self, escape:bool=False):
             """Render this row as wiki table row"""
-            res = "|-" + Table.render_parameter(self.css_class, self.style) +"\n"
+            rowSeparationTag="|-"
+            if escape:
+                rowSeparationTag=Table.escapePipeChar(rowSeparationTag)
+            res = rowSeparationTag+ Table.render_parameter(self.css_class, self.style) +"\n"
             for cell in self.cells:
-                res += cell.render() + "\n"
+                res += cell.render(escape) + "\n"
             return res[:-1] + "\n"
 
         def add_cell(self, content, is_header=False, colspan=None, css_class: str=None, style: str=None):
@@ -678,10 +739,13 @@ class Table:
                 self.css_class = css_class
                 self.style = style
 
-            def render(self):
+            def render(self, escape:bool=False):
                 """Render this cell as wiki table cell"""
-                separator = "!" if self.is_header else "|"
+                pipe="|"
+                if escape:
+                    pipe=Table.escapePipeChar(pipe)
+                separator = "!" if self.is_header else pipe
                 config = Table.render_parameter(self.css_class, self.style, colspan=self.colspan)
-                config += " |" if config else ""
+                config += f" {pipe}" if config else ""
                 return f"{separator}{config}{self.content}"
 

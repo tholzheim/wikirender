@@ -205,6 +205,7 @@ class Topic(MetaModelElement):
         super(Topic, self).__init__(Topic.propList, properties=topic_properties)
         self.properties = properties
 
+
     def get_pageTitle(self, withNamespace=True):
         """
         Returns page name of this topic. If pageTitle is not defined, it is assumed that name corresponds to the pageTitle.

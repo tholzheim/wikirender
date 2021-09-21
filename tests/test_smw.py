@@ -1,7 +1,8 @@
 from unittest import TestCase
 
+from tests.test_wikirender import TestWikiRender
 from wikifile.metamodel import Property, Topic
-from wikifile.smw import Query, Form, SMWPart, SMW, Table
+from wikifile.smw import Query, Form, SMWPart, SMW, Table, TemplatePage
 
 
 class TestSMWPart(TestCase):
@@ -357,3 +358,17 @@ class TestCell(TestCase):
         exp_val_2 = '!class="Test class" style="color:red" colspan="2"  |Test value'
         self.assertEqual(exp_val_2, cell_header.render())
 
+
+class TestTemplatePage(TestCase):
+    """
+    Tests the rendering of the Template page for topics
+    """
+
+    def testDefaultTemplatePage(self):
+        """
+        tests the rendering of the default template page
+        """
+
+    topic = Topic.from_wiki_json(TestWikiRender.topicJson, TestWikiRender.propJson)
+    markup=TemplatePage(topic)
+    print(markup)

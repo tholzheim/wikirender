@@ -13,11 +13,9 @@ class TestWikiRender(unittest.TestCase):
     '''
     test wiki rendering
     '''
-
-    def setUp(self):
-        self.topicJson = """{"data": [{"pageTitle": "Concept:Task", "name": "Task", "pluralName": "Tasks", "documentation": "Problem or issue that needs to be solved", "wikiDocumentation": "Problem or issue that needs to be solved"}]}
+    topicJson = """{"data": [{"pageTitle": "Concept:Task", "name": "Task", "pluralName": "Tasks", "documentation": "Problem or issue that needs to be solved", "wikiDocumentation": "Problem or issue that needs to be solved"}]}
                 """
-        self.propJson = """{
+    propJson = """{
             "data": [{
                 "pageTitle": "Property:Task goals",
                 "name": "Task goals",
@@ -127,6 +125,7 @@ class TestWikiRender(unittest.TestCase):
         wikiRender=WikiRender(debug=True)
         with tempfile.TemporaryDirectory() as tempDir:
             wikiRender.generateTopic(topic, path=tempDir, overwrite=True)
+            print("Wait")
         
         pass
 

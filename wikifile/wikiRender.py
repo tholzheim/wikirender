@@ -3,7 +3,7 @@ import os
 import wikifile
 from wikifile.wikiFile import WikiFile
 from wikifile.metamodel import Context, Topic, UML, Property, MetaModelElement
-from wikifile.smw import SMWPart, SMW, Form, ListOf, Query
+from wikifile.smw import SMWPart, SMW, Form, ListOf, Query, TemplatePage
 import json
 import sys
 import jinja2
@@ -131,6 +131,7 @@ class WikiRender(CmdLineAble):
         template_env.globals['Property'] = Property
         template_env.globals['Topic'] = Topic
         template_env.globals['Context'] = Context
+        template_env.globals['TemplatePage'] = TemplatePage
         # Further functionc
         template_env.globals['map'] = map
         return template_env

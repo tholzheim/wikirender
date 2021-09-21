@@ -7,24 +7,4 @@ Input:
 Output: Generates the page Template:<topic.name>
 #}
 {#-------------------------------Template-------------------------------------#}
-<noinclude>
-This is the template {{ '{{' }}Link|target=Template:{{ topic.name }}|title={{ '}}' }}.
-
-== See also ==
-{{ SMWPart.getAllAsPageLink(topic) }}
-
-== Usage ==
-<pre>
-{{ SMW.render_sample_entity_with_properties(topic, topic.properties, oneliner=False) }}
-</pre>
-{{ SMW.render_sample_entity_with_properties(topic, topic.properties, oneliner=False) }}
-
-[[Category:Template]]
-</noinclude>
-<includeonly>
-{{ SMW.set_entity_parameter(topic, topic.properties, oneliner=False) }}
-
-{{ Template.table_of_arguments(topic, topic.properties) }}
-
-[[Category:{{ topic.name }}]]{{ SMW.parser_function("default_form",presence_is_true=True, **{topic.name:True}) }}
-</includeonly>
+{{ TemplatePage(topic) }}
