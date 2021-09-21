@@ -244,6 +244,8 @@ This is the template {PageLink(Template.get_page_name(self.topic))}.
 </noinclude><includeonly>
 { SwitchFunction(TemplateParam('storemode', defaultValue='property'), **storemodes)}
 { SwitchFunction(TemplateParam('viewmode'), **viewmodes)}
+
+[[Category:{ self.topic.name }]]
 </includeonly>
 """
         return template
