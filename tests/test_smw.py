@@ -369,6 +369,7 @@ class TestTemplatePage(TestCase):
         tests the rendering of the default template page
         """
 
-    topic = Topic.from_wiki_json(TestWikiRender.topicJson, TestWikiRender.propJson)
-    markup=TemplatePage(topic)
-    print(markup)
+        topic = Topic.from_wiki_json(TestWikiRender.topicJson, TestWikiRender.propJson)
+        markup=TemplatePage(topic)
+        if self.debug:
+            print(markup)

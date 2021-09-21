@@ -125,7 +125,6 @@ class TestWikiRender(unittest.TestCase):
         wikiRender=WikiRender(debug=True)
         with tempfile.TemporaryDirectory() as tempDir:
             wikiRender.generateTopic(topic, path=tempDir, overwrite=True)
-            print("Wait")
         
         pass
 
