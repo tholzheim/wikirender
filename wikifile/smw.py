@@ -225,6 +225,8 @@ class TemplatePage(Widget):
 
     @property
     def storemodes(self) -> dict:
+        topicProperties = {prop.get_pageTitle(withNamespace=False): TemplateParam(prop.name) for prop in
+                           self.topic.properties}
         storemodes = {
             "subobject": SubObject("-", **topicProperties, isA=self.topic.name),
             "property": None,  # fallthrough
@@ -233,7 +235,6 @@ class TemplatePage(Widget):
         return storemodes
 
     def render(self):
-        topicProperties={prop.get_pageTitle(withNamespace=False):TemplateParam(prop.name) for prop in self.topic.properties}
         topicPropertySamples={prop.get_pageTitle(withNamespace=False):"some value" for prop in self.topic.properties}
         template=f"""<noinclude>
 This is the template {PageLink(Template.get_page_name(self.topic))}.
