@@ -212,22 +212,29 @@ class TemplatePage(Widget):
         self.topic=topic
         self.template="<noinclude>\n{templatePage}\n</noinclude><includeonly>\n{templateRender}\n</includeonly>"
 
+    @property
+    def viewmodes(self) -> dict:
+        viewmodes = {
+            "queryTable": Query(mainlabel="-").select(
+                f"-Has subobject::{MagicWord('PAGENAME')}").printout_list_of_properties(self.topic.properties).render(),
+            "hidden": "",
+            "masterdetail": None,  # fallthrough
+            "#default": Template.table_of_arguments(self.topic, self.topic.properties, escape=True)
+        }
+        return viewmodes
+
+    @property
+    def storemodes(self) -> dict:
+        storemodes = {
+            "subobject": SubObject("-", **topicProperties, isA=self.topic.name),
+            "property": None,  # fallthrough
+            "#default": SetProperties(**topicProperties)  # default
+        }
+        return storemodes
+
     def render(self):
         topicProperties={prop.get_pageTitle(withNamespace=False):TemplateParam(prop.name) for prop in self.topic.properties}
         topicPropertySamples={prop.get_pageTitle(withNamespace=False):"some value" for prop in self.topic.properties}
-
-        storemodes={
-            "subobject": SubObject("-",  **topicProperties, isA=self.topic.name),
-            "property":  None,  # fallthrough
-            "#default":  SetProperties(**topicProperties)  # default
-        }
-        viewmodes={
-            "queryTable":   Query(mainlabel="-").select(f"-Has subobject::{MagicWord('PAGENAME')}").printout_list_of_properties(self.topic.properties).render(),
-            "hidden":       "",
-            "masterdetail": None,  # fallthrough
-            "#default":     Template.table_of_arguments(self.topic, self.topic.properties, escape=True)
-        }
-
         template=f"""<noinclude>
 This is the template {PageLink(Template.get_page_name(self.topic))}.
         
@@ -242,8 +249,8 @@ This is the template {PageLink(Template.get_page_name(self.topic))}.
 
 [[Category:Template]]
 </noinclude><includeonly>
-{ SwitchFunction(TemplateParam('storemode', defaultValue='property'), **storemodes)}
-{ SwitchFunction(TemplateParam('viewmode'), **viewmodes)}
+{ SwitchFunction(TemplateParam('storemode', defaultValue='property'), **self.storemodes)}
+{ SwitchFunction(TemplateParam('viewmode'), **self.viewmodes)}
 
 [[Category:{ self.topic.name }]]
 </includeonly>

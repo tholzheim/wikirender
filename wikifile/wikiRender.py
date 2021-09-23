@@ -1,6 +1,7 @@
 import os
 
 import wikifile
+from wikifile.utils import Widget
 from wikifile.wikiFile import WikiFile
 from wikifile.metamodel import Context, Topic, UML, Property, MetaModelElement
 from wikifile.smw import SMWPart, SMW, Form, ListOf, Query, TemplatePage
@@ -166,20 +167,27 @@ class WikiRender(CmdLineAble):
             print(e)
         return None
 
-    def generateTopic(self, topic: Topic, path: str, overwrite:bool=False, withProperties:bool=True):
+    def generateTopic(self, topic: Topic, path: str, overwrite:bool=False, withProperties:bool=True, **templates):
         """
         Generate all technical pages of the given topic and save them as wiki page at the given path
         Args:
             topic: topic for which the pages should be generated
             path: path to the location where the pages should be stored
             overwrite: If true the generated pages will overwrite existing pages. Otherwise only missing pages will be stored
+            template: widgets to overwrite the jinja templates
         """
         if self.debug:
             print(f"generating topic {topic.name}")
         for part, smwPart in SMWPart.getAll(self).items():
             if self.debug:
                 print(f"generating {smwPart.get_page_name(topic)}")
-            page = smwPart.render_page(topic)
+            page=""
+            if part.lower() in templates:
+                templateWidget=templates.get(part.lower())
+                if issubclass(templateWidget, Widget) and callable(templateWidget):   # update to intermediate widget class
+                    page=templateWidget(topic)
+            else:
+                page = smwPart.render_page(topic)
             WikiFile.write_to_file(path, smwPart.get_page_name(topic),page, overwrite=overwrite)
         if withProperties:
             for prop in topic.properties:
