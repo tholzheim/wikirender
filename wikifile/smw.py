@@ -225,8 +225,9 @@ class TemplatePage(Widget):
 
     @property
     def storemodes(self) -> dict:
-        topicProperties = {prop.get_pageTitle(withNamespace=False): TemplateParam(prop.name) for prop in
-                           self.topic.properties}
+        templateParamMapping=self.topic.templateParamMapping
+        properties={templateParamMapping[prop.name] if prop.name in templateParamMapping else prop.name:prop for prop in self.topic.properties}
+        topicProperties = {prop.get_pageTitle(withNamespace=False): TemplateParam(name) for name, prop in properties.items()}
         storemodes = {
             "subobject": SubObject("-", **topicProperties, isA=self.topic.name),
             "property": None,  # fallthrough

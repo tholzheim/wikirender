@@ -205,6 +205,16 @@ class Topic(MetaModelElement):
         super(Topic, self).__init__(Topic.propList, properties=topic_properties)
         self.properties = properties
 
+    @property
+    def templateParamMapping(self) -> dict:
+        if hasattr(self, "_templateParamMapping"):
+            return getattr(self, "_templateParamMapping")
+        return {}
+
+    @templateParamMapping.setter
+    def templateParamMapping(self, mapping:dict):
+        setattr(self, "_templateParamMapping", mapping)
+
 
     def get_pageTitle(self, withNamespace=True):
         """
