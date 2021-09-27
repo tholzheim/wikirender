@@ -1,6 +1,8 @@
 import os
 import re
 import sys
+import warnings
+
 from lodstorage.lod import LOD
 from wikibot.wikipush import WikiPush
 from wikifile.wikiFile import WikiFile
@@ -21,7 +23,7 @@ class WikiFileManager(CmdLineAble):
             sourceWikiId(str): the wikiId of the wiki that should be used as source
             wikiTextPath(str): the wikiTextPath to use - if None use the wikibackup path of the given wikiId
             targetWikiTextPath(str): the targetWikiTextPath to use - used to specify the target location of the wikiFiles (if saved)
-            targetWikiId(str): the target wikiId of the wiki were pages should be pushed to. If not defined the source wiki is also used as target
+            targetWikiId(str): the target wikiId of the wiki were pages should be pushed to
             login(bool): do we need to login to the wiki
             debug(bool): True if debugging should be switched on 
         '''
@@ -29,8 +31,6 @@ class WikiFileManager(CmdLineAble):
         self.sourceWikiId=sourceWikiId
         if targetWikiTextPath is None:
             targetWikiTextPath=wikiTextPath
-        if targetWikiId is None:
-            targetWikiId=sourceWikiId
         self.targetWikiId=targetWikiId
         self.targetPath=targetWikiTextPath
         self.wikiPush = WikiPush(fromWikiId=sourceWikiId, toWikiId=self.targetWikiId, login=login)
@@ -219,6 +219,7 @@ class WikiFileManager(CmdLineAble):
     def pushWikiFilesToWiki(self, wiki_files: list):
         """
         Pushes the content of the given wikiFiles to the corresponding wiki pages in the wiki
+        If targetWikiId is not defined no pages will be pushed
         
         Args:
             wiki_files: list of WikiFiles that should be pushed to the wiki
@@ -226,6 +227,9 @@ class WikiFileManager(CmdLineAble):
         Returns:
             Nothing
         """
+        if self.targetWikiId is None:
+            warnings.warn("targetWikiId needs to be defined to be able to push WikiFiles to a wiki", Warning)
+            return
         for wiki_file in wiki_files:
             if isinstance(wiki_file, WikiFile):
                 page_content = str(wiki_file)
