@@ -13,14 +13,15 @@ class WikiFileManager(CmdLineAble):
     access to Wiki markup files for a given wiki
     '''
 
-    def __init__(self, sourceWikiId:str, wikiTextPath:str=None,targetWikiTextPath:str=None,login=True,debug=False):
+    def __init__(self, sourceWikiId:str, wikiTextPath:str=None,targetWikiTextPath:str=None, targetWikiId:str=None, login=True,debug=False):
         '''
         constructor
         
         Args:
-            sourceWikiId(str): the wikiId of the wiki
+            sourceWikiId(str): the wikiId of the wiki that should be used as source
             wikiTextPath(str): the wikiTextPath to use - if None use the wikibackup path of the given wikiId
             targetWikiTextPath(str): the targetWikiTextPath to use - used to specify the target location of the wikiFiles (if saved)
+            targetWikiId(str): the target wikiId of the wiki were pages should be pushed to. If not defined the source wiki is also used as target
             login(bool): do we need to login to the wiki
             debug(bool): True if debugging should be switched on 
         '''
@@ -28,8 +29,11 @@ class WikiFileManager(CmdLineAble):
         self.sourceWikiId=sourceWikiId
         if targetWikiTextPath is None:
             targetWikiTextPath=wikiTextPath
+        if targetWikiId is None:
+            targetWikiId=sourceWikiId
+        self.targetWikiId=targetWikiId
         self.targetPath=targetWikiTextPath
-        self.wikiPush = WikiPush(fromWikiId=sourceWikiId, login=login)
+        self.wikiPush = WikiPush(fromWikiId=sourceWikiId, toWikiId=self.targetWikiId, login=login)
         self.debug = debug
         if wikiTextPath is None:
             home = os.path.expanduser("~")
@@ -225,7 +229,7 @@ class WikiFileManager(CmdLineAble):
         for wiki_file in wiki_files:
             if isinstance(wiki_file, WikiFile):
                 page_content = str(wiki_file)
-                update_msg = f"modified through csv import by {self.wikiPush.fromWiki.wikiUser.user}"
+                update_msg = f"modified through csv import by {self.wikiPush.toWiki.wikiUser.user}"
                 page = wiki_file.getPage()
                 if page is None:
                     page = self.wikiPush.fromWiki.getPage(wiki_file.getPageTitle())
