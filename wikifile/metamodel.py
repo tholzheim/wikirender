@@ -428,7 +428,7 @@ class Property(MetaModelElement):
                 res.extend(self.topic)
             else:
                 res.append(self.topic)
-        elif hasattr(self, 'usedFor') and self.usedFor:
+        if hasattr(self, 'usedFor') and self.usedFor:
             if isinstance(self.usedFor, list):
                 res.extend(self.usedFor)
             else:
