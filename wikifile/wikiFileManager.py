@@ -4,6 +4,7 @@ import sys
 import warnings
 
 from lodstorage.lod import LOD
+from typing import List
 from wikibot.wikipush import WikiPush
 from wikifile.wikiFile import WikiFile
 from wikifile.cmdline import CmdLineAble
@@ -115,10 +116,10 @@ class WikiFileManager(CmdLineAble):
 
 
     def exportWikiSonToLOD(self, pageTitels: list, wikiSonName: str, pageTitleKey: str = "pageTitle",
-                           properties: list = [], limitProperties: bool = False) -> list:
+                           properties: list = [], limitProperties: bool = False) -> List[dict]:
         """
-        Exports the given given WikiSon entities corresponding to the given WikiSonName of the pages corresponding to
-        the given pageTitles and returns the values as list of dicts.
+        Exports the WikiSon entities from the WikiFiles identified by the given pageTitles corresponding to the given
+        WikiSonName and returns the values as list of dicts.
 
         Args:
             pageTitles(list): List of all pageTitles from which the given WikiSon entity should be extracted
@@ -133,8 +134,9 @@ class WikiFileManager(CmdLineAble):
         lod = []
         for pageTitle in pageTitels:
             wikiFile = self.getWikiFile(pageTitle)
-            wikiSon = wikiFile.extract_template(wikiSonName)
-            if wikiSon is not None:
+            wikiSonEntities=wikiFile.extractTemplate(wikiSonName)
+            if wikiSonEntities:
+                wikiSon=wikiSonEntities.pop()
                 wikiSon[pageTitleKey] = pageTitle
                 lod.append(wikiSon)
 
@@ -184,12 +186,13 @@ class WikiFileManager(CmdLineAble):
         lod = []
         for wikifile in wikiFiles:
             if isinstance(wikifile, WikiFile):
-                values = wikifile.extract_template(templateName)
-                if values is not None:
+                wikiSonEntities = wikifile.extractTemplate(templateName)
+                if wikiSonEntities:
+                    wikiSonEntity=wikiSonEntities.pop()
                     pageTitle = wikifile.getPageTitle()
                     if pageTitle is not None:
-                        values['pageTitle']= pageTitle
-                    lod.append(values)
+                        wikiSonEntity['pageTitle']= pageTitle
+                    lod.append(wikiSonEntity)
         return lod
 
     def pagesListToDict(self, data: list, titleKey: str = "pageTitle", removeKey:bool=True) -> dict:
@@ -287,7 +290,7 @@ class WikiFileManager(CmdLineAble):
         """
         pageTitles= self.getPageTitlesForArgs(args)
         if args.template:
-            condition=lambda wikiFile:wikiFile.extract_template(args.template) is not None
+            condition=lambda wikiFile:wikiFile.extractTemplate(args.template)
         else:
             condition=lambda wikiFile:wikiFile is not None
         wikiFiles=self.getWikiFilesForPageTitles(pageTitles,condition)
@@ -320,7 +323,7 @@ class WikiFileManager(CmdLineAble):
             dict: a map of wikiFiles by pageTitle
         '''
         pageTitles=CmdLineAble.getPageTitlesForWikiTextPath(self.wikiTextPath)
-        condition=lambda wikiFile:wikiFile.extract_template(templateName) is not None
+        condition=lambda wikiFile:wikiFile.extractTemplate(templateName)
         wikiFiles=self.getWikiFilesForPageTitles(pageTitles, condition)
         return wikiFiles
     
