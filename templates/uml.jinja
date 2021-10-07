@@ -12,15 +12,15 @@ Output: Generates uml diagram representing the usage of the entity in the wiki.
 <uml>
 title {{ topic.name }}
 
-note as {{ topic.name }}Note
+note as {{ topic.name.replace(" ","_") }}Note
 {{  topic.documentation }}
 end note
-class {{ topic.name }} {
+class "{{ topic.name }}" as {{ topic.name.replace(" ","_") }} {
 {%  for property in Property.get_primitive_properties(topic.name,topic.properties) -%}
   {{ property.type.replace("Special:Types/","") }}: {{ property.label }}
 {% endfor -%}
 }
-{{ topic.name }}Note .. {{ topic.name }}
+{{ topic.name.replace(" ","_") }}Note .. {{ topic.name.replace(" ","_") }}
 {# Set outgoing edges #}
 {%-  for edge in UML.get_outgoing_edges(topic.name,topic.properties) %}
   "{{ edge.source }}" "{{ edge.source_cardinality }}" --> "{{ edge.target_cardinality }}" "{{ edge.target }}" : "{{ edge.property.name }}"
