@@ -483,21 +483,9 @@ class Property(MetaModelElement):
         Returns:
             List of primitive properties of the given entity
         """
-        primitive_datatypes = ["Special:Types/Boolean",
-                               "Special:Types/Date",
-                               "Special:Types/Code",
-                               "Special:Types/Text",
-                               "Special:Types/text",
-                               "Special:Types/url",
-                               "Special:Types/URL",
-                               "Special:Types/External identifier",
-                               "Special:Types/ExternalIdentifier",
-                               "Special:Types/Geographic coordinate",
-                               "Special:Types/Number",
-                               "Special:Types/URI",
-                               "Special:Types/Url",
-                               "Special:Types/number",
-                               "Special:Types/code"]
+        primitive_datatypes = ["Boolean","Date","Code","Text","text", "url","URL","External identifier",
+                               "ExternalIdentifier","Geographic coordinate", "Number","URI","Url","number","code"]
+        primitive_datatypes.extend([f"Special:Types/{datatype}" for datatype in primitive_datatypes])
         primitive_properties = []
         for property in properties:
             if f"Concept:{entity_name}" in property.is_used_for() and property.type in primitive_datatypes:
