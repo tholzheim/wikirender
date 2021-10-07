@@ -333,6 +333,33 @@ class WikiFile:
         else:
             WikiFile.update_arguments(template, data, overwrite, prettify)
 
+    def extractTemplate(self, templateName, match:dict={}) -> list:
+        """
+        Extracts the template data and returns it as dict
+
+        Args:
+            name: name of the template that should be extracted
+            match(dict):
+
+        Returns:
+            Returns template content as dict and a list if multiple instances of the template are found
+        """
+        templates=self.getTemplatesByName(templateName, match=match)
+        lod=[]
+        for template in templates:
+            if template is None:
+                continue
+            records = {}
+            for arg in template.arguments:
+                value = arg.value.strip()
+                if value.endswith("\n"):
+                    value = value[:-1]
+                records[arg.name.strip()] = value
+            if records:
+                lod.append(records)
+        return lod
+
+
     def extract_template(self, name: str):
         """
         Extracts the template data and returns it as dict
@@ -344,16 +371,12 @@ class WikiFile:
         Returns:
             Returns template content as dict
         """
-        template = self.get_template(name)
-        if template is None:
-            return None
-        res = {}
-        for arg in template.arguments:
-            value = arg.value.strip()
-            if value.endswith("\n"):
-                value=value[:-1]
-            res[arg.name.strip()] = value
-        return res
+        warnings.warn("extract_template is deprecated as it only supports the first template occurrence. Please use extractTemplate instead.",
+                      DeprecationWarning)
+        templates=self.extractTemplate(name)
+        if templates:
+            return templates[0]
+        return None
 
     def setPage(self, page:Page):
         self.pageRef=page
