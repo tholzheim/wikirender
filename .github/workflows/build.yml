@@ -40,6 +40,7 @@ jobs:
     - name:                check running containers
       run:                 |
         docker ps -a
+        wikiquery -s wikirenderTest -q "[[Modification date::+]]|limit=10" -l
     - name:                Run tests
       run:                 |
         scripts/test

@@ -132,7 +132,7 @@ class WikiFile:
         if os.path.isfile(fname):
             with open(fname, mode='r') as file:
                 page = file.read()
-                return page
+            return page
         return None
 
     def get_template(self, template_name: str):

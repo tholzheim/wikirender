@@ -19,9 +19,9 @@ class TestWikiFile(TestCase):
         self.debug=False
         self.sourcePath = f"{Path.home()}/wikibackup/or"
         self.wikiId = "wikirenderTest"
-        _wikiUser = DefaultWikiUser.getSMW_WikiUser(self.wikiId)   # ensures existence of the wikiuser in the CI
-        self.wikiFileManager = WikiFileManager(self.wikiId, wikiTextPath=self.sourcePath)
-        self.wikiRender=WikiRender()
+        _wikiUser = DefaultWikiUser.getSMW_WikiUser(self.wikiId)  # ensures existence of the wikiuser in the CI
+        self.wikiFileManager = WikiFileManager(self.wikiId, wikiTextPath=self.sourcePath, login=False)
+        self.wikiRender=self.wikiFileManager.wikiRender
         self.sampleWikiFile="""
 {{Event
 |Acronym=3DUI 2020
