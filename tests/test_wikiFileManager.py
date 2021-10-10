@@ -23,8 +23,7 @@ class TestWikiFileManager(unittest.TestCase):
     def setUpClass(cls):
         super(TestWikiFileManager, cls).setUpClass()
         cls.wikiFileManagers={}
-        cls.wikiFileManagers["wikirenderTest"]=WikiFileManager("wikirenderTest")
-        for wikiId in ["or","orclone"]:
+        for wikiId in ["or","orclone","wikirenderTest"]:
             _wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
             home = os.path.expanduser("~")
             wikiTextPath=f"{home}/.or/wikibackup/{wikiId}"

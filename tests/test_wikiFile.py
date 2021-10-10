@@ -4,6 +4,7 @@ from unittest import TestCase
 
 from wikitextparser import Template
 
+from tests.default_wikiuser import DefaultWikiUser
 from wikifile.wikiFile import WikiFile
 from wikifile.wikiFileManager import WikiFileManager
 from wikifile.wikiRender import WikiRender
@@ -18,6 +19,7 @@ class TestWikiFile(TestCase):
         self.debug=False
         self.sourcePath = f"{Path.home()}/wikibackup/or"
         self.wikiId = "wikirenderTest"
+        _wikiUser = DefaultWikiUser.getSMW_WikiUser(self.wikiId)   # ensures existence of the wikiuser in the CI
         self.wikiFileManager = WikiFileManager(self.wikiId, wikiTextPath=self.sourcePath)
         self.wikiRender=WikiRender()
         self.sampleWikiFile="""
