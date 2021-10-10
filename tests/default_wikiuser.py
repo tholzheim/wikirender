@@ -40,8 +40,9 @@ class DefaultWikiUser(object):
                 
             if wikiDict is None:
                 raise Exception("wikiId %s is not known" % wikiId)
-            else:    
-                wikiUser=WikiUser.ofDict(wikiDict, encrypted=False, lenient=True)   # ToDo: Why does encrypted needs to be false to enable encryption?
+            else:
+                encrypted= 'password' not in wikiDict
+                wikiUser=WikiUser.ofDict(wikiDict, encrypted=encrypted, lenient=True)   # ToDo: Why does encrypted needs to be false to enable encryption?
                 if save:
                     wikiUser.save()
         else:
