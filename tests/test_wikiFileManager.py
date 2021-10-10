@@ -34,7 +34,7 @@ class TestWikiFileManager(unittest.TestCase):
         self.debug=True
         self.sourcePath=f"{Path.home()}/.or/wikibackup/or"
         self.wikiId="wikirenderTest"
-        self.wikiFileManager = WikiFileManager(self.wikiId, targetWikiId=self.wikiId)
+        self.wikiFileManager = WikiFileManager(self.wikiId, targetWikiId=self.wikiId, debug=self.debug)
         self.pageTitle="Test_WikiFileManager"
         self.wikiSonName = "UnitTestPage"
         self.wikiPush = WikiPush(fromWikiId=self.wikiId, login=True, debug=self.debug)

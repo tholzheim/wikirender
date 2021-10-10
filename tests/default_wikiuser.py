@@ -44,6 +44,7 @@ class DefaultWikiUser(object):
                 encrypted= 'password' not in wikiDict
                 wikiUser=WikiUser.ofDict(wikiDict, encrypted=encrypted, lenient=True)   # ToDo: Why does encrypted needs to be false to enable encryption?
                 if save:
+                    print(f"Saved wikiuser credentials for {wikiId}")
                     wikiUser.save()
         else:
             wikiUser=WikiUser.ofWikiId(wikiId,lenient=True)
