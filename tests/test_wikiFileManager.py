@@ -31,12 +31,13 @@ class TestWikiFileManager(unittest.TestCase):
             cls.wikiFileManagers[wikiId]=wikiFileManager
         
     def setUp(self):
+        self.debug=True
         self.sourcePath=f"{Path.home()}/.or/wikibackup/or"
         self.wikiId="wikirenderTest"
         self.wikiFileManager = WikiFileManager(self.wikiId, targetWikiId=self.wikiId)
         self.pageTitle="Test_WikiFileManager"
         self.wikiSonName = "UnitTestPage"
-        self.wikiPush = WikiPush(fromWikiId=self.wikiId, login=True)
+        self.wikiPush = WikiPush(fromWikiId=self.wikiId, login=True, debug=self.debug)
         # filter annoying resource warnings
         testPageContent="""{{UnitTestPage
 |name=Test page to test WikiFix
