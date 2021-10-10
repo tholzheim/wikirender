@@ -16,7 +16,7 @@ class DefaultWikiUser(object):
         '''
         are we running in a public Continuous Integration Environment?
         '''
-        return getpass.getuser() in [ "travis", "runner" ];
+        return getpass.getuser() in [ "travis", "runner" ]
             
     @classmethod
     def getSMW_WikiUser(cls,wikiId="or",save=None):
@@ -36,12 +36,12 @@ class DefaultWikiUser(object):
             if wikiId=="cr":
                 wikiDict={"wikiId": wikiId,"email":"noreply@nouser.com","url":"https://cr.bitplan.com","scriptPath":"/","version":"MediaWiki 1.33.4"}
             if wikiId=="wikirenderTest":
-                wikiDict={"wikiId": wikiId,"email":"noreply@nouser.com","url":"http://localhost:8000","scriptPath":"","version":"MediaWiki 1.31.1", "user":"Sysop","password":"sysop-1234!"}   # tries fixing the missing wikiuser that normally be created by the wikicluster in the startDocker script
+                wikiDict={"wikiId": wikiId,"email":"noreply@nouser.com","url":"http://localhost:8000","scriptPath":"","version":"MediaWiki 1.31.14", "user":"Sysop","password":"sysop-1234!"}   # tries fixing the missing wikiuser that normally be created by the wikicluster in the startDocker script
                 
-            if wikiDict is  None:
+            if wikiDict is None:
                 raise Exception("wikiId %s is not known" % wikiId)
             else:    
-                wikiUser=WikiUser.ofDict(wikiDict, lenient=True)
+                wikiUser=WikiUser.ofDict(wikiDict, encrypted=False, lenient=True)   # ToDo: Why does encrypted needs to be false to enable encryption?
                 if save:
                     wikiUser.save()
         else:
