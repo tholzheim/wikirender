@@ -25,8 +25,9 @@ installAndGetMediaWikiDocker() {
 # installation procedure
 #
 installDockerCompose() {
+  local FORCE_REINSTALL=$1
   docker  2>&1 | grep compose
-  if [ $? -ne 0 ]
+  if [ $? -ne 0 ] || $FORCE_REINSTALL
   then
     echo "Installing Docker Compose CLI"
     docker --version
@@ -56,12 +57,20 @@ while [[ $# -gt 0 ]]; do
       shift # past argument
       shift # past value
       ;;
+    --installDockerCompose)
+      FORCE_REINSTALL=true
+      shift # past argument
+      shift # past value
+      ;;
   esac
 done
 if [ "$WIKI_VERSION" = "" ]
 then
   WIKI_VERSION="1.31.14"
 fi
-
-installDockerCompose
+if [ "$FORCE_REINSTALL" = "" ]
+then
+  FORCE_REINSTALL=false
+fi
+installDockerCompose $FORCE_REINSTALL
 installAndGetMediaWikiDocker $WIKI_VERSION
