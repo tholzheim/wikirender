@@ -30,16 +30,16 @@ class WikiFileManager(CmdLineAble):
         '''
         super(WikiFileManager, self).__init__()
         self.sourceWikiId=sourceWikiId
+        if wikiTextPath is None:
+            home = os.path.expanduser("~")
+            wikiTextPath=f"{home}/wikibackup/{sourceWikiId}"
+        self.wikiTextPath=wikiTextPath
         if targetWikiTextPath is None:
             targetWikiTextPath=wikiTextPath
         self.targetWikiId=targetWikiId
         self.targetPath=targetWikiTextPath
         self.wikiPush = WikiPush(fromWikiId=sourceWikiId, toWikiId=self.targetWikiId, login=login, debug=debug)
         self.debug = debug
-        if wikiTextPath is None:
-            home = os.path.expanduser("~")
-            wikiTextPath=f"{home}/wikibackup/{sourceWikiId}"
-        self.wikiTextPath=wikiTextPath
         self.wikiRender = WikiRender()
 
 
