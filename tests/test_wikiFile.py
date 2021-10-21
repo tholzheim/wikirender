@@ -21,7 +21,7 @@ class TestWikiFile(TestCase):
         self.sourcePath = f"{Path.home()}/wikibackup/or"
         self.wikiId = "wikirenderTest"
         _wikiUser = DefaultWikiUser.getSMW_WikiUser(self.wikiId)  # ensures existence of the wikiuser in the CI
-        self.wikiFileManager = WikiFileManager(self.wikiId, wikiTextPath=self.sourcePath, login=False)
+        self.wikiFileManager = WikiFileManager(self.wikiId, wikiTextPath=self.sourcePath,targetWikiId=self.wikiId, login=False)
         self.wikiRender=self.wikiFileManager.wikiRender
         self.sampleWikiFile="""
 {{Event
