@@ -1,4 +1,5 @@
 import unittest
+import uuid
 from pathlib import Path
 from unittest import TestCase
 
@@ -237,6 +238,14 @@ class TestWikiFile(TestCase):
         wikiFile.updateTemplate(name,labelRecord, match={"ordinal":"2"})
         templatesWithLabel = wikiFile.extractTemplatesByName(name, match=labelRecord)
         self.assertEqual(1, len(templatesWithLabel))
+
+    def testPushToWiki(self):
+        """tests the publishing of a wikiFile to the targetWiki"""
+        pageTitle=str(uuid.uuid1())
+        wikiFile = WikiFile(pageTitle, self.wikiFileManager, pageTitle)
+        wikiFile.pushToWiki()
+        page=self.wikiFileManager.wikiPush.toWiki.getPage(pageTitle)
+        self.assertEqual(pageTitle, page.text())
 
 
 if __name__ == "__main__":

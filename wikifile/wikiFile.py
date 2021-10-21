@@ -388,6 +388,17 @@ class WikiFile:
     def getPageTitle(self):
         return self.pageTitle
 
+    def pushToWiki(self, msg:str=None):
+        """
+        Pushes the wikiMarkup/WikiText of this object to the target wiki of the wikiFileManager on the page
+        corresponding to the pageTitle of the object.
+
+        Args:
+            msg(str): Summary of the update (shown as comment in the history of the page)
+        """
+        page = self.wikiFileManager.wikiPush.toWiki.getPage(self.getPageTitle())
+        page.edit(self.wikiText, msg)
+
     @staticmethod
     def get_wiki_path(path: str, name: str):
         """
