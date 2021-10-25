@@ -308,7 +308,7 @@ class WikiFile:
                     postfix=""
                     if prettify:
                         postfix="\n"
-                    template.set_arg(key, value+postfix, preserve_spacing=False)
+                    template.set_arg(key, str(value)+postfix, preserve_spacing=False)
 
     def add_template(self, template_name: str, data: dict, overwrite=False, prettify:bool=False):
         """
