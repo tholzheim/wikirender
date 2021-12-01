@@ -219,7 +219,7 @@ class WikiFileManager(CmdLineAble):
                 del record[titleKey] 
         return pagesDict
 
-    def pushWikiFilesToWiki(self, wiki_files: list):
+    def pushWikiFilesToWiki(self, wiki_files: list, updateMsg:str=None):
         """
         Pushes the content of the given wikiFiles to the corresponding wiki pages in the wiki
         If targetWikiId is not defined no pages will be pushed
@@ -236,11 +236,9 @@ class WikiFileManager(CmdLineAble):
         for wiki_file in wiki_files:
             if isinstance(wiki_file, WikiFile):
                 page_content = str(wiki_file)
-                update_msg = f"modified through csv import by {self.wikiPush.toWiki.wikiUser.user}"
-                page = wiki_file.getPage()
-                if page is None:
-                    page = self.wikiPush.fromWiki.getPage(wiki_file.getPageTitle())
-                page.edit(page_content, update_msg)
+                if updateMsg is None: updateMsg=f"modified through WikiFileManager by {self.wikiPush.toWiki.wikiUser.user}"
+                page = self.wikiPush.toWiki.getPage(wiki_file.getPageTitle())
+                page.edit(page_content, updateMsg)
 
     def getUpdatedPages(self, records: dict, wikiSon: str) -> list:
         """

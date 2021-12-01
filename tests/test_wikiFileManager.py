@@ -1,10 +1,12 @@
 import unittest
+import uuid
 import warnings
 import getpass
 from pathlib import Path
 
 from wikibot.wikiuser import WikiUser
 
+from wikifile.wikiFile import WikiFile
 from wikifile.wikiFileManager import WikiFileManager
 from wikibot.wikipush import WikiPush
 from datetime import datetime
@@ -262,6 +264,15 @@ Help:Topic"""
     def testWikiUser(self):
         wikiUser=self.wikiFileManager.wikiUser
         self.assertTrue(isinstance(wikiUser, WikiUser))
+
+
+    def testPushNewPageToWiki(self):
+        """
+        tests pushing a wikiFile to the target wiki with the page not existing at first
+        """
+        wikiFile=WikiFile(wikiFileManager=self.wikiFileManager, wikiText="Test Page", name=str(uuid.uuid1()))
+        self.wikiFileManager.pushWikiFilesToWiki([wikiFile])
+
 
 
 if __name__ == "__main__":
