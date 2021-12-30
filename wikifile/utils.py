@@ -145,7 +145,7 @@ class SubObject(ParserFunction):
     see https://www.semantic-mediawiki.org/wiki/Help:Adding_subobjects
     """
 
-    def __init__(self, name, **properties):
+    def __init__(self, name:str, properties:dict):
         super().__init__("subobject", name, *[f"{key}={value}" for key, value in properties.items()])
 
 class SetProperties(ParserFunction):

@@ -132,9 +132,8 @@ class TestWikiRender(unittest.TestCase):
         """
         test the rendering of the metamodel technical pages
         """
-        #ToDo:
-        # wikiRender = WikiRender(debug=True)
-        # wikiRender.render_metamodel()
+        wikiRender = WikiRender(debug=True)
+        wikiRender.render_metamodel()
         pass
 
     def testRenderProperty(self):

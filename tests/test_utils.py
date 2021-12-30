@@ -184,7 +184,7 @@ class TestUtils(unittest.TestCase):
                     "postcode":"OX1 3QD",
                     "city":"Oxford",
                     "country":"UK"}
-        subobject=SubObject("street address",**properties)
+        subobject=SubObject("street address",properties)
         actualMarkup=subobject.render()
         self.assertEqual(expectedMarkup, actualMarkup)
 
