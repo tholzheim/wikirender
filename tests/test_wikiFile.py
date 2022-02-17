@@ -65,7 +65,6 @@ class TestWikiFile(TestCase):
         eventTemplate = wikiFile.get_template("Event")
         self.assertTrue(isinstance(eventTemplate,Template))
         self.assertTrue(len(eventTemplate.arguments)==10)
-        self.debug=True
         if self.debug:
             print(eventTemplate)
 

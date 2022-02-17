@@ -8,6 +8,10 @@ this_directory = path.abspath(path.dirname(__file__))
 with open(path.join(this_directory, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
+with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
+    requirements=f.readlines()
+
+
 setup(
     name='wikirender',
     version='0.0.34',
@@ -19,11 +23,7 @@ setup(
             'Programming Language :: Python :: 3.9'
     ],
 
-    install_requires=[
-      'wikitextparser',
-      'jinja2',
-      'pylodstorage'
-    ],
+    install_requires=requirements,
     entry_points={
       'console_scripts': [
         'wikirender = wikifile.wikiRender:main_module_call',
