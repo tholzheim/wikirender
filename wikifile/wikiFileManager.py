@@ -170,7 +170,7 @@ class WikiFileManager(CmdLineAble):
         return lod
 
     @classmethod
-    def convertWikiFilesToLOD(cls, wikiFiles: list, templateName: str):
+    def convertWikiFilesToLOD(cls, wikiFiles: list, templateName: str, limit:int=None):
         '''
         converts the given wikiFiles to list of dicts 
         by extracting the given templateName from the wikiPage corresponding to
@@ -179,6 +179,7 @@ class WikiFileManager(CmdLineAble):
         Args:
             wikiFiles(list): pageTitles to convert to list of dict
             templateName(str): Name of the template/entity/WikiSon object that should be extracted
+            limit(int): limit the number of converted records
 
         Returns:
             list: a list of dicts with the content
@@ -193,6 +194,9 @@ class WikiFileManager(CmdLineAble):
                     if pageTitle is not None:
                         wikiSonEntity['pageTitle']= pageTitle
                     lod.append(wikiSonEntity)
+                    if limit is not None:
+                        if len(lod) >= limit:
+                            break
         return lod
 
     def pagesListToDict(self, data: list, titleKey: str = "pageTitle", removeKey:bool=True) -> dict:
