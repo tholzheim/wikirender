@@ -76,8 +76,6 @@ class WikiFile:
                 name=name[len(prefix):]
         return name
 
-
-
     def save_to_file(self, overwrite=False):
         """
         Save the given data in a file.
@@ -359,7 +357,6 @@ class WikiFile:
             if records:
                 lod.append(records)
         return lod
-
 
     def extract_template(self, name: str):
         """
