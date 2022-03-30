@@ -6,12 +6,14 @@ class WikiPage:
     Provides functionalities to update the WikiSON content of a page
     """
 
-    def __init__(self, wikiId:str):
+    def __init__(self, wikiId:str, debug:bool=False):
         """
         Constructor
         Args:
             wikiId: id of the wiki
+            debug(bool): If True show debug messages
         """
+        self.debug=debug
         self.wikiId = wikiId
         self.wikiFileManager = WikiFileManager(sourceWikiId=self.wikiId, targetWikiId=self.wikiId)
 
