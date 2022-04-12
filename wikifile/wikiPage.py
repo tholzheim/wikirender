@@ -33,20 +33,24 @@ class WikiPage:
         wikiFile.updateTemplate(wikiSonEntity, props, prettify=True, overwrite=True)
         wikiFile.pushToWiki(msg=updateMsg)
 
-    def getWikiSonFromPage(self, pageTitle:str, wikiSonEntity:str) -> dict:
+    def getWikiSonFromPage(self, pageTitle:str, wikiSonEntity:str, includeWikiMarkup:bool=False) -> dict:
         """
         Extract the given WikiSON entity from the page with the given pageTitle
         Note: In case multiple wikiSON  entities are present on the page currently only the first one is returned
         Args:
             pageTitle: name of the page
             wikiSonEntity: name of the WikiSON entity to extract
+            includeWikiMarkup: If True the WikiMarkup of the page will be added as property to the returned record
 
         Returns:
             dict properties of the WikiSON entity on the page
         """
         wikiFile = self.wikiFileManager.getWikiFileFromWiki(pageTitle)
-        entities = wikiFile.extractTemplate(wikiSonEntity)
-        if len(entities) >= 1:
-            return entities[0]
+        entityRecords = wikiFile.extractTemplate(wikiSonEntity)
+        if len(entityRecords) >= 1:
+            entityRecord = entityRecords[0]
+            if includeWikiMarkup:
+                entityRecord['wikiMarkup'] = wikiFile.wikiText
+            return entityRecord
         else:
             return {}
