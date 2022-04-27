@@ -6,16 +6,17 @@ class WikiPage:
     Provides functionalities to update the WikiSON content of a page
     """
 
-    def __init__(self, wikiId:str, debug:bool=False):
+    def __init__(self, wikiId:str, login:bool=True, debug:bool=False):
         """
         Constructor
         Args:
             wikiId: id of the wiki
+            login(bool): If True login when accessing the wiki
             debug(bool): If True show debug messages
         """
         self.debug=debug
         self.wikiId = wikiId
-        self.wikiFileManager = WikiFileManager(sourceWikiId=self.wikiId, targetWikiId=self.wikiId)
+        self.wikiFileManager = WikiFileManager(sourceWikiId=self.wikiId, targetWikiId=self.wikiId, login=login)
 
     def updatePageWikiSON(self, pageTitle:str, wikiSonEntity:str, props:dict, updateMsg:str=None):
         """
