@@ -16,7 +16,7 @@ class WikiPage:
         """
         self.debug=debug
         self.wikiId = wikiId
-        targetWikiId = self.wikiId if login else False
+        targetWikiId = self.wikiId if login else None
         self.wikiFileManager = WikiFileManager(sourceWikiId=self.wikiId, targetWikiId=targetWikiId, login=login)
 
     def updatePageWikiSON(self, pageTitle:str, wikiSonEntity:str, props:dict, updateMsg:str=None):
