@@ -11,12 +11,13 @@ class WikiPage:
         Constructor
         Args:
             wikiId: id of the wiki
-            login(bool): If True login when accessing the wiki
+            login(bool): If True login when accessing the wiki. If False updates can not be performed
             debug(bool): If True show debug messages
         """
         self.debug=debug
         self.wikiId = wikiId
-        self.wikiFileManager = WikiFileManager(sourceWikiId=self.wikiId, targetWikiId=self.wikiId, login=login)
+        targetWikiId = self.wikiId if login else False
+        self.wikiFileManager = WikiFileManager(sourceWikiId=self.wikiId, targetWikiId=targetWikiId, login=login)
 
     def updatePageWikiSON(self, pageTitle:str, wikiSonEntity:str, props:dict, updateMsg:str=None):
         """
