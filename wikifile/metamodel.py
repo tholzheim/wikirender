@@ -26,15 +26,14 @@ class MetaModelElement(JSONAble):
         return samples
 
     def __init__(self, propList: list = None, properties: dict = None, template=None):
-        '''
+        """
         construct me from the given properties and the given propertyMap
-        
+
         Args:
             propList(list): a list of field names
             properties(dict): a dictionary of properties
             template(str): the template to be used
-            lenient(bool): if False throw an exception if invalid property names are in the properties dict
-        '''
+        """
         super().__init__()
         self.template=template
         if propList is None:

@@ -3,7 +3,7 @@ Created on 13.07.2021
 
 @author: wf
 '''
-from wikibot.wikiuser import WikiUser
+from wikibot3rd.wikiuser import WikiUser
 import os
 import getpass
 

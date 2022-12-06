@@ -4,11 +4,11 @@ import warnings
 import getpass
 from pathlib import Path
 
-from wikibot.wikiuser import WikiUser
+from wikibot3rd.wikiuser import WikiUser
 
 from wikifile.wikiFile import WikiFile
 from wikifile.wikiFileManager import WikiFileManager
-from wikibot.wikipush import WikiPush
+from wikibot3rd.wikipush import WikiPush
 from datetime import datetime
 from random import random
 import io
@@ -16,15 +16,17 @@ import os
 import time
 from tests.default_wikiuser import DefaultWikiUser
 
+
 class TestWikiFileManager(unittest.TestCase):
-    '''
+    """
     test WikiFileManager
-    '''
+    """
+
+    wikiFileManagers = dict()
 
     @classmethod
     def setUpClass(cls):
         super(TestWikiFileManager, cls).setUpClass()
-        cls.wikiFileManagers={}
         for wikiId in ["or","orclone","wikirenderTest"]:
             _wikiUser=DefaultWikiUser.getSMW_WikiUser(wikiId)
             home = os.path.expanduser("~")
@@ -58,7 +60,7 @@ test freetext"""
         '''
         are we running in a public Continuous Integration Environment?
         '''
-        return getpass.getuser() in ["travis", "runner"];
+        return getpass.getuser() in ["travis", "runner"]
 
 
     def testGetWikiAllWikiFilesForArgs(self):

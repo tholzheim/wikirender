@@ -5,7 +5,7 @@ import warnings
 
 from lodstorage.lod import LOD
 from typing import List
-from wikibot.wikipush import WikiPush
+from wikibot3rd.wikipush import WikiPush
 from wikifile.wikiFile import WikiFile
 from wikifile.cmdline import CmdLineAble
 from wikifile.wikiRender import WikiRender

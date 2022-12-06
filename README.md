@@ -8,7 +8,7 @@
 
 Provides jinja templates to create wiki page files form JSON input
 ## Install
-```json
+```bash
 pip install wikirender
 ```
 check if it worked with
@@ -68,6 +68,7 @@ Returns:
          "Submission deadline": "2008/10/02",
          "Filename": "CC 2009"
       }
+  ]
 }
 ```
 > Note: As the name says the data is only extracted form the file. Meaning that also template arguments with invalid arguments are included in the result which is contrary to querying the templates in the wiki (invalid values are excluded there)
@@ -91,7 +92,7 @@ To generate the pages the following input is required:
     "icon": "File:EventLogo-64px.png",
     "iconUrl": "",
     "documentation": "a meeting of researchers at a specific time and place",
-    "wikiDocumentation": "a meeting of researchers at a specific time and place (virtual or physical) and with a specific thematic focus to present, hear and discuss research outputs ",
+    "wikiDocumentation": "a meeting of researchers at a specific time and place (virtual or physical) and with a specific thematic focus to present, hear and discuss research outputs "
   }]
 }
 ```
