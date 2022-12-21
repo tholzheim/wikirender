@@ -14,7 +14,7 @@ with open(path.join(this_directory, 'requirements.txt'), encoding='utf-8') as f:
 
 setup(
     name='wikirender',
-    version='0.0.42',
+    version='0.0.43',
     packages=['wikifile','templates','templates/macros', 'wikifile/resources/metamodel'],
     classifiers=[
             'Programming Language :: Python',
